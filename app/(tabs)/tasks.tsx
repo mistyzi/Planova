@@ -35,18 +35,17 @@ const tasks = [
     category: 'Coding',
     priority: 'High',
   },
-]
+];
 
-const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const dates = ['19', '20', '21', '22', '23', '24', '25']
+const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const dates = ['19', '20', '21', '22', '23', '24', '25'];
 
 export default function TasksScreen() {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState('');
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoRow}>
             <MaterialCommunityIcons
@@ -71,7 +70,6 @@ export default function TasksScreen() {
           </View>
         </View>
 
-        {/* Calendar */}
         <View style={styles.calendarCard}>
           <View style={styles.calendarHeader}>
             <TouchableOpacity>
@@ -109,7 +107,6 @@ export default function TasksScreen() {
 
         <View style={styles.constellationLine} />
 
-        {/* Search */}
         <TextInput
           value={search}
           onChangeText={setSearch}
@@ -118,7 +115,6 @@ export default function TasksScreen() {
           style={styles.searchInput}
         />
 
-        {/* Tasks */}
         {tasks.map((task, index) => (
           <View key={index} style={styles.taskCard}>
             <View style={styles.taskHeader}>
@@ -142,41 +138,20 @@ export default function TasksScreen() {
           </View>
         ))}
 
-        {/* Add Task */}
         <TouchableOpacity style={styles.addButton}>
           <Text style={styles.addButtonText}>+ Add New Task</Text>
         </TouchableOpacity>
 
         <View style={styles.constellationLine} />
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={styles.navWrapper}>
-        <View style={styles.navBar}>
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="home" size={22} color="#cbd5e1" />
-            <Text style={styles.navLabel}>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="checkmark-done" size={22} color="#ffffff" />
-            <Text style={styles.navLabelActive}>Tasks</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="timer" size={22} color="#cbd5e1" />
-            <Text style={styles.navLabel}>Timer</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0e1938',
+    backgroundColor: 'transparent',
   },
 
   scrollContent: {
@@ -419,33 +394,4 @@ const styles = StyleSheet.create({
     padding: 2,
     backgroundColor: '#8b5cf6',
   },
-
-  navBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: 'rgba(14,25,56,0.92)',
-    borderRadius: 999,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-  },
-
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  navLabel: {
-    marginTop: 4,
-    fontSize: 11,
-    color: '#cbd5e1',
-    fontWeight: '600',
-  },
-
-  navLabelActive: {
-    marginTop: 4,
-    fontSize: 11,
-    color: '#ffffff',
-    fontWeight: '700',
-  },
-})
+});
