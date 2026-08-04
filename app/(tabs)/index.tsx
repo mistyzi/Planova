@@ -13,13 +13,12 @@ const tasks = [
   { title: 'Submit Project Proposal', remaining: '0 Days Remaining' },
   { title: 'Review Lecture Notes', remaining: '3 Days Remaining' },
   { title: 'Debug UI Layout', remaining: '5 Days Remaining' },
-]
+];
 
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoRow}>
             <MaterialCommunityIcons
@@ -44,15 +43,13 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Welcome */}
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>Welcome Back, Celestia!</Text>
           <Text style={styles.welcomeSubtitle}>
-            Your Starpath awaits, let’s make today luminous.
+            Your Starpath awaits, let's make today luminous.
           </Text>
         </View>
 
-        {/* Schedule Overview */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Schedule Overview</Text>
 
@@ -74,7 +71,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Daily Alignment */}
         <View style={styles.alignmentSection}>
           <Text style={styles.alignmentTitle}>.⋆˚✦. DAILY ALIGNMENT .✦˚⋆.</Text>
           <Text style={styles.alignmentText}>
@@ -86,7 +82,6 @@ export default function HomeScreen() {
 
         <View style={styles.constellationLine} />
 
-        {/* Weekly Progress */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Weekly Starpath Progress</Text>
 
@@ -109,7 +104,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Weekly Goals */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Weekly Galaxy Goals</Text>
 
@@ -141,34 +135,14 @@ export default function HomeScreen() {
 
         <View style={styles.constellationLine} />
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={styles.navWrapper}>
-        <View style={styles.navBar}>
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="home" size={22} color="#ffffff" />
-            <Text style={styles.navLabel}>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="checkmark-done" size={22} color="#d1d5db" />
-            <Text style={styles.navLabel}>Tasks</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="timer" size={22} color="#d1d5db" />
-            <Text style={styles.navLabel}>Timer</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0e1938',
+    backgroundColor: 'transparent',
   },
 
   scrollContent: {
@@ -456,36 +430,4 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '600',
   },
-
-  navWrapper: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-    bottom: 16,
-    borderRadius: 999,
-    padding: 2,
-    backgroundColor: '#8b5cf6',
-  },
-
-  navBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: 'rgba(14,25,56,0.92)',
-    borderRadius: 999,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-  },
-
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  navLabel: {
-    marginTop: 4,
-    fontSize: 11,
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-})
+});
