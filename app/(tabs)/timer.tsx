@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   SafeAreaView,
   ScrollView,
   View,
   Text,
   TouchableOpacity,
-  TextInput,
   Image,
   StyleSheet,
+  Pressable,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const presets = [
   {
@@ -44,11 +45,7 @@ const presets = [
   },
 ];
 
-const quickTimes = [5, 10, 15, 30, 45, 60];
-
 export default function TimerScreen() {
-  const [customMinutes, setCustomMinutes] = useState('');
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -85,54 +82,76 @@ export default function TimerScreen() {
 
           <View style={styles.grid}>
             {presets.map((preset, index) => (
-              <TouchableOpacity key={index} style={styles.planetCard}>
+              <Pressable
+                key={index}
+                style={({ pressed }) => [
+                  styles.planetCard,
+                  pressed && {
+                    backgroundColor: 'rgba(255,255,255,0.18)',
+                  },
+                ]}
+              >
                 <View style={styles.planetGlow} />
-                <Image source={{ uri: preset.image }} style={styles.planetImage} />
+
+                <Image
+                  source={{ uri: preset.image }}
+                  style={styles.planetImage}
+                />
+
                 <Text style={styles.planetText}>
                   {preset.name}
                   {'\n'}
                   ✦ {preset.time}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Choose a Custom Cosmic Focus
+            Create a Custom Cosmic Focus
           </Text>
-
           <View style={styles.constellationLine} />
+          <View style={styles.grid}>
+            {presets.map((preset, index) => (
+              <Pressable
+                key={index}
+                style={({ pressed }) => [
+                  styles.planetCard,
+                  pressed && {
+                    backgroundColor: 'rgba(255,255,255,0.18)',
+                  },
+                ]}
+              >
+                <View style={styles.planetGlow} />
 
-          <View style={styles.customCard}>
-            <Text style={styles.inputLabel}>
-              Enter your study time (minutes)
-            </Text>
+                <Image
+                  source={{ uri: preset.image }}
+                  style={styles.planetImage}
+                />
 
-            <TextInput
-              value={customMinutes}
-              onChangeText={setCustomMinutes}
-              placeholder="e.g., 45"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              keyboardType="numeric"
-              style={styles.input}
-            />
-
-            <TouchableOpacity style={styles.startButton}>
-              <Text style={styles.startButtonText}>Start Timer</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.quickGrid}>
-            {quickTimes.map((time) => (
-              <TouchableOpacity key={time} style={styles.quickButton}>
-                <Text style={styles.quickButtonText}>{time} min</Text>
-              </TouchableOpacity>
+                <Text style={styles.planetText}>
+                  {preset.name}
+                  {'\n'}
+                  ✦ {preset.time}
+                </Text>
+              </Pressable>
             ))}
           </View>
+          <TouchableOpacity activeOpacity={0.9}>
+            <LinearGradient
+              colors={['#c084fc', '#6366f1']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.customFocusButton}
+            >
+              <Text style={styles.customFocusButtonText}>
+                ＋ Create Custom Cosmic Focus
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
-
         <View style={styles.constellationLine} />
       </ScrollView>
     </SafeAreaView>
@@ -163,10 +182,10 @@ const styles = StyleSheet.create({
   },
 
   logoText: {
+    fontFamily: 'MysteryQuest',
     marginLeft: 8,
     fontSize: 28,
     color: '#e9d5ff',
-    fontWeight: '700',
     letterSpacing: 1,
   },
 
@@ -211,9 +230,9 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
+    fontFamily: 'BitterBold',
     fontSize: 22,
     color: '#e9d5ff',
-    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -263,78 +282,32 @@ const styles = StyleSheet.create({
   },
 
   planetText: {
+    fontFamily: 'Bitter',
     fontSize: 13,
     color: '#ffffff',
     textAlign: 'center',
     lineHeight: 18,
   },
 
-  customCard: {
+  customFocusButton: {
     width: '100%',
-    maxWidth: 360,
-    backgroundColor: 'rgba(255,255,255,0.10)',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(196,181,253,0.35)',
-    padding: 20,
-    marginBottom: 20,
-  },
-
-  inputLabel: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-    marginBottom: 10,
-  },
-
-  input: {
-    width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(196,181,253,0.25)',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: '#ffffff',
-    fontSize: 15,
-    marginBottom: 16,
-  },
-
-  startButton: {
-    width: '100%',
-    backgroundColor: '#8b5cf6',
-    borderRadius: 14,
-    paddingVertical: 14,
+    padding: 12,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#b478ff',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    elevation: 8,
   },
 
-  startButtonText: {
+  customFocusButtonText: {
+    fontFamily: 'Bitter',
     color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-
-  quickGrid: {
-    width: '100%',
-    maxWidth: 360,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-
-  quickButton: {
-    width: '31%',
-    backgroundColor: 'rgba(255,255,255,0.10)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(196,181,253,0.35)',
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-
-  quickButtonText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 16,
   },
 });
