@@ -163,10 +163,10 @@ const styles = StyleSheet.create({
   },
 
   logoText: {
+    fontFamily: 'MysteryQuest',
     marginLeft: 8,
     fontSize: 28,
     color: '#e9d5ff',
-    fontWeight: '700',
     letterSpacing: 1,
   },
 
@@ -211,13 +211,14 @@ const styles = StyleSheet.create({
   },
 
   welcomeTitle: {
+    fontFamily: 'BitterBold',
     fontSize: 24,
     color: '#e9d5ff',
-    fontWeight: '700',
     textAlign: 'center',
   },
 
   welcomeSubtitle: {
+    fontFamily: 'Bitter',
     marginTop: 6,
     fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
@@ -235,21 +236,22 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
+    fontFamily: 'BitterBold',
     fontSize: 20,
     color: '#e9d5ff',
-    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 14,
   },
 
   cardText: {
+    fontFamily: 'Bitter',
     fontSize: 15,
     color: 'rgba(255,255,255,0.9)',
     lineHeight: 22,
   },
 
   bold: {
-    fontWeight: '700',
+    fontFamily: 'BitterBold',
     color: '#ffffff',
   },
 
@@ -264,9 +266,9 @@ const styles = StyleSheet.create({
   },
 
   primaryButtonText: {
+    fontFamily: 'BitterBold',
     color: '#ffffff',
     fontSize: 14,
-    fontWeight: '600',
   },
 
   alignmentSection: {
@@ -276,13 +278,14 @@ const styles = StyleSheet.create({
   },
 
   alignmentTitle: {
+    fontFamily: 'BitterBold',
     fontSize: 18,
     color: '#e9d5ff',
-    fontWeight: '700',
     textAlign: 'center',
   },
 
   alignmentText: {
+    fontFamily: 'Bitter',
     marginTop: 10,
     fontSize: 16,
     color: 'rgba(255,255,255,0.92)',
@@ -313,19 +316,21 @@ const styles = StyleSheet.create({
   },
 
   streakLabel: {
+    fontFamily: 'Bitter',
     fontSize: 13,
     color: 'rgba(255,255,255,0.82)',
     letterSpacing: 0.5,
   },
 
   streakValue: {
+    fontFamily: 'BitterBold',
     marginTop: 8,
     fontSize: 34,
     color: '#e9d5ff',
-    fontWeight: '700',
   },
 
   streakHint: {
+    fontFamily: 'Bitter',
     marginTop: 6,
     fontSize: 12,
     color: 'rgba(255,255,255,0.65)',
@@ -357,6 +362,7 @@ const styles = StyleSheet.create({
   },
 
   statText: {
+    fontFamily: 'Bitter',
     fontSize: 13,
     color: 'rgba(255,255,255,0.82)',
   },
@@ -380,9 +386,9 @@ const styles = StyleSheet.create({
   },
 
   chipText: {
+    fontFamily: 'BitterBold',
     fontSize: 12,
     color: 'rgba(255,255,255,0.86)',
-    fontWeight: '600',
   },
 
   taskItem: {
@@ -398,14 +404,15 @@ const styles = StyleSheet.create({
   },
 
   taskTitle: {
+    fontFamily: 'BitterBold',
     flex: 1,
     fontSize: 15,
     color: '#f5f3ff',
-    fontWeight: '600',
     marginRight: 12,
   },
 
   taskRemaining: {
+    fontFamily: 'Bitter',
     fontSize: 12,
     color: 'rgba(255,255,255,0.55)',
     textAlign: 'right',
@@ -426,8 +433,8 @@ const styles = StyleSheet.create({
   },
 
   seeMoreText: {
+    fontFamily: 'BitterBold',
     fontSize: 13,
     color: '#ffffff',
-    fontWeight: '600',
   },
 });

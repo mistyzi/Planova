@@ -172,10 +172,10 @@ const styles = StyleSheet.create({
   },
 
   logoText: {
+    fontFamily: 'MysteryQuest',
     marginLeft: 8,
     fontSize: 28,
     color: '#e9d5ff',
-    fontWeight: '700',
     letterSpacing: 1,
   },
 
@@ -231,9 +231,9 @@ const styles = StyleSheet.create({
   },
 
   calendarTitle: {
+    fontFamily: 'BitterBold',
     fontSize: 18,
     color: '#ffffff',
-    fontWeight: '700',
   },
 
   calendarGrid: {
@@ -243,11 +243,11 @@ const styles = StyleSheet.create({
   },
 
   dayLabel: {
+    fontFamily: 'BitterBold',
     width: '14%',
     textAlign: 'center',
     color: '#d8b4fe',
     fontSize: 12,
-    fontWeight: '600',
     marginBottom: 10,
   },
 
@@ -259,6 +259,7 @@ const styles = StyleSheet.create({
   },
 
   dateText: {
+    fontFamily: 'Bitter',
     color: 'rgba(255,255,255,0.75)',
     fontSize: 14,
   },
@@ -273,9 +274,9 @@ const styles = StyleSheet.create({
   },
 
   activeDateText: {
+    fontFamily: 'BitterBold',
     color: '#0e1938',
     fontSize: 14,
-    fontWeight: '700',
   },
 
   constellationLine: {
@@ -287,6 +288,7 @@ const styles = StyleSheet.create({
   },
 
   searchInput: {
+    fontFamily: 'Bitter',
     width: '100%',
     backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 16,
@@ -315,19 +317,21 @@ const styles = StyleSheet.create({
   },
 
   taskTitle: {
+    fontFamily: 'BitterBold',
     flex: 1,
     color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
     marginRight: 12,
   },
 
   taskDue: {
+    fontFamily: 'Bitter',
     color: 'rgba(255,255,255,0.6)',
     fontSize: 12,
   },
 
   taskMeta: {
+    fontFamily: 'Bitter',
     marginTop: 8,
     color: 'rgba(255,255,255,0.75)',
     fontSize: 13,
@@ -351,9 +355,9 @@ const styles = StyleSheet.create({
   },
 
   completeButtonText: {
+    fontFamily: 'BitterBold',
     color: '#ffffff',
     fontSize: 13,
-    fontWeight: '600',
   },
 
   editButton: {
@@ -380,9 +384,9 @@ const styles = StyleSheet.create({
   },
 
   addButtonText: {
+    fontFamily: 'BitterBold',
     color: '#ffffff',
     fontSize: 15,
-    fontWeight: '700',
   },
 
   navWrapper: {
