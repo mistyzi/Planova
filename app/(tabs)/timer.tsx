@@ -9,46 +9,65 @@ import {
   StyleSheet,
   Pressable,
 } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useProfileSheet } from '../../components/profilesheetcontext';
 
 const presets = [
   {
     name: 'Mercury',
     time: '20 min',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg',
   },
   {
     name: 'Mars',
     time: '40 min',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg',
   },
   {
     name: 'Venus',
     time: '60 min',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg',
   },
   {
     name: 'Earth',
     time: '80 min',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg',
   },
   {
     name: 'Neptune',
     time: '100 min',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg',
   },
   {
     name: 'Uranus',
     time: '120 min',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg',
+    image:
+      'https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg',
   },
 ];
 
 export default function TimerScreen() {
+  const { openProfile } = useProfileSheet();
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.pageScroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        scrollEnabled={true}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.header}>
           <View style={styles.logoRow}>
             <MaterialCommunityIcons
@@ -67,7 +86,11 @@ export default function TimerScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.iconBubble}>
+            <TouchableOpacity
+              style={styles.iconBubble}
+              onPress={openProfile}
+              activeOpacity={0.8}
+            >
               <Ionicons name="person" size={18} color="#ffffff" />
             </TouchableOpacity>
           </View>
@@ -86,15 +109,15 @@ export default function TimerScreen() {
                 key={index}
                 style={({ pressed }) => [
                   styles.planetCard,
-                  pressed && {
-                    backgroundColor: 'rgba(255,255,255,0.18)',
-                  },
+                  pressed && styles.planetCardPressed,
                 ]}
               >
                 <View style={styles.planetGlow} />
 
                 <Image
-                  source={{ uri: preset.image }}
+                  source={{
+                    uri: preset.image,
+                  }}
                   style={styles.planetImage}
                 />
 
@@ -112,38 +135,23 @@ export default function TimerScreen() {
           <Text style={styles.sectionTitle}>
             Create a Custom Cosmic Focus
           </Text>
+
           <View style={styles.constellationLine} />
-          <View style={styles.grid}>
-            {presets.map((preset, index) => (
-              <Pressable
-                key={index}
-                style={({ pressed }) => [
-                  styles.planetCard,
-                  pressed && {
-                    backgroundColor: 'rgba(255,255,255,0.18)',
-                  },
-                ]}
-              >
-                <View style={styles.planetGlow} />
 
-                <Image
-                  source={{ uri: preset.image }}
-                  style={styles.planetImage}
-                />
-
-                <Text style={styles.planetText}>
-                  {preset.name}
-                  {'\n'}
-                  ✦ {preset.time}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-          <TouchableOpacity activeOpacity={0.9}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            style={styles.customFocusWrapper}
+          >
             <LinearGradient
               colors={['#c084fc', '#6366f1']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              start={{
+                x: 0,
+                y: 0,
+              }}
+              end={{
+                x: 1,
+                y: 0,
+              }}
               style={styles.customFocusButton}
             >
               <Text style={styles.customFocusButtonText}>
@@ -152,7 +160,9 @@ export default function TimerScreen() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+
         <View style={styles.constellationLine} />
+        <View style={styles.pageBottomSpacer} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -164,9 +174,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 
+  pageScroll: {
+    flex: 1,
+  },
+
   scrollContent: {
     padding: 24,
     paddingBottom: 120,
+  },
+
+  pageBottomSpacer: {
+    height: 120,
   },
 
   header: {
@@ -264,6 +282,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
+  planetCardPressed: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+
   planetGlow: {
     position: 'absolute',
     top: 12,
@@ -287,6 +309,10 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     textAlign: 'center',
     lineHeight: 18,
+  },
+
+  customFocusWrapper: {
+    width: '100%',
   },
 
   customFocusButton: {
