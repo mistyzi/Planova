@@ -7,18 +7,36 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
+import { useProfileSheet } from '../../components/profilesheetcontext';
 
 const tasks = [
-  { title: 'Submit Project Proposal', remaining: '0 Days Remaining' },
-  { title: 'Review Lecture Notes', remaining: '3 Days Remaining' },
-  { title: 'Debug UI Layout', remaining: '5 Days Remaining' },
+  {
+    title: 'Submit Project Proposal',
+    remaining: '0 Days Remaining',
+  },
+  {
+    title: 'Review Lecture Notes',
+    remaining: '3 Days Remaining',
+  },
+  {
+    title: 'Debug UI Layout',
+    remaining: '5 Days Remaining',
+  },
 ];
 
 export default function HomeScreen() {
+  const { openProfile } = useProfileSheet();
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <View style={styles.logoRow}>
             <MaterialCommunityIcons
@@ -37,14 +55,20 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.iconBubble}>
+            <TouchableOpacity
+              style={styles.iconBubble}
+              onPress={openProfile}
+              activeOpacity={0.8}
+            >
               <Ionicons name="person" size={18} color="#ffffff" />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Welcome Back, Celestia!</Text>
+          <Text style={styles.welcomeTitle}>
+            Welcome Back, Celestia!
+          </Text>
           <Text style={styles.welcomeSubtitle}>
             Your Starpath awaits, let's make today luminous.
           </Text>
@@ -72,7 +96,9 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.alignmentSection}>
-          <Text style={styles.alignmentTitle}>.⋆˚✦. DAILY ALIGNMENT .✦˚⋆.</Text>
+          <Text style={styles.alignmentTitle}>
+            .⋆˚✦. DAILY ALIGNMENT .✦˚⋆.
+          </Text>
           <Text style={styles.alignmentText}>
             The universe conspires for your focus today.
             {'\n'}
@@ -98,9 +124,15 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.statsRow}>
-            <Text style={styles.statText}>Completed: <Text style={styles.bold}>6</Text></Text>
-            <Text style={styles.statText}>Remaining: <Text style={styles.bold}>3</Text></Text>
-            <Text style={styles.statText}>Goal: <Text style={styles.bold}>10</Text></Text>
+            <Text style={styles.statText}>
+              Completed: <Text style={styles.bold}>6</Text>
+            </Text>
+            <Text style={styles.statText}>
+              Remaining: <Text style={styles.bold}>3</Text>
+            </Text>
+            <Text style={styles.statText}>
+              Goal: <Text style={styles.bold}>10</Text>
+            </Text>
           </View>
         </View>
 

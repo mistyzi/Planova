@@ -8,7 +8,11 @@ import {
   TextInput,
   StyleSheet,
 } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
+import { useProfileSheet } from '../../components/profilesheetcontext';
 
 const tasks = [
   {
@@ -42,10 +46,14 @@ const dates = ['19', '20', '21', '22', '23', '24', '25'];
 
 export default function TasksScreen() {
   const [search, setSearch] = useState('');
+  const { openProfile } = useProfileSheet();
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <View style={styles.logoRow}>
             <MaterialCommunityIcons
@@ -64,7 +72,11 @@ export default function TasksScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.iconBubble}>
+            <TouchableOpacity
+              style={styles.iconBubble}
+              onPress={openProfile}
+              activeOpacity={0.8}
+            >
               <Ionicons name="person" size={18} color="#ffffff" />
             </TouchableOpacity>
           </View>
