@@ -1,45 +1,41 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  StyleSheet,
-  Dimensions,
-  View,
-} from 'react-native';
-import {
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
+import { StyleSheet, Dimensions, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import StarryBackground from '../../components/starrybackground';
-import {
-  ProfileSheetProvider,
-} from '../../components/profilesheetcontext';
+import { ProfileSheetProvider } from '../../components/profilesheetcontext';
+import { useTheme } from '../../components/themecontext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function TabLayout() {
   const NAV_WIDTH = 280;
   const SIDE_MARGIN = (SCREEN_WIDTH - NAV_WIDTH) / 2;
+  const { isDark } = useTheme();
+
+  const backgroundColors: [string, string] = isDark ? ['#0e1938', '#6b41bf'] : ['#EEF3FF', '#DCCFF5'];
+  const navBorderColors: [string, string, string] = isDark ? ['#f9a8d4', '#c084fc', '#6366f1'] : ['#D8B4FE', '#C4B5FD', '#A5B4FC'];
+  const navInnerColors: [string, string] = isDark ? ['rgba(14,25,56,0.96)', 'rgba(14,25,56,0.96)'] : ['rgba(248,250,255,0.96)', 'rgba(248,250,255,0.96)'];
+  const activeTintColor = isDark ? '#ffffff' : '#33265C';
+  const inactiveTintColor = isDark ? 'rgba(203,213,225,0.65)' : 'rgba(71,65,96,0.60)';
 
   return (
     <GestureHandlerRootView style={styles.root}>
       <ProfileSheetProvider>
         <View style={styles.container}>
           <LinearGradient
-            colors={['#0e1938', '#6b41bf']}
+            colors={backgroundColors}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
             style={StyleSheet.absoluteFillObject}
           />
-
           <StarryBackground />
-
           <Tabs
             screenOptions={{
               headerShown: false,
               tabBarShowLabel: true,
-              sceneStyle: {
-                backgroundColor: 'transparent',
-              },
+              sceneStyle: { backgroundColor: 'transparent' },
               tabBarStyle: {
                 position: 'absolute',
                 width: NAV_WIDTH,
@@ -54,31 +50,18 @@ export default function TabLayout() {
                 elevation: 0,
                 zIndex: 0,
                 shadowColor: '#000',
-                shadowOffset: {
-                  width: 0,
-                  height: 10,
-                },
-                shadowOpacity: 0.35,
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: isDark ? 0.35 : 0.18,
                 shadowRadius: 20,
               },
               tabBarBackground: () => (
                 <LinearGradient
-                  colors={['#f9a8d4', '#c084fc', '#6366f1']}
+                  colors={navBorderColors}
                   start={{ x: 0, y: 0.5 }}
                   end={{ x: 1, y: 0.5 }}
-                  style={{
-                    flex: 1,
-                    borderRadius: 999,
-                    padding: 2,
-                  }}
+                  style={{ flex: 1, borderRadius: 999, padding: 2 }}
                 >
-                  <LinearGradient
-                    colors={['rgba(14,25,56,0.96)', 'rgba(14,25,56,0.96)']}
-                    style={{
-                      flex: 1,
-                      borderRadius: 999,
-                    }}
-                  />
+                  <LinearGradient colors={navInnerColors} style={{ flex: 1, borderRadius: 999 }} />
                 </LinearGradient>
               ),
               tabBarItemStyle: {
@@ -91,8 +74,8 @@ export default function TabLayout() {
                 fontSize: 11,
                 fontWeight: '600',
               },
-              tabBarActiveTintColor: '#ffffff',
-              tabBarInactiveTintColor: 'rgba(203,213,225,0.65)',
+              tabBarActiveTintColor: activeTintColor,
+              tabBarInactiveTintColor: inactiveTintColor,
               tabBarLabelPosition: 'below-icon',
             }}
           >
@@ -107,11 +90,7 @@ export default function TabLayout() {
                     color={color}
                     style={{
                       opacity: focused ? 1 : 0.65,
-                      transform: [
-                        {
-                          scale: focused ? 1.08 : 1,
-                        },
-                      ],
+                      transform: [{ scale: focused ? 1.08 : 1 }],
                     }}
                   />
                 ),
@@ -123,7 +102,6 @@ export default function TabLayout() {
                 },
               }}
             />
-
             <Tabs.Screen
               name="tasks"
               options={{
@@ -135,11 +113,7 @@ export default function TabLayout() {
                     color={color}
                     style={{
                       opacity: focused ? 1 : 0.65,
-                      transform: [
-                        {
-                          scale: focused ? 1.08 : 1,
-                        },
-                      ],
+                      transform: [{ scale: focused ? 1.08 : 1 }],
                     }}
                   />
                 ),
@@ -150,7 +124,6 @@ export default function TabLayout() {
                 },
               }}
             />
-
             <Tabs.Screen
               name="timer"
               options={{
@@ -162,11 +135,7 @@ export default function TabLayout() {
                     color={color}
                     style={{
                       opacity: focused ? 1 : 0.65,
-                      transform: [
-                        {
-                          scale: focused ? 1.08 : 1,
-                        },
-                      ],
+                      transform: [{ scale: focused ? 1.08 : 1 }],
                     }}
                   />
                 ),
@@ -188,7 +157,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-
   container: {
     flex: 1,
   },

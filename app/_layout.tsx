@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ProfileSheetProvider } from '../components/profilesheetcontext';
+import { ThemeProvider } from '../components/themecontext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -13,7 +13,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Bitter: require('../assets/fonts/Bitter-Regular.otf'),
     BitterBold: require('../assets/fonts/Bitter-Bold.otf'),
-    MysteryQuest: require('../assets/fonts/MysteryQuest-Regular.ttf')
+    MysteryQuest: require('../assets/fonts/MysteryQuest-Regular.ttf'),
   });
 
   useEffect(() => {
@@ -27,13 +27,13 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ProfileSheetProvider>
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
         </Stack>
-      </ProfileSheetProvider>
-    </GestureHandlerRootView>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 }
