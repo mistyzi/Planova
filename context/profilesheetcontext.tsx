@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet from '@gorhom/bottom-sheet';
-import ProfileSheet from './profilesheet';
+import ProfileSheet from '@/components/profilesheet';
 
 type ProfileSheetContextType = {
   openProfile: () => void;
@@ -10,7 +10,11 @@ type ProfileSheetContextType = {
 
 const ProfileSheetContext = createContext<ProfileSheetContextType | null>(null);
 
-export function ProfileSheetProvider({ children }: { children: React.ReactNode }) {
+export function ProfileSheetProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const profileSheetRef = useRef<BottomSheet>(null);
 
   const openProfile = () => {
@@ -22,8 +26,17 @@ export function ProfileSheetProvider({ children }: { children: React.ReactNode }
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ProfileSheetContext.Provider value={{ openProfile, closeProfile }}>
+    <GestureHandlerRootView
+      style={{
+        flex: 1,
+      }}
+    >
+      <ProfileSheetContext.Provider
+        value={{
+          openProfile,
+          closeProfile,
+        }}
+      >
         {children}
         <ProfileSheet ref={profileSheetRef} />
       </ProfileSheetContext.Provider>
@@ -33,10 +46,8 @@ export function ProfileSheetProvider({ children }: { children: React.ReactNode }
 
 export function useProfileSheet() {
   const context = useContext(ProfileSheetContext);
-
   if (!context) {
     throw new Error('useProfileSheet must be used inside ProfileSheetProvider');
   }
-
   return context;
 }
