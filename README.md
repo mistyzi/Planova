@@ -8,7 +8,7 @@ ABOUT WILL GO HERE
 
 ### ★ PROJECT STRUCTURE !!
 
-├── app/ 
+├── app/      
 ├── assets/         
 ├── components/      
 ├── context/     
