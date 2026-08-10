@@ -21,7 +21,7 @@ const songs: Song[] = [
     id: "2",
     title: "Eternal Stars",
     artist: "Planova Ambient",
-    source: require("../assets/music/Endless-Stars.mp3"),
+    source: require("../assets/music/Eternal-Stars.mp3"),
   },
   {
     id: "3",

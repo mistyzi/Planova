@@ -1,11 +1,24 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteStudyGuide, getStudyGuides, StudyGuide } from "../storage/studyGuideStorage";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    deleteStudyGuide,
+    getStudyGuides,
+    StudyGuide,
+} from "../storage/studyGuideStorage";
 
 export default function StudyGuidesScreen() {
   const { isDark } = useTheme();
@@ -54,7 +67,7 @@ export default function StudyGuidesScreen() {
   useFocusEffect(
     useCallback(() => {
       loadGuides();
-    }, [loadGuides])
+    }, [loadGuides]),
   );
 
   const handleDelete = (guide: StudyGuide) => {
@@ -75,11 +88,14 @@ export default function StudyGuidesScreen() {
               await loadGuides();
             } catch (error) {
               console.log("Failed to delete study guide:", error);
-              Alert.alert("Delete failed", "The study guide could not be deleted.");
+              Alert.alert(
+                "Delete failed",
+                "The study guide could not be deleted.",
+              );
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -99,7 +115,10 @@ export default function StudyGuidesScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
@@ -122,10 +141,16 @@ export default function StudyGuidesScreen() {
         <StarryBackground />
       </View>
       <View style={styles.topBar}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.headerButton}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.back()}
+          style={styles.headerButton}
+        >
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-        <Text style={[styles.topTitle, { color: colors.title }]}>Study Guides</Text>
+        <Text style={[styles.topTitle, { color: colors.title }]}>
+          Study Guides
+        </Text>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={createGuide}
@@ -155,7 +180,9 @@ export default function StudyGuidesScreen() {
           >
             <Ionicons name="book-outline" size={28} color={colors.icon} />
           </View>
-          <Text style={[styles.pageTitle, { color: colors.title }]}>Your Study Guides</Text>
+          <Text style={[styles.pageTitle, { color: colors.title }]}>
+            Your Study Guides
+          </Text>
           <Text style={[styles.pageSubtitle, { color: colors.secondaryText }]}>
             Create organized study guides to review your course material.
           </Text>
@@ -180,7 +207,9 @@ export default function StudyGuidesScreen() {
             >
               <Ionicons name="book-outline" size={30} color={colors.icon} />
             </View>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>No Study Guides Yet</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              No Study Guides Yet
+            </Text>
             <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
               Create your first study guide and start organizing your notes.
             </Text>
@@ -201,7 +230,9 @@ export default function StudyGuidesScreen() {
         ) : (
           <>
             <View style={styles.listHeader}>
-              <Text style={[styles.listTitle, { color: colors.title }]}>Saved Guides</Text>
+              <Text style={[styles.listTitle, { color: colors.title }]}>
+                Saved Guides
+              </Text>
               <Text style={[styles.listCount, { color: colors.secondaryText }]}>
                 {guides.length} {guides.length === 1 ? "guide" : "guides"}
               </Text>
@@ -228,30 +259,79 @@ export default function StudyGuidesScreen() {
                       },
                     ]}
                   >
-                    <Ionicons name="book-outline" size={23} color={colors.icon} />
+                    <Ionicons
+                      name="book-outline"
+                      size={23}
+                      color={colors.icon}
+                    />
                   </View>
                   <View style={styles.guideInfo}>
-                    <Text numberOfLines={1} style={[styles.guideTitle, { color: colors.text }]}>
+                    <Text
+                      numberOfLines={1}
+                      style={[styles.guideTitle, { color: colors.text }]}
+                    >
                       {guide.title}
                     </Text>
                     {guide.description ? (
-                      <Text numberOfLines={2} style={[styles.guideDescription, { color: colors.secondaryText }]}>
+                      <Text
+                        numberOfLines={2}
+                        style={[
+                          styles.guideDescription,
+                          { color: colors.secondaryText },
+                        ]}
+                      >
                         {guide.description}
                       </Text>
                     ) : null}
                     <View style={styles.guideMeta}>
-                      <Ionicons name="layers-outline" size={13} color={colors.secondaryText} />
-                      <Text style={[styles.metaText, { color: colors.secondaryText }]}>
-                        {guide.sections.length} {guide.sections.length === 1 ? "section" : "sections"}
+                      <Ionicons
+                        name="layers-outline"
+                        size={13}
+                        color={colors.secondaryText}
+                      />
+                      <Text
+                        style={[
+                          styles.metaText,
+                          { color: colors.secondaryText },
+                        ]}
+                      >
+                        {guide.sections.length}{" "}
+                        {guide.sections.length === 1 ? "section" : "sections"}
                       </Text>
-                      <Text style={[styles.metaDot, { color: colors.secondaryText }]}>•</Text>
-                      <Text style={[styles.metaText, { color: colors.secondaryText }]}>{guide.date}</Text>
+                      <Text
+                        style={[
+                          styles.metaDot,
+                          { color: colors.secondaryText },
+                        ]}
+                      >
+                        •
+                      </Text>
+                      <Text
+                        style={[
+                          styles.metaText,
+                          { color: colors.secondaryText },
+                        ]}
+                      >
+                        {guide.date}
+                      </Text>
                     </View>
                   </View>
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => handleDelete(guide)} style={styles.deleteButton}>
-                    <Ionicons name="trash-outline" size={18} color={colors.secondaryText} />
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => handleDelete(guide)}
+                    style={styles.deleteButton}
+                  >
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={colors.secondaryText}
+                    />
                   </TouchableOpacity>
-                  <Ionicons name="chevron-forward" size={18} color={colors.secondaryText} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={18}
+                    color={colors.secondaryText}
+                  />
                 </TouchableOpacity>
               ))}
             </View>

@@ -1,10 +1,18 @@
-import React, { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useTheme } from "@/context/themecontext";
 import Header from "@/components/header";
+import { useTheme } from "@/context/themecontext";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 const ACTIVE_FOCUS_SESSION_KEY = "@planova_active_focus_session";
 
@@ -158,7 +166,12 @@ export default function StudyScreen() {
       >
         <View style={styles.titleSection}>
           <Text style={[styles.pageTitle, { color: colors.title }]}>Study</Text>
-          <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
+          <View
+            style={[
+              styles.constellationLine,
+              { backgroundColor: colors.constellation },
+            ]}
+          />
           <Text style={[styles.pageSubtitle, { color: colors.secondaryText }]}>
             Tools and resources to help you study smarter.
           </Text>
@@ -183,14 +196,29 @@ export default function StudyScreen() {
                 },
               ]}
             >
-              <Ionicons name="document-text-outline" size={29} color={colors.icon} />
+              <Ionicons
+                name="document-text-outline"
+                size={29}
+                color={colors.icon}
+              />
             </View>
-            <Text style={[styles.featuredTitle, { color: colors.text }]}>Notes</Text>
-            <Text style={[styles.featuredDescription, { color: colors.secondaryText }]}>
+            <Text style={[styles.featuredTitle, { color: colors.text }]}>
+              Notes
+            </Text>
+            <Text
+              style={[
+                styles.featuredDescription,
+                { color: colors.secondaryText },
+              ]}
+            >
               Organize your notes and class materials.
             </Text>
             <View style={styles.featuredArrow}>
-              <Ionicons name="arrow-forward-outline" size={18} color={colors.secondaryText} />
+              <Ionicons
+                name="arrow-forward-outline"
+                size={18}
+                color={colors.secondaryText}
+              />
             </View>
           </TouchableOpacity>
           <TouchableOpacity
@@ -220,18 +248,36 @@ export default function StudyScreen() {
                 <Ionicons name="timer-outline" size={29} color={colors.icon} />
               )}
             </View>
-            <Text style={[styles.featuredTitle, { color: colors.text }]}>Focus Timer</Text>
-            <Text style={[styles.featuredDescription, { color: colors.secondaryText }]}>
+            <Text style={[styles.featuredTitle, { color: colors.text }]}>
+              Focus Timer
+            </Text>
+            <Text
+              style={[
+                styles.featuredDescription,
+                { color: colors.secondaryText },
+              ]}
+            >
               Set a session and focus on your work.
             </Text>
             <View style={styles.featuredArrow}>
-              <Ionicons name="arrow-forward-outline" size={18} color={colors.secondaryText} />
+              <Ionicons
+                name="arrow-forward-outline"
+                size={18}
+                color={colors.secondaryText}
+              />
             </View>
           </TouchableOpacity>
         </View>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>Study Tools</Text>
-          <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
+          <Text style={[styles.sectionTitle, { color: colors.title }]}>
+            Study Tools
+          </Text>
+          <View
+            style={[
+              styles.constellationLine,
+              { backgroundColor: colors.constellation },
+            ]}
+          />
           <View style={styles.toolsGrid}>
             {studyTools.map((tool) => (
               <TouchableOpacity
@@ -256,8 +302,15 @@ export default function StudyScreen() {
                 >
                   <Ionicons name={tool.icon} size={23} color={colors.icon} />
                 </View>
-                <Text style={[styles.toolTitle, { color: colors.text }]}>{tool.title}</Text>
-                <Text style={[styles.toolDescription, { color: colors.secondaryText }]}>
+                <Text style={[styles.toolTitle, { color: colors.text }]}>
+                  {tool.title}
+                </Text>
+                <Text
+                  style={[
+                    styles.toolDescription,
+                    { color: colors.secondaryText },
+                  ]}
+                >
                   {tool.description}
                 </Text>
               </TouchableOpacity>
@@ -265,8 +318,15 @@ export default function StudyScreen() {
           </View>
         </View>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>Recently Used</Text>
-          <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
+          <Text style={[styles.sectionTitle, { color: colors.title }]}>
+            Recently Used
+          </Text>
+          <View
+            style={[
+              styles.constellationLine,
+              { backgroundColor: colors.constellation },
+            ]}
+          />
           <View
             style={[
               styles.recentCard,
@@ -287,14 +347,26 @@ export default function StudyScreen() {
               <Ionicons name="time-outline" size={24} color={colors.icon} />
             </View>
             <View style={styles.recentText}>
-              <Text style={[styles.recentTitle, { color: colors.text }]}>Nothing here yet</Text>
-              <Text style={[styles.recentDescription, { color: colors.secondaryText }]}>
+              <Text style={[styles.recentTitle, { color: colors.text }]}>
+                Nothing here yet
+              </Text>
+              <Text
+                style={[
+                  styles.recentDescription,
+                  { color: colors.secondaryText },
+                ]}
+              >
                 Your recently opened study resources will appear here.
               </Text>
             </View>
           </View>
         </View>
-        <View style={[styles.bottomDivider, { backgroundColor: colors.constellation }]} />
+        <View
+          style={[
+            styles.bottomDivider,
+            { backgroundColor: colors.constellation },
+          ]}
+        />
       </ScrollView>
     </SafeAreaView>
   );

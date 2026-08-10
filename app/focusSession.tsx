@@ -1,16 +1,24 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from "@/context/themecontext";
+import {
+    ActiveFocusSession,
+    clearActiveFocusSession,
+    getActiveFocusSession,
+    pauseActiveFocusSession,
+    resumeActiveFocusSession,
+} from "@/storage/focusTimerStorage";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useTheme } from "@/context/themecontext";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  ActiveFocusSession,
-  clearActiveFocusSession,
-  getActiveFocusSession,
-  pauseActiveFocusSession,
-  resumeActiveFocusSession,
-} from "@/storage/focusTimerStorage";
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 export default function FocusSessionScreen() {
   const { isDark } = useTheme();
@@ -66,12 +74,16 @@ export default function FocusSessionScreen() {
         setSession(null);
         setRemaining(0);
         setLoading(false);
-        Alert.alert("Focus Complete", "Your cosmic focus session is complete.", [
-          {
-            text: "OK",
-            onPress: () => router.replace("/study"),
-          },
-        ]);
+        Alert.alert(
+          "Focus Complete",
+          "Your cosmic focus session is complete.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.replace("/study"),
+            },
+          ],
+        );
         return;
       }
       if (!stored.isRunning && stored.remainingSeconds > 0) {
@@ -81,18 +93,25 @@ export default function FocusSessionScreen() {
         return;
       }
       if (stored.isRunning) {
-        const seconds = Math.max(0, Math.ceil((stored.endsAt - Date.now()) / 1000));
+        const seconds = Math.max(
+          0,
+          Math.ceil((stored.endsAt - Date.now()) / 1000),
+        );
         if (seconds <= 0) {
           await clearActiveFocusSession();
           setSession(null);
           setRemaining(0);
           setLoading(false);
-          Alert.alert("Focus Complete", "Your cosmic focus session is complete.", [
-            {
-              text: "OK",
-              onPress: () => router.replace("/study"),
-            },
-          ]);
+          Alert.alert(
+            "Focus Complete",
+            "Your cosmic focus session is complete.",
+            [
+              {
+                text: "OK",
+                onPress: () => router.replace("/study"),
+              },
+            ],
+          );
           return;
         }
         setSession(stored);
@@ -135,18 +154,25 @@ export default function FocusSessionScreen() {
         }
         return;
       }
-      const seconds = Math.max(0, Math.ceil((current.endsAt - Date.now()) / 1000));
+      const seconds = Math.max(
+        0,
+        Math.ceil((current.endsAt - Date.now()) / 1000),
+      );
       if (seconds <= 0) {
         await clearActiveFocusSession();
         setSession(null);
         setRemaining(0);
         clearInterval(interval);
-        Alert.alert("Focus Complete", "Your cosmic focus session is complete.", [
-          {
-            text: "OK",
-            onPress: () => router.replace("/study"),
-          },
-        ]);
+        Alert.alert(
+          "Focus Complete",
+          "Your cosmic focus session is complete.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.replace("/study"),
+            },
+          ],
+        );
         return;
       }
       setSession(current);
@@ -195,27 +221,31 @@ export default function FocusSessionScreen() {
 
   const handleCancel = () => {
     if (changingState) return;
-    Alert.alert("Cancel Focus", "Are you sure you want to cancel this focus session?", [
-      {
-        text: "Keep Focus",
-        style: "cancel",
-      },
-      {
-        text: "Cancel Timer",
-        style: "destructive",
-        onPress: async () => {
-          setChangingState(true);
-          try {
-            await clearActiveFocusSession();
-            setSession(null);
-            setRemaining(0);
-            router.replace("/study");
-          } finally {
-            setChangingState(false);
-          }
+    Alert.alert(
+      "Cancel Focus",
+      "Are you sure you want to cancel this focus session?",
+      [
+        {
+          text: "Keep Focus",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Cancel Timer",
+          style: "destructive",
+          onPress: async () => {
+            setChangingState(true);
+            try {
+              await clearActiveFocusSession();
+              setSession(null);
+              setRemaining(0);
+              router.replace("/study");
+            } finally {
+              setChangingState(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const handleBack = () => {
@@ -236,7 +266,11 @@ export default function FocusSessionScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <LinearGradient
-          colors={[colors.backgroundTop, colors.backgroundMiddle, colors.backgroundBottom]}
+          colors={[
+            colors.backgroundTop,
+            colors.backgroundMiddle,
+            colors.backgroundBottom,
+          ]}
           locations={[0, 0.55, 1]}
           style={StyleSheet.absoluteFill}
         />
@@ -269,7 +303,11 @@ export default function FocusSessionScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[colors.backgroundTop, colors.backgroundMiddle, colors.backgroundBottom]}
+        colors={[
+          colors.backgroundTop,
+          colors.backgroundMiddle,
+          colors.backgroundBottom,
+        ]}
         locations={[0, 0.52, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -298,7 +336,9 @@ export default function FocusSessionScreen() {
         style={[
           styles.cosmicGlow,
           {
-            backgroundColor: isDark ? "rgba(196,181,253,0.08)" : "rgba(128,105,179,0.07)",
+            backgroundColor: isDark
+              ? "rgba(196,181,253,0.08)"
+              : "rgba(128,105,179,0.07)",
           },
         ]}
       />
@@ -308,7 +348,9 @@ export default function FocusSessionScreen() {
         style={[
           styles.backButton,
           {
-            backgroundColor: isDark ? "rgba(14,25,56,0.45)" : "rgba(255,255,255,0.45)",
+            backgroundColor: isDark
+              ? "rgba(14,25,56,0.45)"
+              : "rgba(255,255,255,0.45)",
             borderColor: colors.border,
           },
         ]}
@@ -330,7 +372,9 @@ export default function FocusSessionScreen() {
         <Text style={[styles.label, { color: colors.secondary }]}>
           {isPaused ? "FOCUS PAUSED" : "COSMIC FOCUS"}
         </Text>
-        <Text style={[styles.title, { color: colors.title }]}>{session.name}</Text>
+        <Text style={[styles.title, { color: colors.title }]}>
+          {session.name}
+        </Text>
         <View
           style={[
             styles.timerCard,
@@ -340,8 +384,12 @@ export default function FocusSessionScreen() {
             },
           ]}
         >
-          <Text style={[styles.timer, { color: colors.text }]}>{formatTime(remaining)}</Text>
-          <Text style={[styles.remainingLabel, { color: colors.secondary }]}>TIME REMAINING</Text>
+          <Text style={[styles.timer, { color: colors.text }]}>
+            {formatTime(remaining)}
+          </Text>
+          <Text style={[styles.remainingLabel, { color: colors.secondary }]}>
+            TIME REMAINING
+          </Text>
         </View>
         <TouchableOpacity
           activeOpacity={0.8}
@@ -355,7 +403,11 @@ export default function FocusSessionScreen() {
             },
           ]}
         >
-          <Ionicons name={isPaused ? "play" : "pause"} size={20} color={colors.buttonText} />
+          <Ionicons
+            name={isPaused ? "play" : "pause"}
+            size={20}
+            color={colors.buttonText}
+          />
           <Text style={[styles.mainButtonText, { color: colors.buttonText }]}>
             {isPaused ? "Resume Focus" : "Pause Focus"}
           </Text>
@@ -366,8 +418,14 @@ export default function FocusSessionScreen() {
           onPress={handleCancel}
           style={styles.cancelButton}
         >
-          <Ionicons name="close-circle-outline" size={18} color={colors.danger} />
-          <Text style={[styles.cancelText, { color: colors.danger }]}>Cancel Focus</Text>
+          <Ionicons
+            name="close-circle-outline"
+            size={18}
+            color={colors.danger}
+          />
+          <Text style={[styles.cancelText, { color: colors.danger }]}>
+            Cancel Focus
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

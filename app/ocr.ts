@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 const OCR_API_URL = "https://api.ocr.space/parse/image";
 const OCR_API_KEY = "helloworld";

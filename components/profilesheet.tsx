@@ -1,67 +1,129 @@
 import React, { forwardRef, useMemo, useState } from "react";
-import { Image, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from "@gorhom/bottom-sheet";
+
+import {
+  Image,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+
 import { useTheme } from "../context/themecontext";
 import MusicSelector from "./musicselector";
 
 const ProfileSheet = forwardRef<any, {}>((props, ref) => {
   const snapPoints = useMemo(() => ["90%"], []);
+
   const [studyReminders, setStudyReminders] = useState(true);
+
   const { theme, setTheme, isDark } = useTheme();
+
+  /*
+   * ==================================================
+   * THEME COLORS
+   * ==================================================
+   *
+   * DARK MODE COLORS ARE LEFT AS THEY WERE.
+   *
+   * LIGHT MODE ONLY changes the colors needed
+   * for readability.
+   */
 
   const colors = isDark
     ? {
+        // ================================
+        // DARK MODE — DO NOT CHANGE
+        // ================================
+
         sheetBackground: "#0A1024",
+
         gradientTop: "#121A45",
         gradientBottom: "#06070D",
+
         textPrimary: "#FFFFFF",
         textSecondary: "#A8B2FF",
         textMuted: "#9097B5",
+
         card: "#1A1E52",
         deleteCard: "#1B1D36",
+
         description: "#B7B6D8",
         icon: "#E5D7FF",
+
         button: "#7C5DFF",
         tag: "#282C5D",
+
         optionBorder: "#2E3160",
         optionText: "#D3D2F2",
+
         smallSubtitle: "#A6A5C9",
+
         gold: "#E7DDB2",
         goldText: "#323246",
+
         deleteTitle: "#D68A8A",
         deleteDescription: "#AFAFC7",
         deleteBorder: "#7C5A66",
         deleteText: "#F2C8D0",
+
         handle: "#7C5DFF",
+
         iconBackground: "rgba(255,255,255,0.06)",
+
         cardBorder: "rgba(255,255,255,0.08)",
       }
     : {
+        // ================================
+        // LIGHT MODE
+        // ================================
+
         sheetBackground: "#F7F5FF",
+
+        /*
+         * KEEPING YOUR LIGHT GRADIENT
+         */
         gradientTop: "#F0EDFF",
         gradientBottom: "#FFFFFF",
+
         textPrimary: "#17152A",
         textSecondary: "#6658B5",
         textMuted: "#77748A",
+
         card: "#FFFFFF",
         deleteCard: "#FFF5F7",
+
         description: "#66627A",
         icon: "#6658A8",
+
         button: "#7C5DFF",
         tag: "#EEEAFF",
+
         optionBorder: "#D8D1F4",
         optionText: "#5D5870",
+
         smallSubtitle: "#77738B",
+
         gold: "#E7DDB2",
         goldText: "#323246",
+
         deleteTitle: "#B95F6C",
         deleteDescription: "#81727A",
         deleteBorder: "#D7AAB4",
         deleteText: "#A45A68",
+
         handle: "#7C5DFF",
+
         iconBackground: "rgba(124,93,255,0.08)",
+
         cardBorder: "rgba(91,76,145,0.12)",
       };
 
@@ -105,16 +167,25 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
         bounces
         overScrollMode="always"
       >
+        {/* ================================= */}
+        {/* GRADIENT */}
+        {/* ================================= */}
+
         <LinearGradient
           colors={[colors.gradientTop, colors.gradientBottom]}
           style={styles.gradient}
         >
+          {/* ================================= */}
+          {/* PROFILE HEADER */}
+          {/* ================================= */}
+
           <Image
             source={{
               uri: "https://i.pinimg.com/736x/e9/46/55/e94655294e897527f56c15e51580661a.jpg",
             }}
             style={styles.avatar}
           />
+
           <Text
             style={[
               styles.name,
@@ -125,6 +196,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
           >
             Hokazono Iroha
           </Text>
+
           <Text
             style={[
               styles.subtitle,
@@ -135,6 +207,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
           >
             SAIT • Software Development
           </Text>
+
+          {/* ================================= */}
+          {/* STATS */}
+          {/* ================================= */}
+
           <View style={styles.statsRow}>
             <View style={styles.stat}>
               <Text
@@ -147,6 +224,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               >
                 1240
               </Text>
+
               <Text
                 style={[
                   styles.statLabel,
@@ -158,6 +236,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 Tasks Completed
               </Text>
             </View>
+
             <View style={styles.stat}>
               <Text
                 style={[
@@ -169,6 +248,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               >
                 12
               </Text>
+
               <Text
                 style={[
                   styles.statLabel,
@@ -180,6 +260,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 Planets
               </Text>
             </View>
+
             <View style={styles.stat}>
               <Text
                 style={[
@@ -191,6 +272,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               >
                 158
               </Text>
+
               <Text
                 style={[
                   styles.statLabel,
@@ -203,6 +285,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               </Text>
             </View>
           </View>
+
+          {/* ================================= */}
+          {/* EDIT PROFILE */}
+          {/* ================================= */}
+
           <TouchableOpacity
             activeOpacity={0.8}
             style={[
@@ -214,6 +301,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
           >
             <Text style={styles.buttonText}>EDIT PROFILE</Text>
           </TouchableOpacity>
+
+          {/* ================================= */}
+          {/* SETTINGS */}
+          {/* ================================= */}
+
           <Text
             style={[
               styles.heading,
@@ -224,6 +316,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
           >
             Settings
           </Text>
+
+          {/* ================================= */}
+          {/* STUDY REMINDERS */}
+          {/* ================================= */}
+
           <View
             style={[
               styles.settingCard,
@@ -244,16 +341,19 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               >
                 <Ionicons name="time-outline" size={18} color={colors.icon} />
               </View>
+
               <Switch
                 value={studyReminders}
                 onValueChange={setStudyReminders}
                 thumbColor="#D9C4FF"
                 trackColor={{
                   false: isDark ? "#3B3B55" : "#D9D4EB",
+
                   true: "#6E5EFF",
                 }}
               />
             </View>
+
             <Text
               style={[
                 styles.settingTitle,
@@ -264,6 +364,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
             >
               Study Reminders
             </Text>
+
             <Text
               style={[
                 styles.settingDescription,
@@ -274,6 +375,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
             >
               Receive cosmic nudges for your planned focus sessions.
             </Text>
+
             <View style={styles.tagRow}>
               <TouchableOpacity
                 style={[
@@ -294,6 +396,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   Every 45m
                 </Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[
                   styles.tag,
@@ -315,6 +418,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* ================================= */}
+          {/* SYSTEM THEME */}
+          {/* ================================= */}
+
           <View
             style={[
               styles.settingCard,
@@ -340,6 +448,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 />
               </View>
             </View>
+
             <Text
               style={[
                 styles.settingTitle,
@@ -350,6 +459,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
             >
               System Theme
             </Text>
+
             <Text
               style={[
                 styles.settingDescription,
@@ -360,7 +470,14 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
             >
               Select the atmosphere that aligns with your focus cycles.
             </Text>
+
+            {/* ================================= */}
+            {/* THEME BUTTONS */}
+            {/* ================================= */}
+
             <View style={styles.buttonRow}>
+              {/* STELLAR = DARK */}
+
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
@@ -368,9 +485,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 }}
                 style={[
                   styles.themeOption,
+
                   {
                     borderColor:
                       theme === "light" ? "#B6A8FF" : colors.optionBorder,
+
                     backgroundColor:
                       theme === "light"
                         ? isDark
@@ -387,6 +506,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                     theme === "light" ? colors.textPrimary : colors.optionText
                   }
                 />
+
                 <Text
                   style={[
                     styles.themeOptionText,
@@ -401,6 +521,9 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   Stellar
                 </Text>
               </TouchableOpacity>
+
+              {/* LUNAR = LIGHT */}
+
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
@@ -408,9 +531,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 }}
                 style={[
                   styles.themeOption,
+
                   {
                     borderColor:
                       theme === "dark" ? "#B6A8FF" : colors.optionBorder,
+
                     backgroundColor:
                       theme === "dark"
                         ? isDark
@@ -427,6 +552,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                     theme === "dark" ? colors.textPrimary : colors.optionText
                   }
                 />
+
                 <Text
                   style={[
                     styles.themeOptionText,
@@ -443,6 +569,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* ================================= */}
+          {/* ASTRAL PROGRESS */}
+          {/* ================================= */}
+
           <View
             style={[
               styles.settingCard,
@@ -467,6 +598,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   color={isDark ? "#F3CFA5" : "#8A6A35"}
                 />
               </View>
+
               <View style={styles.astralText}>
                 <Text
                   style={[
@@ -478,6 +610,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 >
                   Astral Progress Tracking
                 </Text>
+
                 <Text
                   style={[
                     styles.settingDescription,
@@ -491,6 +624,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 </Text>
               </View>
             </View>
+
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 style={[
@@ -511,6 +645,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   Configure Map
                 </Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[
                   styles.goldButton,
@@ -532,6 +667,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* ================================= */}
+          {/* PRIVACY */}
+          {/* ================================= */}
+
           <TouchableOpacity
             activeOpacity={0.8}
             style={[
@@ -553,6 +693,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               >
                 <Ionicons name="shield-outline" size={18} color={colors.icon} />
               </View>
+
               <View style={styles.smallText}>
                 <Text
                   style={[
@@ -564,6 +705,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 >
                   Privacy & Sanctuary
                 </Text>
+
                 <Text
                   style={[
                     styles.smallSubtitle,
@@ -575,6 +717,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   Manage your study visibility
                 </Text>
               </View>
+
               <Ionicons
                 name="chevron-forward"
                 size={18}
@@ -582,6 +725,11 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               />
             </View>
           </TouchableOpacity>
+
+          {/* ================================= */}
+          {/* CONNECTED ORBITS */}
+          {/* ================================= */}
+
           <TouchableOpacity
             activeOpacity={0.8}
             style={[
@@ -607,6 +755,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   color={colors.icon}
                 />
               </View>
+
               <View style={styles.smallText}>
                 <Text
                   style={[
@@ -618,6 +767,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 >
                   Connected Orbits
                 </Text>
+
                 <Text
                   style={[
                     styles.smallSubtitle,
@@ -629,6 +779,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   Manage external data streams
                 </Text>
               </View>
+
               <Ionicons
                 name="chevron-forward"
                 size={18}
@@ -636,12 +787,23 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               />
             </View>
           </TouchableOpacity>
+
+          {/* ================================= */}
+          {/* MUSIC */}
+          {/* ================================= */}
+
           <MusicSelector />
+
+          {/* ================================= */}
+          {/* END EXPEDITION */}
+          {/* ================================= */}
+
           <View
             style={[
               styles.deleteCard,
               {
                 backgroundColor: colors.deleteCard,
+
                 borderColor: colors.cardBorder,
               },
             ]}
@@ -657,6 +819,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               >
                 End Expedition
               </Text>
+
               <Text
                 style={[
                   styles.deleteDescription,
@@ -668,6 +831,7 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                 Permanently delete your account and all study nebulae.
               </Text>
             </View>
+
             <TouchableOpacity
               activeOpacity={0.8}
               style={[
@@ -685,7 +849,9 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   },
                 ]}
               >
-                Delete{"\n"}Data
+                Delete
+                {"\n"}
+                Data
               </Text>
             </TouchableOpacity>
           </View>
@@ -700,15 +866,25 @@ ProfileSheet.displayName = "ProfileSheet";
 export default ProfileSheet;
 
 const styles = StyleSheet.create({
+  /* ================================= */
+  /* SHEET */
+  /* ================================= */
+
   sheetBackground: {
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
+
   handle: {
     width: 60,
     height: 4,
     borderRadius: 2,
   },
+
+  /* ================================= */
+  /* GRADIENT */
+  /* ================================= */
+
   gradient: {
     width: "100%",
     minHeight: "100%",
@@ -716,12 +892,23 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 50,
   },
+
+  /* ================================= */
+  /* SCROLL */
+  /* ================================= */
+
   scrollView: {
     flex: 1,
   },
+
   scrollContent: {
     padding: 0,
   },
+
+  /* ================================= */
+  /* PROFILE */
+  /* ================================= */
+
   avatar: {
     width: 100,
     height: 100,
@@ -730,49 +917,75 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 18,
   },
+
   name: {
     fontFamily: "BitterBold",
     fontSize: 28,
     textAlign: "center",
   },
+
   subtitle: {
     fontFamily: "Bitter",
     textAlign: "center",
     marginTop: 6,
     marginBottom: 24,
   },
+
+  /* ================================= */
+  /* STATS */
+  /* ================================= */
+
   statsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 25,
   },
+
   stat: {
     alignItems: "center",
     flex: 1,
   },
+
   statNumber: {
     fontFamily: "BitterBold",
     fontSize: 18,
   },
+
   statLabel: {
     fontFamily: "Bitter",
     marginTop: 4,
   },
+
+  /* ================================= */
+  /* BUTTON */
+  /* ================================= */
+
   button: {
     padding: 14,
     borderRadius: 15,
     marginBottom: 30,
   },
+
   buttonText: {
     fontFamily: "BitterBold",
     color: "#FFFFFF",
     textAlign: "center",
   },
+
+  /* ================================= */
+  /* HEADING */
+  /* ================================= */
+
   heading: {
     fontFamily: "BitterBold",
     fontSize: 28,
     marginBottom: 18,
   },
+
+  /* ================================= */
+  /* CARDS */
+  /* ================================= */
+
   settingCard: {
     width: "100%",
     borderRadius: 22,
@@ -780,6 +993,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     borderWidth: 1,
   },
+
   smallCard: {
     width: "100%",
     borderRadius: 22,
@@ -787,6 +1001,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
   },
+
   deleteCard: {
     width: "100%",
     borderRadius: 22,
@@ -797,16 +1012,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
   },
+
+  /* ================================= */
+  /* ROWS */
+  /* ================================= */
+
   settingTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 18,
   },
+
   settingRow: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   settingIcon: {
     width: 34,
     height: 34,
@@ -814,36 +1036,59 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
+  /* ================================= */
+  /* TEXT */
+  /* ================================= */
+
   settingTitle: {
     fontFamily: "BitterBold",
     fontSize: 22,
     marginTop: 14,
     marginBottom: 8,
   },
+
   settingDescription: {
     fontFamily: "Bitter",
     lineHeight: 22,
     fontSize: 15,
   },
+
+  /* ================================= */
+  /* TAGS */
+  /* ================================= */
+
   tagRow: {
     flexDirection: "row",
     marginTop: 18,
   },
+
   tag: {
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 6,
     marginRight: 10,
   },
+
   tagText: {
     fontFamily: "Bitter",
     fontSize: 12,
   },
+
+  /* ================================= */
+  /* BUTTON ROW */
+  /* ================================= */
+
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 22,
   },
+
+  /* ================================= */
+  /* THEME BUTTONS */
+  /* ================================= */
+
   themeOption: {
     flex: 1,
     borderWidth: 1,
@@ -855,10 +1100,16 @@ const styles = StyleSheet.create({
     gap: 7,
     marginHorizontal: 4,
   },
+
   themeOptionText: {
     fontFamily: "BitterBold",
     fontSize: 14,
   },
+
+  /* ================================= */
+  /* NORMAL OPTION */
+  /* ================================= */
+
   option: {
     flex: 1,
     borderWidth: 1,
@@ -868,9 +1119,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginHorizontal: 4,
   },
+
   optionText: {
     fontFamily: "Bitter",
   },
+
+  /* ================================= */
+  /* GOLD */
+  /* ================================= */
+
   goldButton: {
     flex: 1,
     marginLeft: 8,
@@ -879,45 +1136,67 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
   },
+
   goldButtonText: {
     fontFamily: "BitterBold",
   },
+
+  /* ================================= */
+  /* SMALL CARDS */
+  /* ================================= */
+
   smallText: {
     flex: 1,
     marginLeft: 12,
   },
+
   smallTitle: {
     fontFamily: "BitterBold",
     fontSize: 17,
   },
+
   smallSubtitle: {
     fontFamily: "Bitter",
     marginTop: 4,
     fontSize: 13,
   },
+
+  /* ================================= */
+  /* ASTRAL */
+  /* ================================= */
+
   astralText: {
     flex: 1,
     marginLeft: 14,
   },
+
+  /* ================================= */
+  /* DELETE */
+  /* ================================= */
+
   deleteText: {
     flex: 1,
     marginRight: 12,
   },
+
   deleteTitle: {
     fontFamily: "BitterBold",
     fontSize: 18,
   },
+
   deleteDescription: {
     fontFamily: "Bitter",
     marginTop: 6,
     lineHeight: 20,
   },
+
   deleteButton: {
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+
   deleteButtonText: {
     fontFamily: "BitterBold",
     textAlign: "center",
