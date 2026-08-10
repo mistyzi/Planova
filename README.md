@@ -8,12 +8,12 @@ ABOUT WILL GO HERE
 
 ### ★ PROJECT STRUCTURE !!
 
-├── app/      
-├── assets/         
-├── components/      
-├── context/     
-├── storage/    
-├── .env    
-├── app.json        
-├── package.json    
-└── tsconfig.json 
+  ├── app/      
+  ├── assets/         
+  ├── components/      
+  ├── context/     
+  ├── storage/    
+  ├── .env    
+  ├── app.json        
+  ├── package.json    
+  └── tsconfig.json 
