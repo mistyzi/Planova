@@ -6,7 +6,7 @@ export default {
     slug: "planova",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
+    icon: "./assets/icon.png",
     scheme: "planova",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
@@ -28,7 +28,7 @@ export default {
 
     web: {
       output: "static",
-      favicon: "./assets/images/favicon.png"
+      favicon: "./assets/favicon.png"
     },
 
     plugins: [
