@@ -36,7 +36,7 @@ ABOUT WILL GO HERE
 	│   ├── studyGuide.tsx			# Study Guide
 	│  
 	│   ├── referenceLibrary.tsx	# Stored References
-	│   ├── referenceMaker.tsx		# Reference Adder
+	│   ├── referenceMaker.tsx		# Reference Maker
 	│
 	│  	└── ocr.ts					# OCR Scanning Logic
 	│
