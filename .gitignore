@@ -1,46 +1,99 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# =========================================================
+# GitHub Docs Reference
+# Learn more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# =========================================================
 
-# dependencies
+# =========================================================
+# Dependencies
+# =========================================================
 node_modules/
 
-# Expo
+# =========================================================
+# Expo / React Native
+# =========================================================
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Metro bundler
+.metro-health-check*
+.cache/
+*.packager-info.json
+
+# =========================================================
+# Native (Android / iOS)
+# =========================================================
+android/
+ios/
+
+# Kotlin / Gradle
 .kotlin/
 *.orig.*
+
+# Signing keys & provisioning
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
 
-# Metro
-.metro-health-check*
+# =========================================================
+# Environment Variables
+# =========================================================
+.env
+.env*.local
+.env.local
+.env.development
+.env.production
+.env.test
 
-# debug
+# =========================================================
+# TypeScript
+# =========================================================
+*.tsbuildinfo
+
+# =========================================================
+# Debug / Logs
+# =========================================================
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+pnpm-debug.log*
+*.log
+logs/
+logs/*
 
-# macOS
+# =========================================================
+# macOS / OS Files
+# =========================================================
 .DS_Store
+Thumbs.db
 *.pem
 
-# local env files
-.env*.local
+# =========================================================
+# IDE / Editor
+# =========================================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 
-# typescript
-*.tsbuildinfo
+# JetBrains
+.idea/
+*.iml
 
+# =========================================================
+# Temporary / Generated
+# =========================================================
+tmp/
+temp/
+.tmp/
+.cache/
+.cache/*
+*.tmp
+
+# =========================================================
+# Project-specific
+# =========================================================
 app-example
-
-# generated native folders
-/ios
-/android
-node_modules
-node_modules
-node_modules
