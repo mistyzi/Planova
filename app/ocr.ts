@@ -1,7 +1,9 @@
 import * as FileSystem from "expo-file-system/legacy";
+import { getOcrKey } from "../utils/ocr";
 
 const OCR_API_URL = "https://api.ocr.space/parse/image";
-const OCR_API_KEY = "helloworld";
+const OCR_API_KEY = getOcrKey();
+
 
 type OCRResult = {
   ParsedResults?: {
