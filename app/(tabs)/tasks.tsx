@@ -1,50 +1,129 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import PlanovaHeader from "../../components/header";
 import { useTheme } from "../../context/themecontext";
 
-const tasks = [
-  {
-    title: "Submit Project Proposal",
-    due: "Due in 0 days",
-    category: "School",
-    priority: "High",
-  },
-  {
-    title: "Review Lecture Notes",
-    due: "Due in 3 days",
-    category: "Study",
-    priority: "Medium",
-  },
-  {
-    title: "Debug UI Layout",
-    due: "Due in 5 days",
-    category: "Coding",
-    priority: "Low",
-  },
-  {
-    title: "Refactor Components",
-    due: "Due in 11 days",
-    category: "Coding",
-    priority: "High",
-  },
+const TASKS_STORAGE_KEY = "@planova_tasks";
+const CATEGORIES_STORAGE_KEY = "@planova_categories";
+
+type Task = {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  category: string;
+  priority: string;
+  completed: boolean;
+};
+
+type FilterType = "All" | "Complete" | "Ongoing" | "Missed";
+
+const DEFAULT_CATEGORIES = ["School", "Study", "Coding", "Work", "Personal", "Other"];
+const PRIORITIES = ["Low", "Medium", "High"];
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
-const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const dates = ["19", "20", "21", "22", "23", "24", "25"];
+const pad = (value: number) => String(value).padStart(2, "0");
+
+const formatDateKey = (date: Date) => {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+const parseDateSafe = (dateString?: string) => {
+  if (!dateString) return new Date();
+  const parts = dateString.split("-");
+  if (parts.length !== 3) return new Date();
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return new Date();
+  }
+  return new Date(year, month - 1, day);
+};
+
+const getTodayKey = () => {
+  return formatDateKey(new Date());
+};
+
+const getWeekDates = (date: Date) => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - start.getDay());
+  return Array.from({ length: 7 }, (_, index) => {
+    const current = new Date(start);
+    current.setDate(start.getDate() + index);
+    return current;
+  });
+};
+
+const getMonthDates = (date: Date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const leadingEmptyDays = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+  const dates: (Date | null)[] = [];
+  for (let i = 0; i < leadingEmptyDays; i++) {
+    dates.push(null);
+  }
+  for (let day = 1; day <= totalDays; day++) {
+    dates.push(new Date(year, month, day));
+  }
+  return dates;
+};
+
+const isTaskMissed = (task: Task) => {
+  if (task.completed) return false;
+  const taskDate = parseDateSafe(task.date);
+  const [hours, minutes] = (task.time || "23:59").split(":").map(Number);
+  taskDate.setHours(Number.isFinite(hours) ? hours : 23, Number.isFinite(minutes) ? minutes : 59, 0, 0);
+  return taskDate.getTime() < Date.now();
+};
 
 export default function TasksScreen() {
-  const [search, setSearch] = useState("");
   const { isDark } = useTheme();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<FilterType>("All");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isMonthExpanded, setIsMonthExpanded] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDate, setTaskDate] = useState(getTodayKey());
+  const [taskTime, setTaskTime] = useState("12:00");
+  const [taskCategory, setTaskCategory] = useState("Study");
+  const [taskPriority, setTaskPriority] = useState("Medium");
+  const [showCustomCategoryInput, setShowCustomCategoryInput] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
 
   const colors = isDark
     ? {
@@ -66,20 +145,36 @@ export default function TasksScreen() {
         searchBorder: "rgba(196,181,253,0.28)",
         searchText: "#ffffff",
         searchPlaceholder: "rgba(255,255,255,0.45)",
+        categoryBackground: "rgba(255,255,255,0.08)",
+        categoryBorder: "rgba(196,181,253,0.28)",
+        categoryText: "rgba(255,255,255,0.75)",
+        categoryActive: "#d8b4fe",
+        categoryActiveText: "#0e1938",
         task: "rgba(14,25,56,0.55)",
         taskBorder: "rgba(196,181,253,0.28)",
         taskTitle: "#ffffff",
         taskRemaining: "rgba(255,255,255,0.6)",
         taskMeta: "rgba(255,255,255,0.75)",
-        completeButton: "rgba(255,255,255,0.12)",
-        completeButtonBorder: "rgba(196,181,253,0.35)",
-        completeButtonText: "#ffffff",
         editButton: "rgba(255,255,255,0.10)",
         editButtonBorder: "rgba(196,181,253,0.30)",
         editButtonIcon: "#ffffff",
+        deleteButton: "rgba(248,113,113,0.10)",
+        deleteButtonBorder: "rgba(248,113,113,0.30)",
+        deleteButtonIcon: "#f87171",
         addButton: "rgba(14,25,56,0.55)",
         addButtonBorder: "rgba(196,181,253,0.28)",
         addButtonText: "#ffffff",
+        modal: "#151d3d",
+        modalBorder: "rgba(196,181,253,0.30)",
+        input: "rgba(255,255,255,0.08)",
+        inputBorder: "rgba(196,181,253,0.28)",
+        inputText: "#ffffff",
+        placeholder: "rgba(255,255,255,0.4)",
+        cancelText: "#c4b5fd",
+        saveButton: "#8064B5",
+        saveButtonText: "#ffffff",
+        missed: "#f87171",
+        completed: "#86efac",
       }
     : {
         logo: "#4F427D",
@@ -100,21 +195,230 @@ export default function TasksScreen() {
         searchBorder: "rgba(79,66,125,0.30)",
         searchText: "#30284C",
         searchPlaceholder: "rgba(48,42,70,0.48)",
+        categoryBackground: "rgba(79,66,125,0.08)",
+        categoryBorder: "rgba(79,66,125,0.25)",
+        categoryText: "rgba(48,42,70,0.70)",
+        categoryActive: "#B9A9DF",
+        categoryActiveText: "#29233F",
         task: "rgba(255,255,255,0.72)",
         taskBorder: "rgba(79,66,125,0.30)",
         taskTitle: "#30284C",
         taskRemaining: "rgba(48,42,70,0.58)",
         taskMeta: "rgba(48,42,70,0.76)",
-        completeButton: "rgba(79,66,125,0.14)",
-        completeButtonBorder: "rgba(79,66,125,0.38)",
-        completeButtonText: "#3D3262",
         editButton: "rgba(79,66,125,0.10)",
         editButtonBorder: "rgba(79,66,125,0.30)",
         editButtonIcon: "#403465",
+        deleteButton: "rgba(220,38,38,0.08)",
+        deleteButtonBorder: "rgba(220,38,38,0.25)",
+        deleteButtonIcon: "#dc2626",
         addButton: "rgba(255,255,255,0.72)",
         addButtonBorder: "rgba(79,66,125,0.30)",
         addButtonText: "#403465",
+        modal: "#f8f6ff",
+        modalBorder: "rgba(79,66,125,0.25)",
+        input: "rgba(79,66,125,0.07)",
+        inputBorder: "rgba(79,66,125,0.25)",
+        inputText: "#30284C",
+        placeholder: "rgba(48,42,70,0.4)",
+        cancelText: "#6D5A9F",
+        saveButton: "#8069B3",
+        saveButtonText: "#ffffff",
+        missed: "#dc2626",
+        completed: "#16a34a",
       };
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const storedTasks = await AsyncStorage.getItem(TASKS_STORAGE_KEY);
+        if (storedTasks) {
+          const parsed = JSON.parse(storedTasks);
+          if (Array.isArray(parsed)) {
+            const safeTasks: Task[] = parsed.map((task: any) => ({
+              id: task.id || `${Date.now()}-${Math.random()}`,
+              title: task.title || "Untitled Task",
+              date: task.date || getTodayKey(),
+              time: task.time || "12:00",
+              category: task.category || "Other",
+              priority: task.priority || "Medium",
+              completed: Boolean(task.completed),
+            }));
+            setTasks(safeTasks);
+          }
+        }
+        const storedCategories = await AsyncStorage.getItem(CATEGORIES_STORAGE_KEY);
+        if (storedCategories) {
+          const parsedCategories = JSON.parse(storedCategories);
+          if (Array.isArray(parsedCategories) && parsedCategories.length > 0) {
+            setCategories(parsedCategories);
+          }
+        }
+      } catch (error) {
+        console.log("Failed to load Planova data:", error);
+      }
+    };
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks)).catch((error) =>
+      console.log("Failed to save tasks:", error)
+    );
+  }, [tasks]);
+
+  useEffect(() => {
+    AsyncStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories)).catch((error) =>
+      console.log("Failed to save categories:", error)
+    );
+  }, [categories]);
+
+  const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
+  const monthDates = useMemo(() => getMonthDates(selectedDate), [selectedDate]);
+  const selectedDateKey = formatDateKey(selectedDate);
+
+  const hasTasksOnDate = (date: Date) => {
+    const dateKey = formatDateKey(date);
+    return tasks.some((task) => task.date === dateKey);
+  };
+
+  const changeWeek = (direction: number) => {
+    const next = new Date(selectedDate);
+    next.setDate(next.getDate() + direction * 7);
+    setSelectedDate(next);
+  };
+
+  const changeMonth = (direction: number) => {
+    const next = new Date(selectedDate);
+    next.setMonth(next.getMonth() + direction);
+    setSelectedDate(next);
+  };
+
+  const selectCalendarDate = (date: Date) => {
+    const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    setSelectedDate(cleanDate);
+  };
+
+  const filteredTasks = useMemo(() => {
+    const searchValue = search.trim().toLowerCase();
+    return tasks.filter((task) => {
+      const matchesDate = task.date === selectedDateKey;
+      if (!matchesDate) return false;
+      const matchesSearch =
+        !searchValue ||
+        task.title.toLowerCase().includes(searchValue) ||
+        task.category.toLowerCase().includes(searchValue) ||
+        task.priority.toLowerCase().includes(searchValue);
+      if (!matchesSearch) return false;
+      if (filter === "Complete") return task.completed;
+      if (filter === "Ongoing") return !task.completed && !isTaskMissed(task);
+      if (filter === "Missed") return isTaskMissed(task);
+      return true;
+    });
+  }, [tasks, search, filter, selectedDateKey]);
+
+  const openAddTask = () => {
+    setEditingTask(null);
+    setTaskTitle("");
+    setTaskDate(formatDateKey(selectedDate));
+    setTaskTime("12:00");
+    setTaskCategory("Study");
+    setTaskPriority("Medium");
+    setShowCustomCategoryInput(false);
+    setCustomCategory("");
+    setShowTaskModal(true);
+  };
+
+  const openEditTask = (task: Task) => {
+    setEditingTask(task);
+    setTaskTitle(task.title);
+    setTaskDate(task.date || getTodayKey());
+    setTaskTime(task.time || "12:00");
+    setTaskCategory(task.category || "Other");
+    setTaskPriority(task.priority || "Medium");
+    setShowCustomCategoryInput(false);
+    setCustomCategory("");
+    setShowTaskModal(true);
+  };
+
+  const addCustomCategory = () => {
+    const trimmed = customCategory.trim();
+    if (!trimmed) return;
+    const alreadyExists = categories.some(
+      (category) => category.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (alreadyExists) {
+      setTaskCategory(categories.find((category) => category.toLowerCase() === trimmed.toLowerCase()) || trimmed);
+      setCustomCategory("");
+      setShowCustomCategoryInput(false);
+      return;
+    }
+    setCategories((current) => [...current, trimmed]);
+    setTaskCategory(trimmed);
+    setCustomCategory("");
+    setShowCustomCategoryInput(false);
+  };
+
+  const saveTask = () => {
+    const trimmedTitle = taskTitle.trim();
+    if (!trimmedTitle) {
+      Alert.alert("Missing Task", "Please give your task a name.");
+      return;
+    }
+    const safeDate = /^\d{4}-\d{2}-\d{2}$/.test(taskDate.trim()) ? taskDate.trim() : getTodayKey();
+    const safeTime = /^\d{1,2}:\d{2}$/.test(taskTime.trim()) ? taskTime.trim() : "12:00";
+
+    if (editingTask) {
+      setTasks((current) =>
+        current.map((task) =>
+          task.id === editingTask.id
+            ? { ...task, title: trimmedTitle, date: safeDate, time: safeTime, category: taskCategory, priority: taskPriority }
+            : task
+        )
+      );
+    } else {
+      const newTask: Task = {
+        id: `${Date.now()}-${Math.random()}`,
+        title: trimmedTitle,
+        date: safeDate,
+        time: safeTime,
+        category: taskCategory,
+        priority: taskPriority,
+        completed: false,
+      };
+      setTasks((current) => [...current, newTask]);
+    }
+    const savedDate = parseDateSafe(safeDate);
+    setSelectedDate(new Date(savedDate.getFullYear(), savedDate.getMonth(), savedDate.getDate()));
+    setShowTaskModal(false);
+  };
+
+  const toggleTask = (id: string) => {
+    setTasks((current) =>
+      current.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task))
+    );
+  };
+
+  const deleteTask = (id: string) => {
+    Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
+      {
+        text: "Keep",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          setTasks((current) => current.filter((task) => task.id !== id));
+        },
+      },
+    ]);
+  };
+
+  const getTaskStatus = (task: Task) => {
+    if (task.completed) return "Completed";
+    if (isTaskMissed(task)) return "Missed";
+    return "Ongoing";
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -133,69 +437,117 @@ export default function TasksScreen() {
           ]}
         >
           <View style={styles.calendarHeader}>
-            <TouchableOpacity activeOpacity={0.8}>
-              <Ionicons
-                name="chevron-back"
-                size={22}
-                color={isDark ? "#ffffff" : "#403465"}
-              />
-            </TouchableOpacity>
-            <Text
-              style={[styles.calendarTitle, { color: colors.calendarTitle }]}
-            >
-              July 2026
-            </Text>
-            <TouchableOpacity activeOpacity={0.8}>
-              <Ionicons
-                name="chevron-forward"
-                size={22}
-                color={isDark ? "#ffffff" : "#403465"}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.calendarGrid}>
-            {days.map((day) => (
-              <Text
-                key={day}
-                style={[styles.dayLabel, { color: colors.dayLabel }]}
-              >
-                {day}
-              </Text>
-            ))}
-            {dates.map((date) => (
-              <View
-                key={date}
-                style={
-                  date === "24"
-                    ? [
-                        styles.activeDate,
-                        { backgroundColor: colors.activeDate },
-                      ]
-                    : styles.dateCell
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                if (isMonthExpanded) {
+                  changeMonth(-1);
+                } else {
+                  changeWeek(-1);
                 }
-              >
-                <Text
-                  style={
-                    date === "24"
-                      ? [
-                          styles.activeDateText,
-                          { color: colors.activeDateText },
-                        ]
-                      : [styles.dateText, { color: colors.dateText }]
-                  }
-                >
-                  {date}
-                </Text>
-              </View>
-            ))}
+              }}
+              style={styles.calendarArrow}
+            >
+              <Ionicons name="chevron-back" size={22} color={isDark ? "#ffffff" : "#403465"} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => setIsMonthExpanded((current) => !current)}
+              style={styles.calendarTitleContainer}
+            >
+              <Text style={[styles.calendarTitle, { color: colors.calendarTitle }]}>
+                {MONTHS[selectedDate.getMonth()]} {selectedDate.getFullYear()}
+              </Text>
+              <Text style={[styles.calendarHint, { color: colors.dayLabel }]}>
+                {isMonthExpanded ? "Tap to show week" : "Tap to expand"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                if (isMonthExpanded) {
+                  changeMonth(1);
+                } else {
+                  changeWeek(1);
+                }
+              }}
+              style={styles.calendarArrow}
+            >
+              <Ionicons name="chevron-forward" size={22} color={isDark ? "#ffffff" : "#403465"} />
+            </TouchableOpacity>
           </View>
+          {!isMonthExpanded && (
+            <View style={styles.calendarGrid}>
+              {weekDates.map((date) => {
+                const dateKey = formatDateKey(date);
+                const selected = dateKey === selectedDateKey;
+                const today = dateKey === getTodayKey();
+                const hasTasks = hasTasksOnDate(date);
+                return (
+                  <TouchableOpacity
+                    key={dateKey}
+                    activeOpacity={0.8}
+                    onPress={() => selectCalendarDate(date)}
+                    style={styles.weekDay}
+                  >
+                    <Text style={[styles.dayLabel, { color: colors.dayLabel }]}>{DAYS[date.getDay()]}</Text>
+                    <View style={[styles.dateCircle, selected && { backgroundColor: colors.activeDate }]}>
+                      <Text style={[styles.dateText, { color: selected ? colors.activeDateText : colors.dateText }]}>
+                        {date.getDate()}
+                      </Text>
+                    </View>
+                    {hasTasks && <View style={[styles.taskDot, { backgroundColor: colors.activeDate }]} />}
+                    {today && !hasTasks && <View style={[styles.todayDot, { backgroundColor: colors.activeDate }]} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+          {isMonthExpanded && (
+            <View>
+              <View style={styles.monthDayLabels}>
+                {DAYS.map((day) => (
+                  <Text key={day} style={[styles.monthDayLabel, { color: colors.dayLabel }]}>
+                    {day}
+                  </Text>
+                ))}
+              </View>
+              <View style={styles.monthGrid}>
+                {monthDates.map((date, index) => {
+                  if (!date) {
+                    return <View key={`empty-${index}`} style={styles.monthDateCell} />;
+                  }
+                  const dateKey = formatDateKey(date);
+                  const selected = dateKey === selectedDateKey;
+                  const today = dateKey === getTodayKey();
+                  const hasTasks = hasTasksOnDate(date);
+                  return (
+                    <TouchableOpacity
+                      key={dateKey}
+                      activeOpacity={0.8}
+                      onPress={() => selectCalendarDate(date)}
+                      style={styles.monthDateCell}
+                    >
+                      <View style={[styles.monthDateCircle, selected && { backgroundColor: colors.activeDate }]}>
+                        <Text
+                          style={[
+                            styles.monthDateText,
+                            { color: selected ? colors.activeDateText : colors.dateText },
+                          ]}
+                        >
+                          {date.getDate()}
+                        </Text>
+                      </View>
+                      {hasTasks && <View style={[styles.taskDot, { backgroundColor: colors.activeDate }]} />}
+                      {today && !hasTasks && <View style={[styles.todayDot, { backgroundColor: colors.activeDate }]} />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
         </View>
-        <View
-          style={[
-            styles.constellationLine,
-            { backgroundColor: colors.constellation },
-          ]}
-        />
+        <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
         <TextInput
           value={search}
           onChangeText={setSearch}
@@ -210,68 +562,151 @@ export default function TasksScreen() {
             },
           ]}
         />
-        {tasks.map((task, index) => (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+        >
+          {(["All", "Complete", "Ongoing", "Missed"] as FilterType[]).map((item) => {
+            const active = filter === item;
+            return (
+              <TouchableOpacity
+                key={item}
+                activeOpacity={0.8}
+                onPress={() => setFilter(item)}
+                style={[
+                  styles.filterButton,
+                  {
+                    backgroundColor: active ? colors.categoryActive : colors.categoryBackground,
+                    borderColor: active ? colors.categoryActive : colors.categoryBorder,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    {
+                      color: active ? colors.categoryActiveText : colors.categoryText,
+                    },
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+        {filteredTasks.length === 0 ? (
           <View
-            key={index}
             style={[
-              styles.taskCard,
+              styles.emptyCard,
               {
                 backgroundColor: colors.task,
                 borderColor: colors.taskBorder,
               },
             ]}
           >
-            <View style={styles.taskHeader}>
-              <Text style={[styles.taskTitle, { color: colors.taskTitle }]}>
-                {task.title}
-              </Text>
-              <Text style={[styles.taskDue, { color: colors.taskRemaining }]}>
-                {task.due}
-              </Text>
-            </View>
-            <Text style={[styles.taskMeta, { color: colors.taskMeta }]}>
-              Category: {task.category} • Priority: {task.priority}
-            </Text>
-            <View style={styles.taskActions}>
-              <TouchableOpacity
-                style={[
-                  styles.completeButton,
-                  {
-                    backgroundColor: colors.completeButton,
-                    borderColor: colors.completeButtonBorder,
-                  },
-                ]}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[
-                    styles.completeButtonText,
-                    { color: colors.completeButtonText },
-                  ]}
-                >
-                  Mark Complete
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.editButton,
-                  {
-                    backgroundColor: colors.editButton,
-                    borderColor: colors.editButtonBorder,
-                  },
-                ]}
-                activeOpacity={0.8}
-              >
-                <Ionicons
-                  name="pencil"
-                  size={16}
-                  color={colors.editButtonIcon}
-                />
-              </TouchableOpacity>
-            </View>
+            <Ionicons name="planet-outline" size={32} color={colors.starLogo} />
+            <Text style={[styles.emptyTitle, { color: colors.taskTitle }]}>No tasks here yet</Text>
+            <Text style={[styles.emptyText, { color: colors.taskMeta }]}>Add something to your cosmic to-do list.</Text>
           </View>
-        ))}
+        ) : (
+          filteredTasks.map((task) => {
+            const status = getTaskStatus(task);
+            return (
+              <View
+                key={task.id}
+                style={[
+                  styles.taskCard,
+                  {
+                    backgroundColor: colors.task,
+                    borderColor: colors.taskBorder,
+                  },
+                ]}
+              >
+                <View style={styles.taskTopRow}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => toggleTask(task.id)}
+                    style={[
+                      styles.checkbox,
+                      {
+                        borderColor: task.completed ? colors.completed : colors.taskBorder,
+                        backgroundColor: task.completed ? colors.completed : "transparent",
+                      },
+                    ]}
+                  >
+                    {task.completed && <Ionicons name="checkmark" size={16} color={isDark ? "#0e1938" : "#ffffff"} />}
+                  </TouchableOpacity>
+                  <View style={styles.taskTitleContainer}>
+                    <Text
+                      style={[
+                        styles.taskTitle,
+                        {
+                          color: colors.taskTitle,
+                          textDecorationLine: task.completed ? "line-through" : "none",
+                          opacity: task.completed ? 0.55 : 1,
+                        },
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {task.title}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.taskDue,
+                        {
+                          color:
+                            status === "Missed"
+                              ? colors.missed
+                              : status === "Completed"
+                              ? colors.completed
+                              : colors.taskRemaining,
+                        },
+                      ]}
+                    >
+                      {task.date} • {task.time} • {status}
+                    </Text>
+                  </View>
+                  <View style={styles.taskActions}>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => openEditTask(task)}
+                      style={[
+                        styles.actionButton,
+                        {
+                          backgroundColor: colors.editButton,
+                          borderColor: colors.editButtonBorder,
+                        },
+                      ]}
+                    >
+                      <Ionicons name="pencil" size={15} color={colors.editButtonIcon} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => deleteTask(task.id)}
+                      style={[
+                        styles.actionButton,
+                        {
+                          backgroundColor: colors.deleteButton,
+                          borderColor: colors.deleteButtonBorder,
+                        },
+                      ]}
+                    >
+                      <Ionicons name="trash-outline" size={15} color={colors.deleteButtonIcon} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <Text style={[styles.taskMeta, { color: colors.taskMeta }]}>
+                  Category: {task.category} • Priority: {task.priority}
+                </Text>
+              </View>
+            );
+          })
+        )}
         <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={openAddTask}
           style={[
             styles.addButton,
             {
@@ -279,19 +714,217 @@ export default function TasksScreen() {
               borderColor: colors.addButtonBorder,
             },
           ]}
-          activeOpacity={0.8}
         >
-          <Text style={[styles.addButtonText, { color: colors.addButtonText }]}>
-            + Add New Task
-          </Text>
+          <Ionicons name="add" size={20} color={colors.addButtonText} />
+          <Text style={[styles.addButtonText, { color: colors.addButtonText }]}>Add New Task</Text>
         </TouchableOpacity>
-        <View
-          style={[
-            styles.constellationLine,
-            { backgroundColor: colors.constellation },
-          ]}
-        />
+        <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
       </ScrollView>
+
+      <Modal
+        visible={showTaskModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTaskModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalCard,
+              {
+                backgroundColor: colors.modal,
+                borderColor: colors.modalBorder,
+              },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: colors.taskTitle }]}>
+              {editingTask ? "Edit Task" : "New Task"}
+            </Text>
+            <TextInput
+              value={taskTitle}
+              onChangeText={setTaskTitle}
+              placeholder="Task name"
+              placeholderTextColor={colors.placeholder}
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: colors.input,
+                  borderColor: colors.inputBorder,
+                  color: colors.inputText,
+                },
+              ]}
+            />
+            <TextInput
+              value={taskDate}
+              onChangeText={setTaskDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={colors.placeholder}
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: colors.input,
+                  borderColor: colors.inputBorder,
+                  color: colors.inputText,
+                },
+              ]}
+            />
+            <TextInput
+              value={taskTime}
+              onChangeText={setTaskTime}
+              placeholder="Time e.g. 14:30"
+              placeholderTextColor={colors.placeholder}
+              keyboardType="numbers-and-punctuation"
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: colors.input,
+                  borderColor: colors.inputBorder,
+                  color: colors.inputText,
+                },
+              ]}
+            />
+            <Text style={[styles.modalLabel, { color: colors.taskMeta }]}>Category</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.modalOptions}
+            >
+              {categories.map((category) => {
+                const active = taskCategory === category;
+                return (
+                  <TouchableOpacity
+                    key={category}
+                    activeOpacity={0.8}
+                    onPress={() => setTaskCategory(category)}
+                    style={[
+                      styles.optionButton,
+                      {
+                        backgroundColor: active ? colors.categoryActive : colors.categoryBackground,
+                        borderColor: active ? colors.categoryActive : colors.categoryBorder,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        {
+                          color: active ? colors.categoryActiveText : colors.categoryText,
+                        },
+                      ]}
+                    >
+                      {category}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setShowCustomCategoryInput(true);
+                  setCustomCategory("");
+                }}
+                style={[
+                  styles.categoryPlusButton,
+                  {
+                    backgroundColor: colors.categoryBackground,
+                    borderColor: colors.categoryBorder,
+                  },
+                ]}
+              >
+                <Ionicons name="add" size={18} color={colors.categoryText} />
+              </TouchableOpacity>
+            </ScrollView>
+            {showCustomCategoryInput && (
+              <View style={styles.customCategoryContainer}>
+                <TextInput
+                  autoFocus
+                  value={customCategory}
+                  onChangeText={setCustomCategory}
+                  placeholder="New category..."
+                  placeholderTextColor={colors.placeholder}
+                  onSubmitEditing={addCustomCategory}
+                  returnKeyType="done"
+                  style={[
+                    styles.customCategoryInput,
+                    {
+                      backgroundColor: colors.input,
+                      borderColor: colors.inputBorder,
+                      color: colors.inputText,
+                    },
+                  ]}
+                />
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={addCustomCategory}
+                  style={[
+                    styles.customCategorySave,
+                    {
+                      backgroundColor: colors.categoryActive,
+                    },
+                  ]}
+                >
+                  <Ionicons name="checkmark" size={18} color={colors.categoryActiveText} />
+                </TouchableOpacity>
+              </View>
+            )}
+            <Text style={[styles.modalLabel, { color: colors.taskMeta }]}>Priority</Text>
+            <View style={styles.priorityRow}>
+              {PRIORITIES.map((priority) => {
+                const active = taskPriority === priority;
+                return (
+                  <TouchableOpacity
+                    key={priority}
+                    activeOpacity={0.8}
+                    onPress={() => setTaskPriority(priority)}
+                    style={[
+                      styles.optionButton,
+                      {
+                        flex: 1,
+                        backgroundColor: active ? colors.categoryActive : colors.categoryBackground,
+                        borderColor: active ? colors.categoryActive : colors.categoryBorder,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        {
+                          color: active ? colors.categoryActiveText : colors.categoryText,
+                        },
+                      ]}
+                    >
+                      {priority}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setShowTaskModal(false)}
+                style={styles.cancelModalButton}
+              >
+                <Text style={[styles.cancelModalText, { color: colors.cancelText }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={saveTask}
+                style={[
+                  styles.saveButton,
+                  {
+                    backgroundColor: colors.saveButton,
+                  },
+                ]}
+              >
+                <Text style={[styles.saveButtonText, { color: colors.saveButtonText }]}>
+                  {editingTask ? "Save Changes" : "Add Task"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -318,42 +951,96 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
+  calendarArrow: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  calendarTitleContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
   calendarTitle: {
     fontFamily: "BitterBold",
     fontSize: 18,
   },
+  calendarHint: {
+    fontFamily: "Bitter",
+    fontSize: 9,
+    marginTop: 3,
+    opacity: 0.8,
+  },
   calendarGrid: {
     flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "space-between",
+  },
+  weekDay: {
+    width: "13%",
+    alignItems: "center",
   },
   dayLabel: {
     fontFamily: "BitterBold",
-    width: "14%",
     textAlign: "center",
-    fontSize: 12,
-    marginBottom: 10,
+    fontSize: 11,
+    marginBottom: 8,
   },
-  dateCell: {
-    width: "14%",
+  dateCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
+    overflow: "hidden",
   },
   dateText: {
     fontFamily: "Bitter",
     fontSize: 14,
   },
-  activeDate: {
-    width: "14%",
+  todayDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 3,
+  },
+  taskDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 3,
+  },
+  monthDayLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  monthDayLabel: {
+    width: "14.28%",
+    textAlign: "center",
+    fontFamily: "BitterBold",
+    fontSize: 10,
+  },
+  monthGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  monthDateCell: {
+    width: "14.28%",
+    height: 52,
+    alignItems: "center",
+    justifyContent: "flex-start",
+  },
+  monthDateCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
-    borderRadius: 10,
+    overflow: "hidden",
   },
-  activeDateText: {
-    fontFamily: "BitterBold",
-    fontSize: 14,
+  monthDateText: {
+    fontFamily: "Bitter",
+    fontSize: 13,
   },
   constellationLine: {
     width: "60%",
@@ -369,7 +1056,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
-    marginBottom: 20,
+    marginBottom: 12,
+  },
+  filterContainer: {
+    gap: 8,
+    paddingBottom: 20,
+  },
+  filterButton: {
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+  },
+  filterText: {
+    fontFamily: "BitterBold",
+    fontSize: 12,
   },
   taskCard: {
     borderRadius: 16,
@@ -377,45 +1078,42 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
   },
-  taskHeader: {
+  taskTopRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    width: "100%",
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+    flexShrink: 0,
+  },
+  taskTitleContainer: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 10,
   },
   taskTitle: {
     fontFamily: "BitterBold",
-    flex: 1,
     fontSize: 15,
-    marginRight: 12,
   },
   taskDue: {
     fontFamily: "Bitter",
-    fontSize: 12,
-    textAlign: "right",
-  },
-  taskMeta: {
-    fontFamily: "Bitter",
-    marginTop: 8,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 11,
+    marginTop: 4,
   },
   taskActions: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 16,
+    gap: 6,
+    flexShrink: 0,
   },
-  completeButton: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  completeButtonText: {
-    fontFamily: "BitterBold",
-    fontSize: 13,
-  },
-  editButton: {
+  actionButton: {
     width: 34,
     height: 34,
     borderRadius: 10,
@@ -423,17 +1121,153 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  taskMeta: {
+    fontFamily: "Bitter",
+    marginTop: 10,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  emptyCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontFamily: "BitterBold",
+    fontSize: 16,
+    marginTop: 10,
+  },
+  emptyText: {
+    fontFamily: "Bitter",
+    fontSize: 12,
+    marginTop: 5,
+    textAlign: "center",
+  },
   addButton: {
     alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
     borderRadius: 16,
     borderWidth: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    paddingHorizontal: 22,
+    paddingVertical: 13,
     marginTop: 8,
     marginBottom: 28,
   },
   addButtonText: {
     fontFamily: "BitterBold",
     fontSize: 15,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 430,
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 20,
+  },
+  modalTitle: {
+    fontFamily: "BitterBold",
+    fontSize: 22,
+    marginBottom: 18,
+  },
+  modalInput: {
+    fontFamily: "Bitter",
+    borderRadius: 13,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  modalLabel: {
+    fontFamily: "BitterBold",
+    fontSize: 12,
+    marginTop: 5,
+    marginBottom: 8,
+  },
+  modalOptions: {
+    gap: 7,
+    paddingBottom: 4,
+    paddingRight: 4,
+  },
+  optionButton: {
+    borderRadius: 11,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  optionText: {
+    fontFamily: "BitterBold",
+    fontSize: 11,
+  },
+  categoryPlusButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  customCategoryContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    marginTop: 8,
+  },
+  customCategoryInput: {
+    flex: 1,
+    fontFamily: "Bitter",
+    borderRadius: 11,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13,
+  },
+  customCategorySave: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  priorityRow: {
+    flexDirection: "row",
+    gap: 7,
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 20,
+  },
+  cancelModalButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  cancelModalText: {
+    fontFamily: "BitterBold",
+    fontSize: 13,
+  },
+  saveButton: {
+    borderRadius: 13,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+  },
+  saveButtonText: {
+    fontFamily: "BitterBold",
+    fontSize: 13,
   },
 });
