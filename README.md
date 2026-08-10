@@ -8,12 +8,32 @@ ABOUT WILL GO HERE
 
 ### ★ PROJECT STRUCTURE !!
 
-	├── app/      
-	├── assets/         
-	├── components/      
-	├── context/     
+	├── app/
+	│   ├── 
+	│
+	├── assets/   
+	│   ├── icon.png	# Mobile App Icon
+	│   ├── fonts/		# Custom Fonts
+	│   └── music/		# Audio Files
+	│ 
+	├── components/     # Reusable UI Components  
+	│   ├── focusTimerOverlay.tsx
+	│   ├── header.tsx
+	│   ├── musicselector.tsx
+	│   ├── profilesheet.tsx
+	│   └── starrybackground.tsx
+	│ 
+	├── context/		# Global State (React Context)
+	│	├── focustimercontext.tsx
+	│	├── profilesheetcontext.tsx
+	│   └── themecontext.tsx
+	│
 	├── storage/    
-	├── utils/ 
-	├── app.json        
+	│
+	├── utils/   		# Secure OCR Key Loader
+	│   └── ocr.ts
+	│
+	├── app.config.ts       
 	├── package.json    
 	└── tsconfig.json 
+	└── README.md  
