@@ -2,7 +2,7 @@
 
 ABOUT WILL GO HERE BLAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHBLAHHHHHHHHHHHHHHH
 
-★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★
+★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★
 
 ## ★ APP FEATURES !!
 - Task Tracker — *organize tasks and stay productive*
@@ -19,7 +19,7 @@ ABOUT WILL GO HERE BLAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 - Notification System — *reminders, alerts, and study‑related updates*
 - Tab Navigation — *fast navigation to core tools*
 
-★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★
+★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★
 
 ## ★ PROJECT STRUCTURE !!
 
