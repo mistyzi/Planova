@@ -1,6 +1,11 @@
 # Planova - Your study schedule, astronomically aligned. 
 
-ABOUT WILL GO HERE BLAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHBLAHHHHHHHHHHHHHHH
+Planova is a space-inspired study companion built to help users stay organized and focused while navigating their academic universe. 
+
+Designed with a calm cosmic aesthetic and adaptive dark/light themes, Planova keeps every study tool in the same orbit — making learning feel smoother, lighter, and a little more celestial.
+
+With essentials like a task tracker, focus timer, notes, and flashcards, Planova helps learners stay on course as they explore new worlds of knowledge.
+
 
 ★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★
 
@@ -14,6 +19,7 @@ ABOUT WILL GO HERE BLAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 - Reference Library — *save reference items*
 - Dark/Light Theme — *full theme system*
 - OCR Scanning — *scan text from images*
+- Text-to-Speech Reader — *listen to notes*
 - Bookmarks — *access to user settings*
 - Profile Sheet — *save important items*
 - Notification System — *reminders, alerts, and study‑related updates*
