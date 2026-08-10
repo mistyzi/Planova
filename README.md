@@ -4,7 +4,13 @@ ABOUT WILL GO HERE
 
 ## ★ FEATURES !!
 - Task Tracker
-- Music Player
+- Focus Timer
+- Background Music Player
+- Daily Streak Tracker
+- Note Uploading
+- Flashcard Creator
+- Reference Library
+- 
 
 ## ★ PROJECT STRUCTURE !!
 
