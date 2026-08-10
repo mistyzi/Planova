@@ -2,11 +2,11 @@
 
 ABOUT WILL GO HERE
 
-### ★ FEATURES !!
+## ★ FEATURES !!
 - Task Tracker
 - Music Player
 
-### ★ PROJECT STRUCTURE !!
+## ★ PROJECT STRUCTURE !!
 
 	├── app/
 	│   ├── 
