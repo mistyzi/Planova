@@ -36,4 +36,3 @@ ABOUT WILL GO HERE
 	├── app.config.ts       
 	├── package.json    
 	└── tsconfig.json 
-	└── README.md  
