@@ -1,16 +1,25 @@
 # Planova - Your study schedule, astronomically aligned. 
 
-ABOUT WILL GO HERE
+ABOUT WILL GO HERE BLAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHBLAHHHHHHHHHHHHHHH
 
-## ★ FEATURES !!
-- Task Tracker
-- Focus Timer
-- Background Music Player
-- Daily Streak Tracker
-- Note Uploading
-- Flashcard Creator
-- Reference Library
-- 
+★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★
+
+## ★ APP FEATURES !!
+- Task Tracker — *organize tasks and stay productive*
+- Focus Timer — *customizable study timer*
+- Background Music Player — *ambient study music*
+- Daily Streak Tracker — *track your consistency*
+- Note Uploading — *create and store notes*
+- Flashcard Creator — *build flashcards*
+- Reference Library — *save reference items*
+- Dark/Light Theme — *full theme system*
+- OCR Scanning — *scan text from images*
+- Bookmarks — *access to user settings*
+- Profile Sheet — *save important items*
+- Notification System — *reminders, alerts, and study‑related updates*
+- Tab Navigation — *fast navigation to core tools*
+
+★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★・・・★
 
 ## ★ PROJECT STRUCTURE !!
 
