@@ -9,7 +9,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useProfileSheet } from "@/context/profilesheetcontext";
 import { useTheme } from "@/context/themecontext";
 
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+
 export default function Header() {
+  const insets = useSafeAreaInsets();
   const { openProfile } = useProfileSheet();
   const { isDark } = useTheme();
 
@@ -40,7 +43,7 @@ export default function Header() {
       };
 
   return (
-    <View style={styles.headerContainer}>
+    <SafeAreaView style={styles.headerContainer}>
       {/* ================================================== */}
       {/* HEADER BACKGROUND */}
       {/* ================================================== */}
@@ -146,7 +149,7 @@ export default function Header() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -196,7 +199,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
 
     paddingHorizontal: 24,
-    paddingTop: 30,
+    paddingTop: 0,
     paddingBottom: 20,
 
     zIndex: 1,
