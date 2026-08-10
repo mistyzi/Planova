@@ -20,8 +20,8 @@ With essentials like a task tracker, focus timer, notes, and flashcards, Planova
 - Dark/Light Theme — *full theme system*
 - OCR Scanning — *scan text from images*
 - Text-to-Speech Reader — *listen to notes*
-- Bookmarks — *access to user settings*
-- Profile Sheet — *save important items*
+- Bookmarks — *save important items*
+- Profile Sheet — *access to user settings*
 - Notification System — *reminders, alerts, and study‑related updates*
 - Tab Navigation — *fast navigation to core tools*
 
