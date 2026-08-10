@@ -1,5 +1,7 @@
 # Planova - Your study schedule, astronomically aligned. 
 
+ABOUT WILL GO HERE
+
 ### ★ FEATURES !!
 - Task Tracker
 - Music Player
