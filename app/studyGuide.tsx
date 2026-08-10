@@ -1,11 +1,24 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteStudyGuide, getStudyGuideById, StudyGuide } from "../storage/studyGuideStorage";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    deleteStudyGuide,
+    getStudyGuideById,
+    StudyGuide,
+} from "../storage/studyGuideStorage";
 
 export default function StudyGuideScreen() {
   const { isDark } = useTheme();
@@ -93,18 +106,24 @@ export default function StudyGuideScreen() {
               router.replace("/studyGuides");
             } catch (error) {
               console.log("Failed to delete study guide:", error);
-              Alert.alert("Delete failed", "The study guide could not be deleted.");
+              Alert.alert(
+                "Delete failed",
+                "The study guide could not be deleted.",
+              );
             }
           },
         },
-      ]
+      ],
     );
   };
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
@@ -118,7 +137,10 @@ export default function StudyGuideScreen() {
   if (!guide) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
@@ -133,7 +155,9 @@ export default function StudyGuideScreen() {
           >
             <Ionicons name="book-outline" size={30} color={colors.icon} />
           </View>
-          <Text style={[styles.notFoundTitle, { color: colors.title }]}>Study Guide Not Found</Text>
+          <Text style={[styles.notFoundTitle, { color: colors.title }]}>
+            Study Guide Not Found
+          </Text>
           <Text style={[styles.notFoundText, { color: colors.secondaryText }]}>
             This study guide may have been deleted or does not exist.
           </Text>
@@ -166,13 +190,24 @@ export default function StudyGuideScreen() {
         <StarryBackground />
       </View>
       <View style={styles.topBar}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.headerButton}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.back()}
+          style={styles.headerButton}
+        >
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-        <Text numberOfLines={1} style={[styles.topTitle, { color: colors.title }]}>
+        <Text
+          numberOfLines={1}
+          style={[styles.topTitle, { color: colors.title }]}
+        >
           Study Guide
         </Text>
-        <TouchableOpacity activeOpacity={0.7} onPress={handleEdit} style={styles.headerButton}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={handleEdit}
+          style={styles.headerButton}
+        >
           <Ionicons name="create-outline" size={21} color={colors.title} />
         </TouchableOpacity>
       </View>
@@ -200,25 +235,34 @@ export default function StudyGuideScreen() {
           >
             <Ionicons name="book" size={26} color={colors.icon} />
           </View>
-          <Text style={[styles.guideTitle, { color: colors.title }]}>{guide.title}</Text>
+          <Text style={[styles.guideTitle, { color: colors.title }]}>
+            {guide.title}
+          </Text>
           {guide.description ? (
-            <Text style={[styles.description, { color: colors.secondaryText }]}>{guide.description}</Text>
+            <Text style={[styles.description, { color: colors.secondaryText }]}>
+              {guide.description}
+            </Text>
           ) : null}
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
               <Ionicons name="layers-outline" size={14} color={colors.icon} />
               <Text style={[styles.metaText, { color: colors.secondaryText }]}>
-                {guide.sections.length} {guide.sections.length === 1 ? "section" : "sections"}
+                {guide.sections.length}{" "}
+                {guide.sections.length === 1 ? "section" : "sections"}
               </Text>
             </View>
             <View style={styles.metaItem}>
               <Ionicons name="time-outline" size={14} color={colors.icon} />
-              <Text style={[styles.metaText, { color: colors.secondaryText }]}>{guide.date}</Text>
+              <Text style={[styles.metaText, { color: colors.secondaryText }]}>
+                {guide.date}
+              </Text>
             </View>
           </View>
         </View>
         <View style={styles.sectionsHeader}>
-          <Text style={[styles.sectionsTitle, { color: colors.title }]}>Study Material</Text>
+          <Text style={[styles.sectionsTitle, { color: colors.title }]}>
+            Study Material
+          </Text>
           <View
             style={[
               styles.sectionCount,
@@ -227,7 +271,9 @@ export default function StudyGuideScreen() {
               },
             ]}
           >
-            <Text style={[styles.sectionCountText, { color: colors.icon }]}>{guide.sections.length}</Text>
+            <Text style={[styles.sectionCountText, { color: colors.icon }]}>
+              {guide.sections.length}
+            </Text>
           </View>
         </View>
         <View style={styles.sectionList}>
@@ -251,9 +297,15 @@ export default function StudyGuideScreen() {
                     },
                   ]}
                 >
-                  <Text style={[styles.sectionNumberText, { color: colors.icon }]}>{index + 1}</Text>
+                  <Text
+                    style={[styles.sectionNumberText, { color: colors.icon }]}
+                  >
+                    {index + 1}
+                  </Text>
                 </View>
-                <Text style={[styles.sectionName, { color: colors.text }]}>{section.title}</Text>
+                <Text style={[styles.sectionName, { color: colors.text }]}>
+                  {section.title}
+                </Text>
               </View>
               <View
                 style={[
@@ -263,7 +315,9 @@ export default function StudyGuideScreen() {
                   },
                 ]}
               />
-              <Text style={[styles.sectionContent, { color: colors.text }]}>{section.content}</Text>
+              <Text style={[styles.sectionContent, { color: colors.text }]}>
+                {section.content}
+              </Text>
             </View>
           ))}
         </View>
@@ -277,8 +331,14 @@ export default function StudyGuideScreen() {
             },
           ]}
         >
-          <Ionicons name="trash-outline" size={18} color={colors.secondaryText} />
-          <Text style={[styles.deleteText, { color: colors.secondaryText }]}>Delete Study Guide</Text>
+          <Ionicons
+            name="trash-outline"
+            size={18}
+            color={colors.secondaryText}
+          />
+          <Text style={[styles.deleteText, { color: colors.secondaryText }]}>
+            Delete Study Guide
+          </Text>
         </TouchableOpacity>
         <View
           style={[

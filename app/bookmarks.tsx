@@ -1,10 +1,21 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Linking, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Linking,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { Bookmark, deleteBookmark, getBookmarks } from "../storage/bookmarkStorage";
 
 export default function BookmarksScreen() {
@@ -73,35 +84,47 @@ export default function BookmarksScreen() {
       (bookmark) =>
         bookmark.title.toLowerCase().includes(query) ||
         bookmark.url.toLowerCase().includes(query) ||
-        bookmark.description?.toLowerCase().includes(query)
+        bookmark.description?.toLowerCase().includes(query),
     );
   }, [bookmarks, search]);
 
   const handleDelete = (bookmark: Bookmark) => {
-    Alert.alert("Remove Bookmark", `Remove "${bookmark.title}" from your bookmarks?`, [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Remove",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteBookmark(bookmark.id);
-            setBookmarks((current) => current.filter((item) => item.id !== bookmark.id));
-          } catch (error) {
-            console.log("Failed to delete bookmark:", error);
-            Alert.alert("Delete failed", "The bookmark could not be removed.");
-          }
+    Alert.alert(
+      "Remove Bookmark",
+      `Remove "${bookmark.title}" from your bookmarks?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteBookmark(bookmark.id);
+              setBookmarks((current) =>
+                current.filter((item) => item.id !== bookmark.id),
+              );
+            } catch (error) {
+              console.log("Failed to delete bookmark:", error);
+              Alert.alert(
+                "Delete failed",
+                "The bookmark could not be removed.",
+              );
+            }
+          },
+        },
+      ],
+    );
   };
 
   const openBookmark = async (url: string) => {
     try {
-      const formattedUrl = url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+      const formattedUrl =
+        url.startsWith("http://") || url.startsWith("https://")
+          ? url
+          : `https://${url}`;
       const supported = await Linking.canOpenURL(formattedUrl);
       if (!supported) {
         Alert.alert("Unable to open", "This link could not be opened.");
@@ -117,7 +140,10 @@ export default function BookmarksScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
@@ -140,11 +166,21 @@ export default function BookmarksScreen() {
         <StarryBackground />
       </View>
       <View style={styles.topBar}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-        <Text style={[styles.topTitle, { color: colors.title }]}>Bookmarks</Text>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/bookmarkMaker")} style={styles.addButton}>
+        <Text style={[styles.topTitle, { color: colors.title }]}>
+          Bookmarks
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/bookmarkMaker")}
+          style={styles.addButton}
+        >
           <Ionicons name="add" size={24} color={colors.title} />
         </TouchableOpacity>
       </View>
@@ -155,8 +191,15 @@ export default function BookmarksScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.titleSection}>
-          <Text style={[styles.pageTitle, { color: colors.title }]}>Saved Resources</Text>
-          <View style={[styles.constellationLine, { backgroundColor: colors.divider }]} />
+          <Text style={[styles.pageTitle, { color: colors.title }]}>
+            Saved Resources
+          </Text>
+          <View
+            style={[
+              styles.constellationLine,
+              { backgroundColor: colors.divider },
+            ]}
+          />
           <Text style={[styles.pageSubtitle, { color: colors.secondaryText }]}>
             Keep useful websites, articles, and study resources in one place.
           </Text>
@@ -170,7 +213,11 @@ export default function BookmarksScreen() {
             },
           ]}
         >
-          <Ionicons name="search-outline" size={19} color={colors.secondaryText} />
+          <Ionicons
+            name="search-outline"
+            size={19}
+            color={colors.secondaryText}
+          />
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -185,15 +232,24 @@ export default function BookmarksScreen() {
           />
           {search.length > 0 && (
             <TouchableOpacity activeOpacity={0.7} onPress={() => setSearch("")}>
-              <Ionicons name="close-circle" size={18} color={colors.secondaryText} />
+              <Ionicons
+                name="close-circle"
+                size={18}
+                color={colors.secondaryText}
+              />
             </TouchableOpacity>
           )}
         </View>
         <View style={styles.listHeader}>
           <View>
-            <Text style={[styles.listTitle, { color: colors.title }]}>My Bookmarks</Text>
-            <Text style={[styles.listSubtitle, { color: colors.secondaryText }]}>
-              {filteredBookmarks.length} {filteredBookmarks.length === 1 ? "resource" : "resources"}
+            <Text style={[styles.listTitle, { color: colors.title }]}>
+              My Bookmarks
+            </Text>
+            <Text
+              style={[styles.listSubtitle, { color: colors.secondaryText }]}
+            >
+              {filteredBookmarks.length}{" "}
+              {filteredBookmarks.length === 1 ? "resource" : "resources"}
             </Text>
           </View>
           <View
@@ -205,7 +261,9 @@ export default function BookmarksScreen() {
             ]}
           >
             <Ionicons name="bookmark" size={15} color={colors.icon} />
-            <Text style={[styles.bookmarkCountText, { color: colors.icon }]}>{bookmarks.length}</Text>
+            <Text style={[styles.bookmarkCountText, { color: colors.icon }]}>
+              {bookmarks.length}
+            </Text>
           </View>
         </View>
         {filteredBookmarks.length === 0 && (
@@ -226,12 +284,18 @@ export default function BookmarksScreen() {
                 },
               ]}
             >
-              <Ionicons name={search.length > 0 ? "search-outline" : "bookmark-outline"} size={29} color={colors.icon} />
+              <Ionicons
+                name={search.length > 0 ? "search-outline" : "bookmark-outline"}
+                size={29}
+                color={colors.icon}
+              />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               {search.length > 0 ? "No bookmarks found" : "No bookmarks yet"}
             </Text>
-            <Text style={[styles.emptyDescription, { color: colors.secondaryText }]}>
+            <Text
+              style={[styles.emptyDescription, { color: colors.secondaryText }]}
+            >
               {search.length > 0
                 ? "Try searching for a different resource."
                 : "Save useful websites and study resources here so you can find them later."}
@@ -277,26 +341,57 @@ export default function BookmarksScreen() {
                   <Ionicons name="bookmark" size={21} color={colors.icon} />
                 </View>
                 <View style={styles.bookmarkInfo}>
-                  <Text numberOfLines={2} style={[styles.bookmarkTitle, { color: colors.text }]}>
+                  <Text
+                    numberOfLines={2}
+                    style={[styles.bookmarkTitle, { color: colors.text }]}
+                  >
                     {bookmark.title}
                   </Text>
-                  <Text numberOfLines={1} style={[styles.bookmarkUrl, { color: colors.secondaryText }]}>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.bookmarkUrl,
+                      { color: colors.secondaryText },
+                    ]}
+                  >
                     {bookmark.url}
                   </Text>
                 </View>
-                <TouchableOpacity activeOpacity={0.7} onPress={() => handleDelete(bookmark)} style={styles.deleteButton}>
-                  <Ionicons name="trash-outline" size={19} color={colors.secondaryText} />
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => handleDelete(bookmark)}
+                  style={styles.deleteButton}
+                >
+                  <Ionicons
+                    name="trash-outline"
+                    size={19}
+                    color={colors.secondaryText}
+                  />
                 </TouchableOpacity>
               </View>
               {!!bookmark.description && (
-                <Text numberOfLines={3} style={[styles.bookmarkDescription, { color: colors.secondaryText }]}>
+                <Text
+                  numberOfLines={3}
+                  style={[
+                    styles.bookmarkDescription,
+                    { color: colors.secondaryText },
+                  ]}
+                >
                   {bookmark.description}
                 </Text>
               )}
               <View style={styles.bookmarkBottom}>
                 <View style={styles.dateContainer}>
-                  <Ionicons name="time-outline" size={13} color={colors.secondaryText} />
-                  <Text style={[styles.dateText, { color: colors.secondaryText }]}>{bookmark.date}</Text>
+                  <Ionicons
+                    name="time-outline"
+                    size={13}
+                    color={colors.secondaryText}
+                  />
+                  <Text
+                    style={[styles.dateText, { color: colors.secondaryText }]}
+                  >
+                    {bookmark.date}
+                  </Text>
                 </View>
                 <TouchableOpacity
                   activeOpacity={0.82}
@@ -308,14 +403,18 @@ export default function BookmarksScreen() {
                     },
                   ]}
                 >
-                  <Text style={[styles.openButtonText, { color: colors.icon }]}>Open</Text>
+                  <Text style={[styles.openButtonText, { color: colors.icon }]}>
+                    Open
+                  </Text>
                   <Ionicons name="open-outline" size={15} color={colors.icon} />
                 </TouchableOpacity>
               </View>
             </View>
           ))}
         </View>
-        <View style={[styles.finalDivider, { backgroundColor: colors.divider }]} />
+        <View
+          style={[styles.finalDivider, { backgroundColor: colors.divider }]}
+        />
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,11 +1,29 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { addBookmark, createBookmarkId, getBookmarkById, updateBookmark, Bookmark } from "../storage/bookmarkStorage";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    addBookmark,
+    Bookmark,
+    createBookmarkId,
+    getBookmarkById,
+    updateBookmark,
+} from "../storage/bookmarkStorage";
 
 export default function BookmarkMakerScreen() {
   const { isDark } = useTheme();
@@ -90,7 +108,10 @@ export default function BookmarkMakerScreen() {
       return;
     }
     if (!url.trim()) {
-      Alert.alert("Add a URL", "Please enter the website URL you want to save.");
+      Alert.alert(
+        "Add a URL",
+        "Please enter the website URL you want to save.",
+      );
       return;
     }
     setIsSaving(true);
@@ -98,7 +119,10 @@ export default function BookmarkMakerScreen() {
       if (isEditing && bookmarkId) {
         const existingBookmark = await getBookmarkById(bookmarkId);
         if (!existingBookmark) {
-          Alert.alert("Bookmark not found", "The bookmark could not be updated.");
+          Alert.alert(
+            "Bookmark not found",
+            "The bookmark could not be updated.",
+          );
           return;
         }
         const updatedBookmark: Bookmark = {
@@ -141,7 +165,10 @@ export default function BookmarkMakerScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
@@ -168,7 +195,11 @@ export default function BookmarkMakerScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.topBar}>
-          <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={25} color={colors.title} />
           </TouchableOpacity>
           <Text style={[styles.topTitle, { color: colors.title }]}>
@@ -200,16 +231,29 @@ export default function BookmarkMakerScreen() {
                   },
                 ]}
               >
-                <Ionicons name="bookmark-outline" size={21} color={colors.icon} />
+                <Ionicons
+                  name="bookmark-outline"
+                  size={21}
+                  color={colors.icon}
+                />
               </View>
               <View style={styles.sectionHeaderText}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Bookmark Information</Text>
-                <Text style={[styles.sectionSubtitle, { color: colors.secondaryText }]}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Bookmark Information
+                </Text>
+                <Text
+                  style={[
+                    styles.sectionSubtitle,
+                    { color: colors.secondaryText },
+                  ]}
+                >
                   Save an important resource for later.
                 </Text>
               </View>
             </View>
-            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Title</Text>
+            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>
+              Title
+            </Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -224,7 +268,9 @@ export default function BookmarkMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Website URL</Text>
+            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>
+              Website URL
+            </Text>
             <TextInput
               value={url}
               onChangeText={setUrl}
@@ -242,7 +288,9 @@ export default function BookmarkMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Description</Text>
+            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>
+              Description
+            </Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
@@ -262,8 +310,15 @@ export default function BookmarkMakerScreen() {
           </View>
           <View style={styles.previewHeader}>
             <View>
-              <Text style={[styles.previewTitle, { color: colors.title }]}>Preview</Text>
-              <Text style={[styles.previewSubtitle, { color: colors.secondaryText }]}>
+              <Text style={[styles.previewTitle, { color: colors.title }]}>
+                Preview
+              </Text>
+              <Text
+                style={[
+                  styles.previewSubtitle,
+                  { color: colors.secondaryText },
+                ]}
+              >
                 This is how your bookmark will appear.
               </Text>
             </View>
@@ -288,13 +343,26 @@ export default function BookmarkMakerScreen() {
               <Ionicons name="bookmark" size={23} color={colors.icon} />
             </View>
             <View style={styles.previewContent}>
-              <Text numberOfLines={2} style={[styles.previewCardTitle, { color: colors.text }]}>
+              <Text
+                numberOfLines={2}
+                style={[styles.previewCardTitle, { color: colors.text }]}
+              >
                 {title.trim() || "Bookmark Title"}
               </Text>
-              <Text numberOfLines={2} style={[styles.previewCardDescription, { color: colors.secondaryText }]}>
-                {description.trim() || "Your bookmark description will appear here."}
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.previewCardDescription,
+                  { color: colors.secondaryText },
+                ]}
+              >
+                {description.trim() ||
+                  "Your bookmark description will appear here."}
               </Text>
-              <Text numberOfLines={1} style={[styles.previewUrl, { color: colors.secondaryText }]}>
+              <Text
+                numberOfLines={1}
+                style={[styles.previewUrl, { color: colors.secondaryText }]}
+              >
                 {url.trim() || "https://example.com"}
               </Text>
             </View>
@@ -312,7 +380,11 @@ export default function BookmarkMakerScreen() {
           >
             <Ionicons name="checkmark" size={21} color="#ffffff" />
             <Text style={styles.saveButtonText}>
-              {isSaving ? "Saving..." : isEditing ? "Save Changes" : "Save Bookmark"}
+              {isSaving
+                ? "Saving..."
+                : isEditing
+                  ? "Save Changes"
+                  : "Save Bookmark"}
             </Text>
           </TouchableOpacity>
           <View

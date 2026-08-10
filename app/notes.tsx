@@ -1,24 +1,24 @@
-import React, { useCallback, useMemo, useState } from "react";
-import {
-  Alert,
-  Image,
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import * as DocumentPicker from "expo-document-picker";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
+import { Ionicons } from "@expo/vector-icons";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
+import {
+    Alert,
+    Image,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { addNote, getNotes, StoredNote } from "../storage/noteStorage";
 import { scanMultipleImages } from "./ocr";
 
@@ -92,7 +92,7 @@ export default function NotesScreen() {
   useFocusEffect(
     useCallback(() => {
       loadNotes();
-    }, [loadNotes])
+    }, [loadNotes]),
   );
 
   const filteredNotes = useMemo(() => {
@@ -103,7 +103,8 @@ export default function NotesScreen() {
         note.title.toLowerCase().includes(query) ||
         note.preview.toLowerCase().includes(query) ||
         note.extractedText?.toLowerCase().includes(query);
-      const matchesFilter = activeFilter === "All" || note.type === activeFilter;
+      const matchesFilter =
+        activeFilter === "All" || note.type === activeFilter;
       return matchesSearch && matchesFilter;
     });
   }, [notes, search, activeFilter]);
@@ -126,9 +127,15 @@ export default function NotesScreen() {
       const combinedText = await scanMultipleImages(imageUris);
       const newNote: StoredNote = {
         id: Date.now().toString() + Math.random().toString(36).slice(2),
-        title: imageUris.length === 1 ? "Imported Study Notes" : `Imported Study Notes (${imageUris.length} pages)`,
+        title:
+          imageUris.length === 1
+            ? "Imported Study Notes"
+            : `Imported Study Notes (${imageUris.length} pages)`,
         type: "Images",
-        preview: combinedText.length > 0 ? combinedText.slice(0, 120) : "Image study notes",
+        preview:
+          combinedText.length > 0
+            ? combinedText.slice(0, 120)
+            : "Image study notes",
         date: "Just now",
         images: imageUris,
         extractedText: combinedText,
@@ -145,7 +152,7 @@ export default function NotesScreen() {
       console.log("Failed to create image note:", error);
       Alert.alert(
         "Scan Failed",
-        "The images were imported, but the text could not be scanned. Check your OCR API key and try again."
+        "The images were imported, but the text could not be scanned. Check your OCR API key and try again.",
       );
     } finally {
       setIsScanning(false);
@@ -157,7 +164,10 @@ export default function NotesScreen() {
     if (!cameraPermission?.granted) {
       const permission = await requestCameraPermission();
       if (!permission.granted) {
-        Alert.alert("Camera Permission", "Camera access is needed to take pictures of your study notes.");
+        Alert.alert(
+          "Camera Permission",
+          "Camera access is needed to take pictures of your study notes.",
+        );
         return;
       }
     }
@@ -168,7 +178,10 @@ export default function NotesScreen() {
     setShowCreateMenu(false);
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Photo Permission", "Photo library access is needed to import your study notes.");
+      Alert.alert(
+        "Photo Permission",
+        "Photo library access is needed to import your study notes.",
+      );
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -229,7 +242,11 @@ export default function NotesScreen() {
       <View pointerEvents="none" style={styles.stars}>
         <StarryBackground />
       </View>
-      <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.backButton}>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => router.back()}
+        style={styles.backButton}
+      >
         <Ionicons name="arrow-back" size={25} color={colors.title} />
       </TouchableOpacity>
       <ScrollView
@@ -253,7 +270,11 @@ export default function NotesScreen() {
             },
           ]}
         >
-          <Ionicons name="search-outline" size={21} color={colors.secondaryText} />
+          <Ionicons
+            name="search-outline"
+            size={21}
+            color={colors.secondaryText}
+          />
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -268,7 +289,11 @@ export default function NotesScreen() {
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch("")}>
-              <Ionicons name="close-circle" size={19} color={colors.secondaryText} />
+              <Ionicons
+                name="close-circle"
+                size={19}
+                color={colors.secondaryText}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -283,8 +308,12 @@ export default function NotesScreen() {
                 style={[
                   styles.filterButton,
                   {
-                    backgroundColor: active ? colors.activeFilter : colors.filterBackground,
-                    borderColor: active ? colors.activeFilterBorder : colors.filterBorder,
+                    backgroundColor: active
+                      ? colors.activeFilter
+                      : colors.filterBackground,
+                    borderColor: active
+                      ? colors.activeFilterBorder
+                      : colors.filterBorder,
                   },
                 ]}
               >
@@ -325,8 +354,14 @@ export default function NotesScreen() {
               <Ionicons name="create-outline" size={21} color={colors.icon} />
             </View>
             <View style={styles.actionText}>
-              <Text style={[styles.actionTitle, { color: colors.text }]}>New Note</Text>
-              <Text style={[styles.actionSubtitle, { color: colors.secondaryText }]}>Write something</Text>
+              <Text style={[styles.actionTitle, { color: colors.text }]}>
+                New Note
+              </Text>
+              <Text
+                style={[styles.actionSubtitle, { color: colors.secondaryText }]}
+              >
+                Write something
+              </Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
@@ -351,8 +386,14 @@ export default function NotesScreen() {
               <Ionicons name="images-outline" size={21} color={colors.icon} />
             </View>
             <View style={styles.actionText}>
-              <Text style={[styles.actionTitle, { color: colors.text }]}>Import</Text>
-              <Text style={[styles.actionSubtitle, { color: colors.secondaryText }]}>Scan study pages</Text>
+              <Text style={[styles.actionTitle, { color: colors.text }]}>
+                Import
+              </Text>
+              <Text
+                style={[styles.actionSubtitle, { color: colors.secondaryText }]}
+              >
+                Scan study pages
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -368,17 +409,27 @@ export default function NotesScreen() {
           >
             <Ionicons name="scan-outline" size={24} color={colors.icon} />
             <View style={styles.processingText}>
-              <Text style={[styles.processingTitle, { color: colors.text }]}>Scanning your notes...</Text>
-              <Text style={[styles.processingSubtitle, { color: colors.secondaryText }]}>
+              <Text style={[styles.processingTitle, { color: colors.text }]}>
+                Scanning your notes...
+              </Text>
+              <Text
+                style={[
+                  styles.processingSubtitle,
+                  { color: colors.secondaryText },
+                ]}
+              >
                 Reading the text from your study pages.
               </Text>
             </View>
           </View>
         )}
         <View style={styles.notesHeader}>
-          <Text style={[styles.notesTitle, { color: colors.title }]}>Your Notes</Text>
+          <Text style={[styles.notesTitle, { color: colors.title }]}>
+            Your Notes
+          </Text>
           <Text style={[styles.noteCount, { color: colors.secondaryText }]}>
-            {filteredNotes.length} {filteredNotes.length === 1 ? "note" : "notes"}
+            {filteredNotes.length}{" "}
+            {filteredNotes.length === 1 ? "note" : "notes"}
           </Text>
         </View>
         {filteredNotes.length > 0 ? (
@@ -403,9 +454,14 @@ export default function NotesScreen() {
                   },
                 ]}
               >
-                {note.type === "Images" && note.images && note.images.length > 0 ? (
+                {note.type === "Images" &&
+                note.images &&
+                note.images.length > 0 ? (
                   <View style={styles.imagePreview}>
-                    <Image source={{ uri: note.images[0] }} style={styles.noteImage} />
+                    <Image
+                      source={{ uri: note.images[0] }}
+                      style={styles.noteImage}
+                    />
                     {note.images.length > 1 && (
                       <View
                         style={[
@@ -415,7 +471,9 @@ export default function NotesScreen() {
                           },
                         ]}
                       >
-                        <Text style={styles.pageCountText}>+{note.images.length - 1}</Text>
+                        <Text style={styles.pageCountText}>
+                          +{note.images.length - 1}
+                        </Text>
                       </View>
                     )}
                   </View>
@@ -428,17 +486,34 @@ export default function NotesScreen() {
                       },
                     ]}
                   >
-                    <Ionicons name="document-text-outline" size={25} color={colors.icon} />
+                    <Ionicons
+                      name="document-text-outline"
+                      size={25}
+                      color={colors.icon}
+                    />
                   </View>
                 )}
                 <View style={styles.noteInfo}>
                   <View style={styles.noteTopRow}>
-                    <Text numberOfLines={1} style={[styles.noteTitle, { color: colors.text }]}>
+                    <Text
+                      numberOfLines={1}
+                      style={[styles.noteTitle, { color: colors.text }]}
+                    >
                       {note.title}
                     </Text>
-                    <Ionicons name="chevron-forward" size={18} color={colors.secondaryText} />
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      color={colors.secondaryText}
+                    />
                   </View>
-                  <Text numberOfLines={2} style={[styles.notePreview, { color: colors.secondaryText }]}>
+                  <Text
+                    numberOfLines={2}
+                    style={[
+                      styles.notePreview,
+                      { color: colors.secondaryText },
+                    ]}
+                  >
                     {note.preview}
                   </Text>
                   <View style={styles.noteBottomRow}>
@@ -450,9 +525,20 @@ export default function NotesScreen() {
                         },
                       ]}
                     >
-                      <Text style={[styles.typeText, { color: colors.secondaryText }]}>{note.type}</Text>
+                      <Text
+                        style={[
+                          styles.typeText,
+                          { color: colors.secondaryText },
+                        ]}
+                      >
+                        {note.type}
+                      </Text>
                     </View>
-                    <Text style={[styles.noteDate, { color: colors.secondaryText }]}>{note.date}</Text>
+                    <Text
+                      style={[styles.noteDate, { color: colors.secondaryText }]}
+                    >
+                      {note.date}
+                    </Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -478,13 +564,17 @@ export default function NotesScreen() {
             >
               <Ionicons name="document-outline" size={27} color={colors.icon} />
             </View>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>No notes found</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              No notes found
+            </Text>
             <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
               Create a text note or import your study pages.
             </Text>
           </View>
         )}
-        <View style={[styles.finalDivider, { backgroundColor: colors.divider }]} />
+        <View
+          style={[styles.finalDivider, { backgroundColor: colors.divider }]}
+        />
       </ScrollView>
 
       <Modal
@@ -493,7 +583,9 @@ export default function NotesScreen() {
         animationType="fade"
         onRequestClose={() => setShowCreateMenu(false)}
       >
-        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}
+        >
           <View
             style={[
               styles.importMenu,
@@ -505,8 +597,15 @@ export default function NotesScreen() {
           >
             <View style={styles.modalHeader}>
               <View>
-                <Text style={[styles.modalTitle, { color: colors.text }]}>Add Study Notes</Text>
-                <Text style={[styles.modalSubtitle, { color: colors.secondaryText }]}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
+                  Add Study Notes
+                </Text>
+                <Text
+                  style={[
+                    styles.modalSubtitle,
+                    { color: colors.secondaryText },
+                  ]}
+                >
                   Create one image note from one or more pages.
                 </Text>
               </View>
@@ -536,8 +635,14 @@ export default function NotesScreen() {
                 <Ionicons name="camera-outline" size={24} color={colors.icon} />
               </View>
               <View style={styles.menuText}>
-                <Text style={[styles.menuTitle, { color: colors.text }]}>Take Photo</Text>
-                <Text style={[styles.menuSubtitle, { color: colors.secondaryText }]}>Photograph your notes</Text>
+                <Text style={[styles.menuTitle, { color: colors.text }]}>
+                  Take Photo
+                </Text>
+                <Text
+                  style={[styles.menuSubtitle, { color: colors.secondaryText }]}
+                >
+                  Photograph your notes
+                </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
@@ -562,8 +667,14 @@ export default function NotesScreen() {
                 <Ionicons name="images-outline" size={24} color={colors.icon} />
               </View>
               <View style={styles.menuText}>
-                <Text style={[styles.menuTitle, { color: colors.text }]}>Choose from Gallery</Text>
-                <Text style={[styles.menuSubtitle, { color: colors.secondaryText }]}>Select multiple pages</Text>
+                <Text style={[styles.menuTitle, { color: colors.text }]}>
+                  Choose from Gallery
+                </Text>
+                <Text
+                  style={[styles.menuSubtitle, { color: colors.secondaryText }]}
+                >
+                  Select multiple pages
+                </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
@@ -585,11 +696,21 @@ export default function NotesScreen() {
                   },
                 ]}
               >
-                <Ionicons name="folder-open-outline" size={24} color={colors.icon} />
+                <Ionicons
+                  name="folder-open-outline"
+                  size={24}
+                  color={colors.icon}
+                />
               </View>
               <View style={styles.menuText}>
-                <Text style={[styles.menuTitle, { color: colors.text }]}>Choose Files</Text>
-                <Text style={[styles.menuSubtitle, { color: colors.secondaryText }]}>Import image files</Text>
+                <Text style={[styles.menuTitle, { color: colors.text }]}>
+                  Choose Files
+                </Text>
+                <Text
+                  style={[styles.menuSubtitle, { color: colors.secondaryText }]}
+                >
+                  Import image files
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -602,9 +723,17 @@ export default function NotesScreen() {
         onRequestClose={() => setShowCamera(false)}
       >
         <View style={styles.cameraContainer}>
-          <CameraView ref={(ref) => setCameraRef(ref)} style={styles.camera} facing="back" />
+          <CameraView
+            ref={(ref) => setCameraRef(ref)}
+            style={styles.camera}
+            facing="back"
+          />
           <View style={styles.cameraControls}>
-            <TouchableOpacity activeOpacity={0.8} onPress={() => setShowCamera(false)} style={styles.cameraCancel}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setShowCamera(false)}
+              style={styles.cameraCancel}
+            >
               <Ionicons name="close" size={26} color="#ffffff" />
             </TouchableOpacity>
             <TouchableOpacity

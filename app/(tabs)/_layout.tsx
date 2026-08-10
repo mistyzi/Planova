@@ -1,5 +1,6 @@
-import { Tabs } from 'expo-router';
-import { Ionicons, Entypo } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Entypo } from "@react-native-vector-icons/entypo";
 import { LinearGradient } from "expo-linear-gradient";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";

@@ -1,15 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, usePathname } from "expo-router";
 import { useTheme } from "@/context/themecontext";
 import {
-  ActiveFocusSession,
-  clearActiveFocusSession,
-  getActiveFocusSession,
-  pauseActiveFocusSession,
-  resumeActiveFocusSession,
+    ActiveFocusSession,
+    clearActiveFocusSession,
+    getActiveFocusSession,
+    pauseActiveFocusSession,
+    resumeActiveFocusSession,
 } from "@/storage/focusTimerStorage";
+import { Ionicons } from "@expo/vector-icons";
+import { router, usePathname } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function FocusTimerOverlay() {
   const { isDark } = useTheme();

@@ -1,6 +1,14 @@
-import React, { useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import {
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import PlanovaHeader from "../../components/header";
 import { useTheme } from "../../context/themecontext";
 
@@ -126,28 +134,53 @@ export default function TasksScreen() {
         >
           <View style={styles.calendarHeader}>
             <TouchableOpacity activeOpacity={0.8}>
-              <Ionicons name="chevron-back" size={22} color={isDark ? "#ffffff" : "#403465"} />
+              <Ionicons
+                name="chevron-back"
+                size={22}
+                color={isDark ? "#ffffff" : "#403465"}
+              />
             </TouchableOpacity>
-            <Text style={[styles.calendarTitle, { color: colors.calendarTitle }]}>July 2026</Text>
+            <Text
+              style={[styles.calendarTitle, { color: colors.calendarTitle }]}
+            >
+              July 2026
+            </Text>
             <TouchableOpacity activeOpacity={0.8}>
-              <Ionicons name="chevron-forward" size={22} color={isDark ? "#ffffff" : "#403465"} />
+              <Ionicons
+                name="chevron-forward"
+                size={22}
+                color={isDark ? "#ffffff" : "#403465"}
+              />
             </TouchableOpacity>
           </View>
           <View style={styles.calendarGrid}>
             {days.map((day) => (
-              <Text key={day} style={[styles.dayLabel, { color: colors.dayLabel }]}>
+              <Text
+                key={day}
+                style={[styles.dayLabel, { color: colors.dayLabel }]}
+              >
                 {day}
               </Text>
             ))}
             {dates.map((date) => (
               <View
                 key={date}
-                style={date === "24" ? [styles.activeDate, { backgroundColor: colors.activeDate }] : styles.dateCell}
+                style={
+                  date === "24"
+                    ? [
+                        styles.activeDate,
+                        { backgroundColor: colors.activeDate },
+                      ]
+                    : styles.dateCell
+                }
               >
                 <Text
                   style={
                     date === "24"
-                      ? [styles.activeDateText, { color: colors.activeDateText }]
+                      ? [
+                          styles.activeDateText,
+                          { color: colors.activeDateText },
+                        ]
                       : [styles.dateText, { color: colors.dateText }]
                   }
                 >
@@ -157,7 +190,12 @@ export default function TasksScreen() {
             ))}
           </View>
         </View>
-        <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
+        <View
+          style={[
+            styles.constellationLine,
+            { backgroundColor: colors.constellation },
+          ]}
+        />
         <TextInput
           value={search}
           onChangeText={setSearch}
@@ -184,8 +222,12 @@ export default function TasksScreen() {
             ]}
           >
             <View style={styles.taskHeader}>
-              <Text style={[styles.taskTitle, { color: colors.taskTitle }]}>{task.title}</Text>
-              <Text style={[styles.taskDue, { color: colors.taskRemaining }]}>{task.due}</Text>
+              <Text style={[styles.taskTitle, { color: colors.taskTitle }]}>
+                {task.title}
+              </Text>
+              <Text style={[styles.taskDue, { color: colors.taskRemaining }]}>
+                {task.due}
+              </Text>
             </View>
             <Text style={[styles.taskMeta, { color: colors.taskMeta }]}>
               Category: {task.category} • Priority: {task.priority}
@@ -201,7 +243,14 @@ export default function TasksScreen() {
                 ]}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.completeButtonText, { color: colors.completeButtonText }]}>Mark Complete</Text>
+                <Text
+                  style={[
+                    styles.completeButtonText,
+                    { color: colors.completeButtonText },
+                  ]}
+                >
+                  Mark Complete
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
@@ -213,7 +262,11 @@ export default function TasksScreen() {
                 ]}
                 activeOpacity={0.8}
               >
-                <Ionicons name="pencil" size={16} color={colors.editButtonIcon} />
+                <Ionicons
+                  name="pencil"
+                  size={16}
+                  color={colors.editButtonIcon}
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -228,9 +281,16 @@ export default function TasksScreen() {
           ]}
           activeOpacity={0.8}
         >
-          <Text style={[styles.addButtonText, { color: colors.addButtonText }]}>+ Add New Task</Text>
+          <Text style={[styles.addButtonText, { color: colors.addButtonText }]}>
+            + Add New Task
+          </Text>
         </TouchableOpacity>
-        <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
+        <View
+          style={[
+            styles.constellationLine,
+            { backgroundColor: colors.constellation },
+          ]}
+        />
       </ScrollView>
     </SafeAreaView>
   );

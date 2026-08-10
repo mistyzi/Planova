@@ -1,23 +1,23 @@
-import React, { useEffect, useRef, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+    Alert,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 const ACTIVE_FOCUS_SESSION_KEY = "@planova_active_focus_session";
 const CUSTOM_FOCUSES_KEY = "@planova_custom_focuses";
@@ -39,9 +39,14 @@ export type ActiveFocusSession = {
   isCompleted: boolean;
 };
 
-export async function saveActiveFocusSession(session: ActiveFocusSession): Promise<void> {
+export async function saveActiveFocusSession(
+  session: ActiveFocusSession,
+): Promise<void> {
   try {
-    await AsyncStorage.setItem(ACTIVE_FOCUS_SESSION_KEY, JSON.stringify(session));
+    await AsyncStorage.setItem(
+      ACTIVE_FOCUS_SESSION_KEY,
+      JSON.stringify(session),
+    );
   } catch (error) {
     console.log("Failed to save active focus session:", error);
   }
@@ -217,7 +222,11 @@ export default function FocusTimerScreen() {
       setHasActiveTimer(false);
       return;
     }
-    if (!session.isRunning && session.remainingSeconds > 0 && !session.isCompleted) {
+    if (
+      !session.isRunning &&
+      session.remainingSeconds > 0 &&
+      !session.isCompleted
+    ) {
       router.push("/focusSession");
       return;
     }
@@ -233,7 +242,11 @@ export default function FocusTimerScreen() {
     if (!selectedFocus) return;
     const existing = await getActiveFocusSession();
     if (existing) {
-      if (!existing.isRunning && existing.remainingSeconds > 0 && !existing.isCompleted) {
+      if (
+        !existing.isRunning &&
+        existing.remainingSeconds > 0 &&
+        !existing.isCompleted
+      ) {
         router.push("/focusSession");
         return;
       }
@@ -263,15 +276,24 @@ export default function FocusTimerScreen() {
     const trimmedName = customName.trim();
     const minutes = Number(customMinutes);
     if (!trimmedName) {
-      Alert.alert("Missing Focus Name", "Please give your cosmic focus a name.");
+      Alert.alert(
+        "Missing Focus Name",
+        "Please give your cosmic focus a name.",
+      );
       return;
     }
     if (!customMinutes.trim() || !Number.isFinite(minutes) || minutes <= 0) {
-      Alert.alert("Invalid Focus Time", "Please enter a number of minutes greater than 0.");
+      Alert.alert(
+        "Invalid Focus Time",
+        "Please enter a number of minutes greater than 0.",
+      );
       return;
     }
     if (minutes > 1440) {
-      Alert.alert("Focus Time Too Long", "Please choose a focus time of 24 hours or less.");
+      Alert.alert(
+        "Focus Time Too Long",
+        "Please choose a focus time of 24 hours or less.",
+      );
       return;
     }
     const customFocus: FocusOption = {
@@ -288,29 +310,36 @@ export default function FocusTimerScreen() {
   };
 
   const deleteCustomFocus = async (focusId: string) => {
-    Alert.alert("Delete Cosmic Focus", "Do you want to remove this saved focus?", [
-      {
-        text: "Keep",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const existing = await getCustomFocuses();
-            const updated = existing.filter((focus) => focus.id !== focusId);
-            await AsyncStorage.setItem(CUSTOM_FOCUSES_KEY, JSON.stringify(updated));
-            setCustomFocuses(updated);
-            if (selectedFocus?.id === focusId) {
-              setSelectedFocus(null);
-            }
-          } catch (error) {
-            console.log("Failed to delete custom focus:", error);
-          }
+    Alert.alert(
+      "Delete Cosmic Focus",
+      "Do you want to remove this saved focus?",
+      [
+        {
+          text: "Keep",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const existing = await getCustomFocuses();
+              const updated = existing.filter((focus) => focus.id !== focusId);
+              await AsyncStorage.setItem(
+                CUSTOM_FOCUSES_KEY,
+                JSON.stringify(updated),
+              );
+              setCustomFocuses(updated);
+              if (selectedFocus?.id === focusId) {
+                setSelectedFocus(null);
+              }
+            } catch (error) {
+              console.log("Failed to delete custom focus:", error);
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -324,7 +353,11 @@ export default function FocusTimerScreen() {
       <View pointerEvents="none" style={styles.stars}>
         <StarryBackground />
       </View>
-      <TouchableOpacity activeOpacity={0.7} onPress={() => router.replace("/(tabs)/study")} style={styles.backButton}>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => router.replace("/(tabs)/study")}
+        style={styles.backButton}
+      >
         <Ionicons name="arrow-back" size={25} color={colors.title} />
       </TouchableOpacity>
       {hasActiveTimer && (
@@ -340,7 +373,9 @@ export default function FocusTimerScreen() {
           ]}
         >
           <Ionicons name="timer-outline" size={18} color={colors.icon} />
-          <Text style={[styles.activeTimerText, { color: colors.title }]}>Ongoing Focus</Text>
+          <Text style={[styles.activeTimerText, { color: colors.title }]}>
+            Ongoing Focus
+          </Text>
         </TouchableOpacity>
       )}
       <ScrollView
@@ -350,15 +385,21 @@ export default function FocusTimerScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.title }]}>Cosmic Focus</Text>
+          <Text style={[styles.title, { color: colors.title }]}>
+            Cosmic Focus
+          </Text>
           <View style={[styles.divider, { backgroundColor: colors.divider }]} />
           <Text style={[styles.subtitle, { color: colors.secondaryText }]}>
             Choose your orbit and focus on the task ahead.
           </Text>
         </View>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>Choose Cosmic Focus</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.secondaryText }]}>
+          <Text style={[styles.sectionTitle, { color: colors.title }]}>
+            Choose Cosmic Focus
+          </Text>
+          <Text
+            style={[styles.sectionSubtitle, { color: colors.secondaryText }]}
+          >
             Select a planet to begin your focus session.
           </Text>
           <View style={styles.grid}>
@@ -372,8 +413,12 @@ export default function FocusTimerScreen() {
                   style={[
                     styles.planetCard,
                     {
-                      backgroundColor: selected ? colors.selectedCard : colors.card,
-                      borderColor: selected ? colors.selectedBorder : colors.cardBorder,
+                      backgroundColor: selected
+                        ? colors.selectedCard
+                        : colors.card,
+                      borderColor: selected
+                        ? colors.selectedBorder
+                        : colors.cardBorder,
                     },
                   ]}
                 >
@@ -385,10 +430,18 @@ export default function FocusTimerScreen() {
                       },
                     ]}
                   >
-                    <Ionicons name="planet-outline" size={24} color={colors.icon} />
+                    <Ionicons
+                      name="planet-outline"
+                      size={24}
+                      color={colors.icon}
+                    />
                   </View>
-                  <Text style={[styles.planetName, { color: colors.text }]}>{planet.name}</Text>
-                  <Text style={[styles.planetTime, { color: colors.secondaryText }]}>
+                  <Text style={[styles.planetName, { color: colors.text }]}>
+                    {planet.name}
+                  </Text>
+                  <Text
+                    style={[styles.planetTime, { color: colors.secondaryText }]}
+                  >
                     {formatDuration(planet.durationSeconds)}
                   </Text>
                 </TouchableOpacity>
@@ -397,8 +450,12 @@ export default function FocusTimerScreen() {
           </View>
         </View>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>My Cosmic Focuses</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.secondaryText }]}>
+          <Text style={[styles.sectionTitle, { color: colors.title }]}>
+            My Cosmic Focuses
+          </Text>
+          <Text
+            style={[styles.sectionSubtitle, { color: colors.secondaryText }]}
+          >
             Your saved custom focus sessions.
           </Text>
           <View style={styles.customList}>
@@ -410,12 +467,20 @@ export default function FocusTimerScreen() {
                   style={[
                     styles.customCard,
                     {
-                      backgroundColor: selected ? colors.selectedCard : colors.card,
-                      borderColor: selected ? colors.selectedBorder : colors.cardBorder,
+                      backgroundColor: selected
+                        ? colors.selectedCard
+                        : colors.card,
+                      borderColor: selected
+                        ? colors.selectedBorder
+                        : colors.cardBorder,
                     },
                   ]}
                 >
-                  <TouchableOpacity activeOpacity={0.8} onPress={() => selectFocus(focus)} style={styles.customMain}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => selectFocus(focus)}
+                    style={styles.customMain}
+                  >
                     <View
                       style={[
                         styles.customIcon,
@@ -424,17 +489,36 @@ export default function FocusTimerScreen() {
                         },
                       ]}
                     >
-                      <Ionicons name="planet-outline" size={22} color={colors.icon} />
+                      <Ionicons
+                        name="planet-outline"
+                        size={22}
+                        color={colors.icon}
+                      />
                     </View>
                     <View style={styles.customText}>
-                      <Text style={[styles.customName, { color: colors.text }]}>{focus.name}</Text>
-                      <Text style={[styles.customTime, { color: colors.secondaryText }]}>
+                      <Text style={[styles.customName, { color: colors.text }]}>
+                        {focus.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.customTime,
+                          { color: colors.secondaryText },
+                        ]}
+                      >
                         {formatDuration(focus.durationSeconds)}
                       </Text>
                     </View>
                   </TouchableOpacity>
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => deleteCustomFocus(focus.id)} style={styles.deleteButton}>
-                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => deleteCustomFocus(focus.id)}
+                    style={styles.deleteButton}
+                  >
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={colors.danger}
+                    />
                   </TouchableOpacity>
                 </View>
               );
@@ -461,12 +545,20 @@ export default function FocusTimerScreen() {
                 <Ionicons name="add-outline" size={25} color={colors.icon} />
               </View>
               <View style={styles.customText}>
-                <Text style={[styles.customName, { color: colors.text }]}>Create Custom Focus</Text>
-                <Text style={[styles.customTime, { color: colors.secondaryText }]}>
+                <Text style={[styles.customName, { color: colors.text }]}>
+                  Create Custom Focus
+                </Text>
+                <Text
+                  style={[styles.customTime, { color: colors.secondaryText }]}
+                >
                   Choose your own name and focus time
                 </Text>
               </View>
-              <Ionicons name="chevron-forward-outline" size={22} color={colors.secondaryText} />
+              <Ionicons
+                name="chevron-forward-outline"
+                size={22}
+                color={colors.secondaryText}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -477,8 +569,14 @@ export default function FocusTimerScreen() {
             }}
             style={styles.expedition}
           >
-            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-            <Text style={[styles.sessionLabel, { color: colors.secondaryText }]}>CURRENT EXPEDITION</Text>
+            <View
+              style={[styles.divider, { backgroundColor: colors.divider }]}
+            />
+            <Text
+              style={[styles.sessionLabel, { color: colors.secondaryText }]}
+            >
+              CURRENT EXPEDITION
+            </Text>
             <View
               style={[
                 styles.selectedCard,
@@ -498,8 +596,15 @@ export default function FocusTimerScreen() {
               >
                 <Ionicons name="planet-outline" size={29} color={colors.icon} />
               </View>
-              <Text style={[styles.selectedName, { color: colors.title }]}>{selectedFocus.name}</Text>
-              <Text style={[styles.selectedDuration, { color: colors.secondaryText }]}>
+              <Text style={[styles.selectedName, { color: colors.title }]}>
+                {selectedFocus.name}
+              </Text>
+              <Text
+                style={[
+                  styles.selectedDuration,
+                  { color: colors.secondaryText },
+                ]}
+              >
                 {formatDuration(selectedFocus.durationSeconds)}
               </Text>
               <TouchableOpacity
@@ -512,13 +617,21 @@ export default function FocusTimerScreen() {
                   },
                 ]}
               >
-                <Ionicons name="rocket-outline" size={19} color={colors.buttonText} />
-                <Text style={[styles.startText, { color: colors.buttonText }]}>Start Expedition</Text>
+                <Ionicons
+                  name="rocket-outline"
+                  size={19}
+                  color={colors.buttonText}
+                />
+                <Text style={[styles.startText, { color: colors.buttonText }]}>
+                  Start Expedition
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
-        <View style={[styles.finalDivider, { backgroundColor: colors.divider }]} />
+        <View
+          style={[styles.finalDivider, { backgroundColor: colors.divider }]}
+        />
       </ScrollView>
       <Modal
         visible={customModalVisible}
@@ -549,8 +662,12 @@ export default function FocusTimerScreen() {
             >
               <Ionicons name="timer-outline" size={27} color={colors.icon} />
             </View>
-            <Text style={[styles.modalTitle, { color: colors.title }]}>Custom Cosmic Focus</Text>
-            <Text style={[styles.modalDescription, { color: colors.secondaryText }]}>
+            <Text style={[styles.modalTitle, { color: colors.title }]}>
+              Custom Cosmic Focus
+            </Text>
+            <Text
+              style={[styles.modalDescription, { color: colors.secondaryText }]}
+            >
               Give your focus a name and choose how long you want to focus.
             </Text>
             <TextInput
@@ -597,7 +714,11 @@ export default function FocusTimerScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.cancelText, { color: colors.secondaryText }]}>Cancel</Text>
+                <Text
+                  style={[styles.cancelText, { color: colors.secondaryText }]}
+                >
+                  Cancel
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.8}

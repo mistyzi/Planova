@@ -1,7 +1,14 @@
-import React from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import PlanovaHeader from "@/components/header";
 import { useTheme } from "@/context/themecontext";
+import React from "react";
+import {
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 const tasks = [
   {
@@ -105,8 +112,12 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.welcomeSection}>
-          <Text style={[styles.welcomeTitle, { color: colors.welcomeTitle }]}>Welcome Back, Celestia!</Text>
-          <Text style={[styles.welcomeSubtitle, { color: colors.welcomeSubtitle }]}>
+          <Text style={[styles.welcomeTitle, { color: colors.welcomeTitle }]}>
+            Welcome Back, Celestia!
+          </Text>
+          <Text
+            style={[styles.welcomeSubtitle, { color: colors.welcomeSubtitle }]}
+          >
             Your Starpath awaits, let's make today luminous.
           </Text>
         </View>
@@ -119,12 +130,20 @@ export default function HomeScreen() {
             },
           ]}
         >
-          <Text style={[styles.cardTitle, { color: colors.cardTitle }]}>Schedule Overview</Text>
+          <Text style={[styles.cardTitle, { color: colors.cardTitle }]}>
+            Schedule Overview
+          </Text>
           <Text style={[styles.cardText, { color: colors.cardText }]}>
             Your productivity trends indicate a high focus window today from
-            <Text style={[styles.bold, { color: colors.bold }]}> 07:30–08:00 AM</Text>.
+            <Text style={[styles.bold, { color: colors.bold }]}>
+              {" "}
+              07:30–08:00 AM
+            </Text>
+            .
           </Text>
-          <Text style={[styles.cardText, { color: colors.cardText, marginTop: 10 }]}>
+          <Text
+            style={[styles.cardText, { color: colors.cardText, marginTop: 10 }]}
+          >
             This is the ideal time for deep work and analytical tasks.
           </Text>
           <TouchableOpacity
@@ -137,7 +156,11 @@ export default function HomeScreen() {
             ]}
             activeOpacity={0.8}
           >
-            <Text style={[styles.primaryButtonText, { color: colors.buttonText }]}>✦ Start Working</Text>
+            <Text
+              style={[styles.primaryButtonText, { color: colors.buttonText }]}
+            >
+              ✦ Start Working
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -149,18 +172,31 @@ export default function HomeScreen() {
             ]}
             activeOpacity={0.8}
           >
-            <Text style={[styles.primaryButtonText, { color: colors.buttonText }]}>✦ View Schedule</Text>
+            <Text
+              style={[styles.primaryButtonText, { color: colors.buttonText }]}
+            >
+              ✦ View Schedule
+            </Text>
           </TouchableOpacity>
         </View>
         <View style={styles.alignmentSection}>
-          <Text style={[styles.alignmentTitle, { color: colors.alignmentTitle }]}>.⋆˚✦. DAILY ALIGNMENT .✦˚⋆.</Text>
+          <Text
+            style={[styles.alignmentTitle, { color: colors.alignmentTitle }]}
+          >
+            .⋆˚✦. DAILY ALIGNMENT .✦˚⋆.
+          </Text>
           <Text style={[styles.alignmentText, { color: colors.alignmentText }]}>
             The universe conspires for your focus today.
             {"\n"}
             Your academic journey is written in the stars.
           </Text>
         </View>
-        <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
+        <View
+          style={[
+            styles.constellationLine,
+            { backgroundColor: colors.constellation },
+          ]}
+        />
         <View
           style={[
             styles.card,
@@ -170,7 +206,9 @@ export default function HomeScreen() {
             },
           ]}
         >
-          <Text style={[styles.cardTitle, { color: colors.cardTitle }]}>Weekly Starpath Progress</Text>
+          <Text style={[styles.cardTitle, { color: colors.cardTitle }]}>
+            Weekly Starpath Progress
+          </Text>
           <View
             style={[
               styles.streakBox,
@@ -180,8 +218,12 @@ export default function HomeScreen() {
               },
             ]}
           >
-            <Text style={[styles.streakLabel, { color: colors.streakLabel }]}>✦ Current Streak ✦</Text>
-            <Text style={[styles.streakValue, { color: colors.streakValue }]}>4 Days</Text>
+            <Text style={[styles.streakLabel, { color: colors.streakLabel }]}>
+              ✦ Current Streak ✦
+            </Text>
+            <Text style={[styles.streakValue, { color: colors.streakValue }]}>
+              4 Days
+            </Text>
             <Text style={[styles.streakHint, { color: colors.streakHint }]}>
               Keep shining — consistency builds galaxies.
             </Text>
@@ -195,17 +237,25 @@ export default function HomeScreen() {
               },
             ]}
           >
-            <View style={[styles.progressFill, { backgroundColor: colors.progressFill }]} />
+            <View
+              style={[
+                styles.progressFill,
+                { backgroundColor: colors.progressFill },
+              ]}
+            />
           </View>
           <View style={styles.statsRow}>
             <Text style={[styles.statText, { color: colors.statText }]}>
-              Completed: <Text style={[styles.bold, { color: colors.bold }]}>6</Text>
+              Completed:{" "}
+              <Text style={[styles.bold, { color: colors.bold }]}>6</Text>
             </Text>
             <Text style={[styles.statText, { color: colors.statText }]}>
-              Remaining: <Text style={[styles.bold, { color: colors.bold }]}>3</Text>
+              Remaining:{" "}
+              <Text style={[styles.bold, { color: colors.bold }]}>3</Text>
             </Text>
             <Text style={[styles.statText, { color: colors.statText }]}>
-              Goal: <Text style={[styles.bold, { color: colors.bold }]}>10</Text>
+              Goal:{" "}
+              <Text style={[styles.bold, { color: colors.bold }]}>10</Text>
             </Text>
           </View>
         </View>
@@ -218,7 +268,9 @@ export default function HomeScreen() {
             },
           ]}
         >
-          <Text style={[styles.cardTitle, { color: colors.cardTitle }]}>Weekly Galaxy Goals</Text>
+          <Text style={[styles.cardTitle, { color: colors.cardTitle }]}>
+            Weekly Galaxy Goals
+          </Text>
           <View style={styles.chipRow}>
             <View
               style={[
@@ -229,7 +281,9 @@ export default function HomeScreen() {
                 },
               ]}
             >
-              <Text style={[styles.chipText, { color: colors.chipText }]}>✦ 1 Due Today</Text>
+              <Text style={[styles.chipText, { color: colors.chipText }]}>
+                ✦ 1 Due Today
+              </Text>
             </View>
             <View
               style={[
@@ -240,7 +294,9 @@ export default function HomeScreen() {
                 },
               ]}
             >
-              <Text style={[styles.chipText, { color: colors.chipText }]}>✦ 0 Overdue</Text>
+              <Text style={[styles.chipText, { color: colors.chipText }]}>
+                ✦ 0 Overdue
+              </Text>
             </View>
             <View
               style={[
@@ -251,7 +307,9 @@ export default function HomeScreen() {
                 },
               ]}
             >
-              <Text style={[styles.chipText, { color: colors.chipText }]}>✦ 4 Upcoming</Text>
+              <Text style={[styles.chipText, { color: colors.chipText }]}>
+                ✦ 4 Upcoming
+              </Text>
             </View>
           </View>
           {tasks.map((task, index) => (
@@ -265,8 +323,14 @@ export default function HomeScreen() {
                 },
               ]}
             >
-              <Text style={[styles.taskTitle, { color: colors.taskTitle }]}>{task.title}</Text>
-              <Text style={[styles.taskRemaining, { color: colors.taskRemaining }]}>{task.remaining}</Text>
+              <Text style={[styles.taskTitle, { color: colors.taskTitle }]}>
+                {task.title}
+              </Text>
+              <Text
+                style={[styles.taskRemaining, { color: colors.taskRemaining }]}
+              >
+                {task.remaining}
+              </Text>
             </View>
           ))}
           <View style={styles.seeMoreRow}>
@@ -280,11 +344,18 @@ export default function HomeScreen() {
               ]}
               activeOpacity={0.8}
             >
-              <Text style={[styles.seeMoreText, { color: colors.seeMoreText }]}>See More →</Text>
+              <Text style={[styles.seeMoreText, { color: colors.seeMoreText }]}>
+                See More →
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
-        <View style={[styles.constellationLine, { backgroundColor: colors.constellation }]} />
+        <View
+          style={[
+            styles.constellationLine,
+            { backgroundColor: colors.constellation },
+          ]}
+        />
       </ScrollView>
     </SafeAreaView>
   );

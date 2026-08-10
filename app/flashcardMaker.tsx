@@ -1,17 +1,29 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  addFlashcardDeck,
-  createFlashcardId,
-  Flashcard,
-  FlashcardDeck,
-  getFlashcardDeckById,
-  updateFlashcardDeck,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    addFlashcardDeck,
+    createFlashcardId,
+    Flashcard,
+    FlashcardDeck,
+    getFlashcardDeckById,
+    updateFlashcardDeck,
 } from "../storage/flashcardStorage";
 
 type CardDraft = {
@@ -81,12 +93,16 @@ export default function FlashcardMakerScreen() {
     try {
       const storedDeck = await getFlashcardDeckById(deckId);
       if (!storedDeck) {
-        Alert.alert("Deck not found", "This flashcard deck could not be found.", [
-          {
-            text: "OK",
-            onPress: () => router.back(),
-          },
-        ]);
+        Alert.alert(
+          "Deck not found",
+          "This flashcard deck could not be found.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ],
+        );
         return;
       }
       setTitle(storedDeck.title);
@@ -104,7 +120,7 @@ export default function FlashcardMakerScreen() {
                 question: "",
                 answer: "",
               },
-            ]
+            ],
       );
     } catch (error) {
       console.log("Failed to load deck:", error);
@@ -117,11 +133,15 @@ export default function FlashcardMakerScreen() {
     loadDeck();
   }, [loadDeck]);
 
-  const updateCard = (cardId: string, field: "question" | "answer", value: string) => {
+  const updateCard = (
+    cardId: string,
+    field: "question" | "answer",
+    value: string,
+  ) => {
     setCards((currentCards) =>
       currentCards.map((card) =>
-        card.id === cardId ? { ...card, [field]: value } : card
-      )
+        card.id === cardId ? { ...card, [field]: value } : card,
+      ),
     );
   };
 
@@ -138,7 +158,10 @@ export default function FlashcardMakerScreen() {
 
   const removeCard = (cardId: string) => {
     if (cards.length === 1) {
-      Alert.alert("Keep at least one card", "A deck needs at least one flashcard.");
+      Alert.alert(
+        "Keep at least one card",
+        "A deck needs at least one flashcard.",
+      );
       return;
     }
     Alert.alert("Remove Card", "Are you sure you want to remove this card?", [
@@ -150,7 +173,9 @@ export default function FlashcardMakerScreen() {
         text: "Remove",
         style: "destructive",
         onPress: () => {
-          setCards((currentCards) => currentCards.filter((card) => card.id !== cardId));
+          setCards((currentCards) =>
+            currentCards.filter((card) => card.id !== cardId),
+          );
         },
       },
     ]);
@@ -161,9 +186,14 @@ export default function FlashcardMakerScreen() {
       Alert.alert("Add a title", "Please give your flashcard deck a title.");
       return;
     }
-    const invalidCard = cards.find((card) => !card.question.trim() || !card.answer.trim());
+    const invalidCard = cards.find(
+      (card) => !card.question.trim() || !card.answer.trim(),
+    );
     if (invalidCard) {
-      Alert.alert("Incomplete Card", "Please fill in both the question and answer for every card.");
+      Alert.alert(
+        "Incomplete Card",
+        "Please fill in both the question and answer for every card.",
+      );
       return;
     }
     setIsSaving(true);
@@ -251,7 +281,11 @@ export default function FlashcardMakerScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.topBar}>
-          <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={25} color={colors.title} />
           </TouchableOpacity>
           <Text style={[styles.topTitle, { color: colors.title }]}>
@@ -286,13 +320,22 @@ export default function FlashcardMakerScreen() {
                 <Ionicons name="albums-outline" size={21} color={colors.icon} />
               </View>
               <View style={styles.sectionHeaderText}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Deck Information</Text>
-                <Text style={[styles.sectionSubtitle, { color: colors.secondaryText }]}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Deck Information
+                </Text>
+                <Text
+                  style={[
+                    styles.sectionSubtitle,
+                    { color: colors.secondaryText },
+                  ]}
+                >
                   Give your study deck a name.
                 </Text>
               </View>
             </View>
-            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Title</Text>
+            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>
+              Title
+            </Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -307,7 +350,9 @@ export default function FlashcardMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Description</Text>
+            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>
+              Description
+            </Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
@@ -326,8 +371,12 @@ export default function FlashcardMakerScreen() {
           </View>
           <View style={styles.cardsHeader}>
             <View>
-              <Text style={[styles.cardsTitle, { color: colors.title }]}>Flashcards</Text>
-              <Text style={[styles.cardsSubtitle, { color: colors.secondaryText }]}>
+              <Text style={[styles.cardsTitle, { color: colors.title }]}>
+                Flashcards
+              </Text>
+              <Text
+                style={[styles.cardsSubtitle, { color: colors.secondaryText }]}
+              >
                 {cards.length} {cards.length === 1 ? "card" : "cards"}
               </Text>
             </View>
@@ -343,7 +392,9 @@ export default function FlashcardMakerScreen() {
               ]}
             >
               <Ionicons name="add" size={18} color={colors.icon} />
-              <Text style={[styles.addCardText, { color: colors.icon }]}>Add Card</Text>
+              <Text style={[styles.addCardText, { color: colors.icon }]}>
+                Add Card
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.cardList}>
@@ -360,18 +411,36 @@ export default function FlashcardMakerScreen() {
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.cardNumber}>
-                    <Text style={[styles.cardNumberText, { color: colors.secondaryText }]}>
+                    <Text
+                      style={[
+                        styles.cardNumberText,
+                        { color: colors.secondaryText },
+                      ]}
+                    >
                       CARD {index + 1}
                     </Text>
                   </View>
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => removeCard(card.id)}>
-                    <Ionicons name="trash-outline" size={19} color={colors.secondaryText} />
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => removeCard(card.id)}
+                  >
+                    <Ionicons
+                      name="trash-outline"
+                      size={19}
+                      color={colors.secondaryText}
+                    />
                   </TouchableOpacity>
                 </View>
-                <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Question</Text>
+                <Text
+                  style={[styles.inputLabel, { color: colors.secondaryText }]}
+                >
+                  Question
+                </Text>
                 <TextInput
                   value={card.question}
-                  onChangeText={(value) => updateCard(card.id, "question", value)}
+                  onChangeText={(value) =>
+                    updateCard(card.id, "question", value)
+                  }
                   placeholder="Enter the question..."
                   placeholderTextColor={colors.secondaryText}
                   multiline
@@ -385,7 +454,11 @@ export default function FlashcardMakerScreen() {
                     },
                   ]}
                 />
-                <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Answer</Text>
+                <Text
+                  style={[styles.inputLabel, { color: colors.secondaryText }]}
+                >
+                  Answer
+                </Text>
                 <TextInput
                   value={card.answer}
                   onChangeText={(value) => updateCard(card.id, "answer", value)}
@@ -418,7 +491,11 @@ export default function FlashcardMakerScreen() {
           >
             <Ionicons name="checkmark" size={21} color="#ffffff" />
             <Text style={styles.saveButtonText}>
-              {isSaving ? "Saving..." : isEditing ? "Save Changes" : "Save Flashcard Deck"}
+              {isSaving
+                ? "Saving..."
+                : isEditing
+                  ? "Save Changes"
+                  : "Save Flashcard Deck"}
             </Text>
           </TouchableOpacity>
           <View

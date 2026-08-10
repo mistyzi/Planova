@@ -1,11 +1,24 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import StarryBackground from "@/components/starrybackground";
+import { useTheme } from "@/context/themecontext";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
-import StarryBackground from "@/components/starrybackground";
-import { useTheme } from "@/context/themecontext";
-import { deleteFlashcardDeck, FlashcardDeck, getFlashcardDecks } from "../storage/flashcardStorage";
+import React, { useCallback, useMemo, useState } from "react";
+import {
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    deleteFlashcardDeck,
+    FlashcardDeck,
+    getFlashcardDecks,
+} from "../storage/flashcardStorage";
 
 export default function FlashcardsScreen() {
   const { isDark } = useTheme();
@@ -66,14 +79,16 @@ export default function FlashcardsScreen() {
   useFocusEffect(
     useCallback(() => {
       loadDecks();
-    }, [loadDecks])
+    }, [loadDecks]),
   );
 
   const filteredDecks = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return decks;
     return decks.filter(
-      (deck) => deck.title.toLowerCase().includes(query) || deck.description.toLowerCase().includes(query)
+      (deck) =>
+        deck.title.toLowerCase().includes(query) ||
+        deck.description.toLowerCase().includes(query),
     );
   }, [decks, search]);
 
@@ -87,20 +102,24 @@ export default function FlashcardsScreen() {
   };
 
   const confirmDelete = (deck: FlashcardDeck) => {
-    Alert.alert("Delete Deck", `Are you sure you want to delete "${deck.title}"?`, [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await deleteFlashcardDeck(deck.id);
-          await loadDecks();
+    Alert.alert(
+      "Delete Deck",
+      `Are you sure you want to delete "${deck.title}"?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteFlashcardDeck(deck.id);
+            await loadDecks();
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -114,7 +133,11 @@ export default function FlashcardsScreen() {
       <View pointerEvents="none" style={styles.stars}>
         <StarryBackground />
       </View>
-      <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.backButton}>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => router.back()}
+        style={styles.backButton}
+      >
         <Ionicons name="arrow-back" size={25} color={colors.title} />
       </TouchableOpacity>
       <ScrollView
@@ -123,7 +146,9 @@ export default function FlashcardsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.title }]}>Flashcards</Text>
+          <Text style={[styles.title, { color: colors.title }]}>
+            Flashcards
+          </Text>
           <View style={[styles.divider, { backgroundColor: colors.divider }]} />
           <Text style={[styles.subtitle, { color: colors.secondaryText }]}>
             Create and organize your study decks.
@@ -138,7 +163,11 @@ export default function FlashcardsScreen() {
             },
           ]}
         >
-          <Ionicons name="search-outline" size={21} color={colors.secondaryText} />
+          <Ionicons
+            name="search-outline"
+            size={21}
+            color={colors.secondaryText}
+          />
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -153,7 +182,11 @@ export default function FlashcardsScreen() {
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch("")}>
-              <Ionicons name="close-circle" size={19} color={colors.secondaryText} />
+              <Ionicons
+                name="close-circle"
+                size={19}
+                color={colors.secondaryText}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -171,9 +204,12 @@ export default function FlashcardsScreen() {
           <Text style={styles.createButtonText}>Create Flashcard Deck</Text>
         </TouchableOpacity>
         <View style={styles.deckHeader}>
-          <Text style={[styles.deckHeaderTitle, { color: colors.title }]}>Your Decks</Text>
+          <Text style={[styles.deckHeaderTitle, { color: colors.title }]}>
+            Your Decks
+          </Text>
           <Text style={[styles.deckCount, { color: colors.secondaryText }]}>
-            {filteredDecks.length} {filteredDecks.length === 1 ? "deck" : "decks"}
+            {filteredDecks.length}{" "}
+            {filteredDecks.length === 1 ? "deck" : "decks"}
           </Text>
         </View>
         {filteredDecks.length > 0 ? (
@@ -206,17 +242,34 @@ export default function FlashcardsScreen() {
                     },
                   ]}
                 >
-                  <Ionicons name="albums-outline" size={26} color={colors.icon} />
+                  <Ionicons
+                    name="albums-outline"
+                    size={26}
+                    color={colors.icon}
+                  />
                 </View>
                 <View style={styles.deckInfo}>
                   <View style={styles.deckTopRow}>
-                    <Text numberOfLines={1} style={[styles.deckTitle, { color: colors.text }]}>
+                    <Text
+                      numberOfLines={1}
+                      style={[styles.deckTitle, { color: colors.text }]}
+                    >
                       {deck.title}
                     </Text>
-                    <Ionicons name="chevron-forward" size={18} color={colors.secondaryText} />
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      color={colors.secondaryText}
+                    />
                   </View>
                   {!!deck.description && (
-                    <Text numberOfLines={2} style={[styles.deckDescription, { color: colors.secondaryText }]}>
+                    <Text
+                      numberOfLines={2}
+                      style={[
+                        styles.deckDescription,
+                        { color: colors.secondaryText },
+                      ]}
+                    >
                       {deck.description}
                     </Text>
                   )}
@@ -229,16 +282,38 @@ export default function FlashcardsScreen() {
                         },
                       ]}
                     >
-                      <Ionicons name="layers-outline" size={12} color={colors.icon} />
-                      <Text style={[styles.cardBadgeText, { color: colors.secondaryText }]}>
-                        {deck.cards.length} {deck.cards.length === 1 ? "card" : "cards"}
+                      <Ionicons
+                        name="layers-outline"
+                        size={12}
+                        color={colors.icon}
+                      />
+                      <Text
+                        style={[
+                          styles.cardBadgeText,
+                          { color: colors.secondaryText },
+                        ]}
+                      >
+                        {deck.cards.length}{" "}
+                        {deck.cards.length === 1 ? "card" : "cards"}
                       </Text>
                     </View>
-                    <Text style={[styles.deckDate, { color: colors.secondaryText }]}>{deck.date}</Text>
+                    <Text
+                      style={[styles.deckDate, { color: colors.secondaryText }]}
+                    >
+                      {deck.date}
+                    </Text>
                   </View>
                 </View>
-                <TouchableOpacity activeOpacity={0.7} onPress={() => confirmDelete(deck)} style={styles.deleteButton}>
-                  <Ionicons name="trash-outline" size={18} color={colors.secondaryText} />
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => confirmDelete(deck)}
+                  style={styles.deleteButton}
+                >
+                  <Ionicons
+                    name="trash-outline"
+                    size={18}
+                    color={colors.secondaryText}
+                  />
                 </TouchableOpacity>
               </TouchableOpacity>
             ))}
@@ -263,7 +338,9 @@ export default function FlashcardsScreen() {
             >
               <Ionicons name="albums-outline" size={28} color={colors.icon} />
             </View>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>No flashcard decks</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              No flashcard decks
+            </Text>
             <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
               Create your first deck to start studying.
             </Text>
@@ -281,7 +358,9 @@ export default function FlashcardsScreen() {
             </TouchableOpacity>
           </View>
         )}
-        <View style={[styles.finalDivider, { backgroundColor: colors.divider }]} />
+        <View
+          style={[styles.finalDivider, { backgroundColor: colors.divider }]}
+        />
       </ScrollView>
     </SafeAreaView>
   );

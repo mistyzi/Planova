@@ -1,11 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import StarryBackground from "@/components/starrybackground";
+import { useTheme } from "@/context/themecontext";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Speech from "expo-speech";
-import StarryBackground from "@/components/starrybackground";
-import { useTheme } from "@/context/themecontext";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { addNote, getNoteById, StoredNote, updateNote } from "../storage/noteStorage";
 
 export default function NoteScreen() {
@@ -137,9 +148,13 @@ export default function NoteScreen() {
   };
 
   const readAloud = async () => {
-    const speechText = note?.type === "Images" ? (note.extractedText ?? "") : text;
+    const speechText =
+      note?.type === "Images" ? (note.extractedText ?? "") : text;
     if (!speechText.trim()) {
-      Alert.alert("Nothing to read", "There isn't any text available to read aloud yet.");
+      Alert.alert(
+        "Nothing to read",
+        "There isn't any text available to read aloud yet.",
+      );
       return;
     }
     if (isSpeaking) {
@@ -160,7 +175,10 @@ export default function NoteScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <StarryBackground />
         <View style={styles.loading}>
           <ActivityIndicator size="large" color={colors.icon} />
@@ -183,10 +201,17 @@ export default function NoteScreen() {
         <StarryBackground />
       </View>
       <View style={styles.topBar}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-        <Text numberOfLines={1} style={[styles.topTitle, { color: colors.title }]}>
+        <Text
+          numberOfLines={1}
+          style={[styles.topTitle, { color: colors.title }]}
+        >
           {isCreating ? "New Note" : note?.title}
         </Text>
         <View style={styles.headerSpacer} />
@@ -227,7 +252,8 @@ export default function NoteScreen() {
                   },
                 ]}
               >
-                {note.images?.length ?? 0} {note.images?.length === 1 ? "page" : "pages"}
+                {note.images?.length ?? 0}{" "}
+                {note.images?.length === 1 ? "page" : "pages"}
               </Text>
             </View>
             <View style={styles.imagePages}>
@@ -254,7 +280,11 @@ export default function NoteScreen() {
                       Page {index + 1}
                     </Text>
                   </View>
-                  <Image source={{ uri: image }} style={styles.fullNoteImage} resizeMode="contain" />
+                  <Image
+                    source={{ uri: image }}
+                    style={styles.fullNoteImage}
+                    resizeMode="contain"
+                  />
                 </View>
               ))}
             </View>
@@ -268,8 +298,16 @@ export default function NoteScreen() {
                 },
               ]}
             >
-              <Ionicons name={isSpeaking ? "stop-circle-outline" : "volume-high-outline"} size={22} color="#ffffff" />
-              <Text style={styles.readButtonText}>{isSpeaking ? "Stop Reading" : "Read Aloud"}</Text>
+              <Ionicons
+                name={
+                  isSpeaking ? "stop-circle-outline" : "volume-high-outline"
+                }
+                size={22}
+                color="#ffffff"
+              />
+              <Text style={styles.readButtonText}>
+                {isSpeaking ? "Stop Reading" : "Read Aloud"}
+              </Text>
             </TouchableOpacity>
             <View
               style={[
@@ -292,14 +330,22 @@ export default function NoteScreen() {
                   <Ionicons name="scan-outline" size={21} color={colors.icon} />
                 </View>
                 <View style={styles.extractedHeaderText}>
-                  <Text style={[styles.extractedTitle, { color: colors.text }]}>Scanned Text</Text>
-                  <Text style={[styles.extractedSubtitle, { color: colors.secondaryText }]}>
+                  <Text style={[styles.extractedTitle, { color: colors.text }]}>
+                    Scanned Text
+                  </Text>
+                  <Text
+                    style={[
+                      styles.extractedSubtitle,
+                      { color: colors.secondaryText },
+                    ]}
+                  >
                     Text recognized from your note images.
                   </Text>
                 </View>
               </View>
               <Text style={[styles.extractedText, { color: colors.text }]}>
-                {note.extractedText?.trim() || "No text could be recognized from these images."}
+                {note.extractedText?.trim() ||
+                  "No text could be recognized from these images."}
               </Text>
             </View>
           </>
@@ -363,8 +409,16 @@ export default function NoteScreen() {
                   },
                 ]}
               >
-                <Ionicons name={isSpeaking ? "stop-circle-outline" : "volume-high-outline"} size={20} color={colors.icon} />
-                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
+                <Ionicons
+                  name={
+                    isSpeaking ? "stop-circle-outline" : "volume-high-outline"
+                  }
+                  size={20}
+                  color={colors.icon}
+                />
+                <Text
+                  style={[styles.secondaryButtonText, { color: colors.text }]}
+                >
                   {isSpeaking ? "Stop" : "Read Aloud"}
                 </Text>
               </TouchableOpacity>
@@ -380,7 +434,9 @@ export default function NoteScreen() {
                 ]}
               >
                 <Ionicons name="checkmark" size={20} color="#ffffff" />
-                <Text style={styles.saveButtonText}>{isSaving ? "Saving..." : "Save Note"}</Text>
+                <Text style={styles.saveButtonText}>
+                  {isSaving ? "Saving..." : "Save Note"}
+                </Text>
               </TouchableOpacity>
             </View>
           </>

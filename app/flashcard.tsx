@@ -1,12 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import * as Speech from "expo-speech";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteFlashcardDeck, FlashcardDeck, getFlashcardDeckById } from "../storage/flashcardStorage";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useLocalSearchParams } from "expo-router";
+import * as Speech from "expo-speech";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    deleteFlashcardDeck,
+    FlashcardDeck,
+    getFlashcardDeckById,
+} from "../storage/flashcardStorage";
 
 export default function FlashcardScreen() {
   const { isDark } = useTheme();
@@ -67,21 +80,29 @@ export default function FlashcardScreen() {
       try {
         const storedDeck = await getFlashcardDeckById(deckId);
         if (!storedDeck) {
-          Alert.alert("Deck not found", "This flashcard deck could not be found.", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]);
+          Alert.alert(
+            "Deck not found",
+            "This flashcard deck could not be found.",
+            [
+              {
+                text: "OK",
+                onPress: () => router.back(),
+              },
+            ],
+          );
           return;
         }
         if (storedDeck.cards.length === 0) {
-          Alert.alert("Empty deck", "This deck does not contain any flashcards.", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]);
+          Alert.alert(
+            "Empty deck",
+            "This deck does not contain any flashcards.",
+            [
+              {
+                text: "OK",
+                onPress: () => router.back(),
+              },
+            ],
+          );
           return;
         }
         setDeck(storedDeck);
@@ -165,26 +186,33 @@ export default function FlashcardScreen() {
 
   const confirmDelete = () => {
     if (!deck) return;
-    Alert.alert("Delete Deck", `Are you sure you want to delete "${deck.title}"?`, [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await deleteFlashcardDeck(deck.id);
-          router.replace("/flashcards");
+    Alert.alert(
+      "Delete Deck",
+      `Are you sure you want to delete "${deck.title}"?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteFlashcardDeck(deck.id);
+            router.replace("/flashcards");
+          },
+        },
+      ],
+    );
   };
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
@@ -224,10 +252,15 @@ export default function FlashcardScreen() {
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text numberOfLines={1} style={[styles.topTitle, { color: colors.title }]}>
+          <Text
+            numberOfLines={1}
+            style={[styles.topTitle, { color: colors.title }]}
+          >
             {deck.title}
           </Text>
-          <Text style={[styles.progressText, { color: colors.secondaryText }]}>{progress}</Text>
+          <Text style={[styles.progressText, { color: colors.secondaryText }]}>
+            {progress}
+          </Text>
         </View>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -251,7 +284,9 @@ export default function FlashcardScreen() {
         showsVerticalScrollIndicator={false}
       >
         {!!deck.description && (
-          <Text style={[styles.description, { color: colors.secondaryText }]}>{deck.description}</Text>
+          <Text style={[styles.description, { color: colors.secondaryText }]}>
+            {deck.description}
+          </Text>
         )}
         <TouchableOpacity
           activeOpacity={0.95}
@@ -259,8 +294,12 @@ export default function FlashcardScreen() {
           style={[
             styles.studyCard,
             {
-              backgroundColor: isFlipped ? colors.answerBackground : colors.questionBackground,
-              borderColor: isFlipped ? "rgba(255,255,255,0.25)" : colors.cardBorder,
+              backgroundColor: isFlipped
+                ? colors.answerBackground
+                : colors.questionBackground,
+              borderColor: isFlipped
+                ? "rgba(255,255,255,0.25)"
+                : colors.cardBorder,
             },
           ]}
         >
@@ -268,12 +307,16 @@ export default function FlashcardScreen() {
             style={[
               styles.cardTypeBadge,
               {
-                backgroundColor: isFlipped ? "rgba(255,255,255,0.15)" : colors.iconBackground,
+                backgroundColor: isFlipped
+                  ? "rgba(255,255,255,0.15)"
+                  : colors.iconBackground,
               },
             ]}
           >
             <Ionicons
-              name={isFlipped ? "checkmark-circle-outline" : "help-circle-outline"}
+              name={
+                isFlipped ? "checkmark-circle-outline" : "help-circle-outline"
+              }
               size={15}
               color={isFlipped ? "#ffffff" : colors.icon}
             />
@@ -304,11 +347,17 @@ export default function FlashcardScreen() {
             style={[
               styles.tapHint,
               {
-                backgroundColor: isFlipped ? "rgba(255,255,255,0.12)" : colors.iconBackground,
+                backgroundColor: isFlipped
+                  ? "rgba(255,255,255,0.12)"
+                  : colors.iconBackground,
               },
             ]}
           >
-            <Ionicons name="sync-outline" size={14} color={isFlipped ? "#ffffff" : colors.icon} />
+            <Ionicons
+              name="sync-outline"
+              size={14}
+              color={isFlipped ? "#ffffff" : colors.icon}
+            />
             <Text
               style={[
                 styles.tapHintText,
@@ -356,7 +405,9 @@ export default function FlashcardScreen() {
             ]}
           >
             <Ionicons name="arrow-back" size={19} color={colors.icon} />
-            <Text style={[styles.navigationText, { color: colors.text }]}>Previous</Text>
+            <Text style={[styles.navigationText, { color: colors.text }]}>
+              Previous
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.82}
@@ -372,7 +423,11 @@ export default function FlashcardScreen() {
               {currentIndex === deck.cards.length - 1 ? "Finish" : "Next"}
             </Text>
             <Ionicons
-              name={currentIndex === deck.cards.length - 1 ? "checkmark" : "arrow-forward"}
+              name={
+                currentIndex === deck.cards.length - 1
+                  ? "checkmark"
+                  : "arrow-forward"
+              }
               size={19}
               color="#ffffff"
             />
@@ -393,11 +448,27 @@ export default function FlashcardScreen() {
             style={styles.managementButton}
           >
             <Ionicons name="create-outline" size={17} color={colors.icon} />
-            <Text style={[styles.managementText, { color: colors.secondaryText }]}>Edit Deck</Text>
+            <Text
+              style={[styles.managementText, { color: colors.secondaryText }]}
+            >
+              Edit Deck
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.75} onPress={confirmDelete} style={styles.managementButton}>
-            <Ionicons name="trash-outline" size={17} color={colors.secondaryText} />
-            <Text style={[styles.managementText, { color: colors.secondaryText }]}>Delete Deck</Text>
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={confirmDelete}
+            style={styles.managementButton}
+          >
+            <Ionicons
+              name="trash-outline"
+              size={17}
+              color={colors.secondaryText}
+            />
+            <Text
+              style={[styles.managementText, { color: colors.secondaryText }]}
+            >
+              Delete Deck
+            </Text>
           </TouchableOpacity>
         </View>
         <View

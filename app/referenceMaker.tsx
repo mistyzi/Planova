@@ -1,20 +1,39 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  addReference,
-  createReferenceId,
-  getReferenceById,
-  Reference,
-  ReferenceType,
-  updateReference,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    addReference,
+    createReferenceId,
+    getReferenceById,
+    Reference,
+    ReferenceType,
+    updateReference,
 } from "../storage/referenceStorage";
 
-const referenceTypes: ReferenceType[] = ["Book", "Article", "Website", "Journal", "Video", "Other"];
+const referenceTypes: ReferenceType[] = [
+  "Book",
+  "Article",
+  "Website",
+  "Journal",
+  "Video",
+  "Other",
+];
 
 export default function ReferenceMakerScreen() {
   const { isDark } = useTheme();
@@ -79,12 +98,16 @@ export default function ReferenceMakerScreen() {
     try {
       const storedReference = await getReferenceById(referenceId);
       if (!storedReference) {
-        Alert.alert("Reference not found", "This reference could not be found.", [
-          {
-            text: "OK",
-            onPress: () => router.back(),
-          },
-        ]);
+        Alert.alert(
+          "Reference not found",
+          "This reference could not be found.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ],
+        );
         return;
       }
       setAuthor(storedReference.author);
@@ -107,7 +130,10 @@ export default function ReferenceMakerScreen() {
 
   const saveReference = async () => {
     if (!author.trim()) {
-      Alert.alert("Add an author", "Please enter the author or creator of this reference.");
+      Alert.alert(
+        "Add an author",
+        "Please enter the author or creator of this reference.",
+      );
       return;
     }
     if (!title.trim()) {
@@ -119,7 +145,10 @@ export default function ReferenceMakerScreen() {
       if (isEditing && referenceId) {
         const existingReference = await getReferenceById(referenceId);
         if (!existingReference) {
-          Alert.alert("Reference not found", "The reference could not be updated.");
+          Alert.alert(
+            "Reference not found",
+            "The reference could not be updated.",
+          );
           return;
         }
         const updatedReference: Reference = {
@@ -170,7 +199,10 @@ export default function ReferenceMakerScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
@@ -197,7 +229,11 @@ export default function ReferenceMakerScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.topBar}>
-          <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.headerButton}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.back()}
+            style={styles.headerButton}
+          >
             <Ionicons name="arrow-back" size={25} color={colors.title} />
           </TouchableOpacity>
           <Text style={[styles.topTitle, { color: colors.title }]}>
@@ -231,8 +267,15 @@ export default function ReferenceMakerScreen() {
               <Ionicons name="library-outline" size={25} color={colors.icon} />
             </View>
             <View style={styles.introText}>
-              <Text style={[styles.introTitle, { color: colors.text }]}>Reference Details</Text>
-              <Text style={[styles.introDescription, { color: colors.secondaryText }]}>
+              <Text style={[styles.introTitle, { color: colors.text }]}>
+                Reference Details
+              </Text>
+              <Text
+                style={[
+                  styles.introDescription,
+                  { color: colors.secondaryText },
+                ]}
+              >
                 Record this source like a bibliography entry.
               </Text>
             </View>
@@ -246,7 +289,9 @@ export default function ReferenceMakerScreen() {
               },
             ]}
           >
-            <Text style={[styles.label, { color: colors.secondaryText }]}>Author / Creator</Text>
+            <Text style={[styles.label, { color: colors.secondaryText }]}>
+              Author / Creator
+            </Text>
             <TextInput
               value={author}
               onChangeText={setAuthor}
@@ -261,7 +306,9 @@ export default function ReferenceMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.label, { color: colors.secondaryText }]}>Title</Text>
+            <Text style={[styles.label, { color: colors.secondaryText }]}>
+              Title
+            </Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -277,7 +324,9 @@ export default function ReferenceMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.label, { color: colors.secondaryText }]}>Publication / Website</Text>
+            <Text style={[styles.label, { color: colors.secondaryText }]}>
+              Publication / Website
+            </Text>
             <TextInput
               value={publication}
               onChangeText={setPublication}
@@ -292,7 +341,9 @@ export default function ReferenceMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.label, { color: colors.secondaryText }]}>Year</Text>
+            <Text style={[styles.label, { color: colors.secondaryText }]}>
+              Year
+            </Text>
             <TextInput
               value={year}
               onChangeText={setYear}
@@ -308,7 +359,9 @@ export default function ReferenceMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.label, { color: colors.secondaryText }]}>Reference Type</Text>
+            <Text style={[styles.label, { color: colors.secondaryText }]}>
+              Reference Type
+            </Text>
             <View style={styles.typeGrid}>
               {referenceTypes.map((referenceType) => {
                 const selected = type === referenceType;
@@ -320,8 +373,12 @@ export default function ReferenceMakerScreen() {
                     style={[
                       styles.typeButton,
                       {
-                        backgroundColor: selected ? colors.selected : colors.input,
-                        borderColor: selected ? colors.selectedBorder : colors.inputBorder,
+                        backgroundColor: selected
+                          ? colors.selected
+                          : colors.input,
+                        borderColor: selected
+                          ? colors.selectedBorder
+                          : colors.inputBorder,
                       },
                     ]}
                   >
@@ -339,7 +396,9 @@ export default function ReferenceMakerScreen() {
                 );
               })}
             </View>
-            <Text style={[styles.label, { color: colors.secondaryText }]}>Link</Text>
+            <Text style={[styles.label, { color: colors.secondaryText }]}>
+              Link
+            </Text>
             <TextInput
               value={url}
               onChangeText={setUrl}
@@ -356,7 +415,9 @@ export default function ReferenceMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.label, { color: colors.secondaryText }]}>Notes</Text>
+            <Text style={[styles.label, { color: colors.secondaryText }]}>
+              Notes
+            </Text>
             <TextInput
               value={notes}
               onChangeText={setNotes}
@@ -383,15 +444,25 @@ export default function ReferenceMakerScreen() {
               },
             ]}
           >
-            <Text style={[styles.previewLabel, { color: colors.secondaryText }]}>CITATION PREVIEW</Text>
+            <Text
+              style={[styles.previewLabel, { color: colors.secondaryText }]}
+            >
+              CITATION PREVIEW
+            </Text>
             <Text style={[styles.citation, { color: colors.text }]}>
               {author.trim() || "Author"} {author.trim() ? ". " : ""}
-              <Text style={styles.citationTitle}>{title.trim() || "Reference title"}</Text>
+              <Text style={styles.citationTitle}>
+                {title.trim() || "Reference title"}
+              </Text>
               {publication.trim() ? `. ${publication.trim()}` : ""}
               {year.trim() ? `, ${year.trim()}` : ""}.
             </Text>
             {!!url.trim() && (
-              <Text style={[styles.previewUrl, { color: colors.secondaryText }]}>{url.trim()}</Text>
+              <Text
+                style={[styles.previewUrl, { color: colors.secondaryText }]}
+              >
+                {url.trim()}
+              </Text>
             )}
           </View>
           <TouchableOpacity
@@ -407,7 +478,11 @@ export default function ReferenceMakerScreen() {
           >
             <Ionicons name="checkmark" size={21} color="#ffffff" />
             <Text style={styles.saveButtonText}>
-              {isSaving ? "Saving..." : isEditing ? "Save Changes" : "Save Reference"}
+              {isSaving
+                ? "Saving..."
+                : isEditing
+                  ? "Save Changes"
+                  : "Save Reference"}
             </Text>
           </TouchableOpacity>
           <View

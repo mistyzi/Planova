@@ -1,17 +1,29 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  addStudyGuide,
-  createStudyGuideId,
-  getStudyGuideById,
-  StudyGuide,
-  StudyGuideSection,
-  updateStudyGuide,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    addStudyGuide,
+    createStudyGuideId,
+    getStudyGuideById,
+    StudyGuide,
+    StudyGuideSection,
+    updateStudyGuide,
 } from "../storage/studyGuideStorage";
 
 type SectionDraft = {
@@ -81,12 +93,16 @@ export default function StudyGuideMakerScreen() {
     try {
       const storedGuide = await getStudyGuideById(guideId);
       if (!storedGuide) {
-        Alert.alert("Study guide not found", "This study guide could not be found.", [
-          {
-            text: "OK",
-            onPress: () => router.back(),
-          },
-        ]);
+        Alert.alert(
+          "Study guide not found",
+          "This study guide could not be found.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ],
+        );
         return;
       }
       setTitle(storedGuide.title);
@@ -104,7 +120,7 @@ export default function StudyGuideMakerScreen() {
                 title: "",
                 content: "",
               },
-            ]
+            ],
       );
     } catch (error) {
       console.log("Failed to load study guide:", error);
@@ -117,11 +133,15 @@ export default function StudyGuideMakerScreen() {
     loadGuide();
   }, [loadGuide]);
 
-  const updateSection = (sectionId: string, field: "title" | "content", value: string) => {
+  const updateSection = (
+    sectionId: string,
+    field: "title" | "content",
+    value: string,
+  ) => {
     setSections((currentSections) =>
       currentSections.map((section) =>
-        section.id === sectionId ? { ...section, [field]: value } : section
-      )
+        section.id === sectionId ? { ...section, [field]: value } : section,
+      ),
     );
   };
 
@@ -138,24 +158,31 @@ export default function StudyGuideMakerScreen() {
 
   const removeSection = (sectionId: string) => {
     if (sections.length === 1) {
-      Alert.alert("Keep at least one section", "A study guide needs at least one section.");
+      Alert.alert(
+        "Keep at least one section",
+        "A study guide needs at least one section.",
+      );
       return;
     }
-    Alert.alert("Remove Section", "Are you sure you want to remove this section?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Remove",
-        style: "destructive",
-        onPress: () => {
-          setSections((currentSections) =>
-            currentSections.filter((section) => section.id !== sectionId)
-          );
+    Alert.alert(
+      "Remove Section",
+      "Are you sure you want to remove this section?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => {
+            setSections((currentSections) =>
+              currentSections.filter((section) => section.id !== sectionId),
+            );
+          },
+        },
+      ],
+    );
   };
 
   const saveGuide = async () => {
@@ -163,9 +190,14 @@ export default function StudyGuideMakerScreen() {
       Alert.alert("Add a title", "Please give your study guide a title.");
       return;
     }
-    const invalidSection = sections.find((section) => !section.title.trim() || !section.content.trim());
+    const invalidSection = sections.find(
+      (section) => !section.title.trim() || !section.content.trim(),
+    );
     if (invalidSection) {
-      Alert.alert("Incomplete Section", "Please fill in both the section title and content for every section.");
+      Alert.alert(
+        "Incomplete Section",
+        "Please fill in both the section title and content for every section.",
+      );
       return;
     }
     setIsSaving(true);
@@ -178,7 +210,10 @@ export default function StudyGuideMakerScreen() {
       if (isEditing && guideId) {
         const existingGuide = await getStudyGuideById(guideId);
         if (!existingGuide) {
-          Alert.alert("Study guide not found", "The study guide could not be updated.");
+          Alert.alert(
+            "Study guide not found",
+            "The study guide could not be updated.",
+          );
           return;
         }
         const updatedGuide: StudyGuide = {
@@ -221,7 +256,10 @@ export default function StudyGuideMakerScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient colors={backgroundColors} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient
+          colors={backgroundColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
@@ -248,7 +286,11 @@ export default function StudyGuideMakerScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.topBar}>
-          <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={25} color={colors.title} />
           </TouchableOpacity>
           <Text style={[styles.topTitle, { color: colors.title }]}>
@@ -283,13 +325,22 @@ export default function StudyGuideMakerScreen() {
                 <Ionicons name="book-outline" size={21} color={colors.icon} />
               </View>
               <View style={styles.sectionHeaderText}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Guide Information</Text>
-                <Text style={[styles.sectionSubtitle, { color: colors.secondaryText }]}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Guide Information
+                </Text>
+                <Text
+                  style={[
+                    styles.sectionSubtitle,
+                    { color: colors.secondaryText },
+                  ]}
+                >
                   Give your study guide a name.
                 </Text>
               </View>
             </View>
-            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Title</Text>
+            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>
+              Title
+            </Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -304,7 +355,9 @@ export default function StudyGuideMakerScreen() {
                 },
               ]}
             />
-            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Description</Text>
+            <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>
+              Description
+            </Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
@@ -323,9 +376,14 @@ export default function StudyGuideMakerScreen() {
           </View>
           <View style={styles.cardsHeader}>
             <View>
-              <Text style={[styles.cardsTitle, { color: colors.title }]}>Guide Sections</Text>
-              <Text style={[styles.cardsSubtitle, { color: colors.secondaryText }]}>
-                {sections.length} {sections.length === 1 ? "section" : "sections"}
+              <Text style={[styles.cardsTitle, { color: colors.title }]}>
+                Guide Sections
+              </Text>
+              <Text
+                style={[styles.cardsSubtitle, { color: colors.secondaryText }]}
+              >
+                {sections.length}{" "}
+                {sections.length === 1 ? "section" : "sections"}
               </Text>
             </View>
             <TouchableOpacity
@@ -340,7 +398,9 @@ export default function StudyGuideMakerScreen() {
               ]}
             >
               <Ionicons name="add" size={18} color={colors.icon} />
-              <Text style={[styles.addCardText, { color: colors.icon }]}>Add Section</Text>
+              <Text style={[styles.addCardText, { color: colors.icon }]}>
+                Add Section
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.cardList}>
@@ -357,18 +417,36 @@ export default function StudyGuideMakerScreen() {
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.cardNumber}>
-                    <Text style={[styles.cardNumberText, { color: colors.secondaryText }]}>
+                    <Text
+                      style={[
+                        styles.cardNumberText,
+                        { color: colors.secondaryText },
+                      ]}
+                    >
                       SECTION {index + 1}
                     </Text>
                   </View>
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => removeSection(section.id)}>
-                    <Ionicons name="trash-outline" size={19} color={colors.secondaryText} />
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => removeSection(section.id)}
+                  >
+                    <Ionicons
+                      name="trash-outline"
+                      size={19}
+                      color={colors.secondaryText}
+                    />
                   </TouchableOpacity>
                 </View>
-                <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Section Title</Text>
+                <Text
+                  style={[styles.inputLabel, { color: colors.secondaryText }]}
+                >
+                  Section Title
+                </Text>
                 <TextInput
                   value={section.title}
-                  onChangeText={(value) => updateSection(section.id, "title", value)}
+                  onChangeText={(value) =>
+                    updateSection(section.id, "title", value)
+                  }
                   placeholder="e.g. Key Concepts"
                   placeholderTextColor={colors.secondaryText}
                   style={[
@@ -380,10 +458,16 @@ export default function StudyGuideMakerScreen() {
                     },
                   ]}
                 />
-                <Text style={[styles.inputLabel, { color: colors.secondaryText }]}>Content</Text>
+                <Text
+                  style={[styles.inputLabel, { color: colors.secondaryText }]}
+                >
+                  Content
+                </Text>
                 <TextInput
                   value={section.content}
-                  onChangeText={(value) => updateSection(section.id, "content", value)}
+                  onChangeText={(value) =>
+                    updateSection(section.id, "content", value)
+                  }
                   placeholder="Write your study notes here..."
                   placeholderTextColor={colors.secondaryText}
                   multiline
@@ -413,7 +497,11 @@ export default function StudyGuideMakerScreen() {
           >
             <Ionicons name="checkmark" size={21} color="#ffffff" />
             <Text style={styles.saveButtonText}>
-              {isSaving ? "Saving..." : isEditing ? "Save Changes" : "Save Study Guide"}
+              {isSaving
+                ? "Saving..."
+                : isEditing
+                  ? "Save Changes"
+                  : "Save Study Guide"}
             </Text>
           </TouchableOpacity>
           <View

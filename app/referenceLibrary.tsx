@@ -1,19 +1,44 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Linking, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteReference, getReferences, Reference, ReferenceType } from "../storage/referenceStorage";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Linking,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    deleteReference,
+    getReferences,
+    Reference,
+    ReferenceType,
+} from "../storage/referenceStorage";
 
-const referenceTypes: ReferenceType[] = ["Book", "Article", "Website", "Journal", "Video", "Other"];
+const referenceTypes: ReferenceType[] = [
+  "Book",
+  "Article",
+  "Website",
+  "Journal",
+  "Video",
+  "Other",
+];
 
 export default function ReferenceLibraryScreen() {
   const { isDark } = useTheme();
   const [references, setReferences] = useState<Reference[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedType, setSelectedType] = useState<ReferenceType | "All">("All");
+  const [selectedType, setSelectedType] = useState<ReferenceType | "All">(
+    "All",
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const backgroundColors: [string, string] = isDark
@@ -70,7 +95,8 @@ export default function ReferenceLibraryScreen() {
       reference.author.toLowerCase().includes(query) ||
       reference.title.toLowerCase().includes(query) ||
       reference.publication.toLowerCase().includes(query);
-    const matchesType = selectedType === "All" || reference.type === selectedType;
+    const matchesType =
+      selectedType === "All" || reference.type === selectedType;
     return matchesSearch && matchesType;
   });
 
@@ -92,11 +118,14 @@ export default function ReferenceLibraryScreen() {
               await loadReferences();
             } catch (error) {
               console.log("Failed to delete reference:", error);
-              Alert.alert("Delete failed", "The reference could not be deleted.");
+              Alert.alert(
+                "Delete failed",
+                "The reference could not be deleted.",
+              );
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -126,10 +155,16 @@ export default function ReferenceLibraryScreen() {
         <StarryBackground />
       </View>
       <View style={styles.topBar}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()} style={styles.headerButton}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.back()}
+          style={styles.headerButton}
+        >
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-        <Text style={[styles.topTitle, { color: colors.title }]}>Reference Library</Text>
+        <Text style={[styles.topTitle, { color: colors.title }]}>
+          Reference Library
+        </Text>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push("/referenceMaker")}
@@ -149,7 +184,9 @@ export default function ReferenceLibraryScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.pageIntro}>
-          <Text style={[styles.pageTitle, { color: colors.title }]}>References</Text>
+          <Text style={[styles.pageTitle, { color: colors.title }]}>
+            References
+          </Text>
           <Text style={[styles.pageSubtitle, { color: colors.secondaryText }]}>
             Keep your sources organized and ready to cite.
           </Text>
@@ -163,7 +200,11 @@ export default function ReferenceLibraryScreen() {
             },
           ]}
         >
-          <Ionicons name="search-outline" size={19} color={colors.secondaryText} />
+          <Ionicons
+            name="search-outline"
+            size={19}
+            color={colors.secondaryText}
+          />
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -178,7 +219,11 @@ export default function ReferenceLibraryScreen() {
           />
           {!!search && (
             <TouchableOpacity onPress={() => setSearch("")}>
-              <Ionicons name="close-circle" size={18} color={colors.secondaryText} />
+              <Ionicons
+                name="close-circle"
+                size={18}
+                color={colors.secondaryText}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -194,8 +239,12 @@ export default function ReferenceLibraryScreen() {
             style={[
               styles.filterButton,
               {
-                backgroundColor: selectedType === "All" ? colors.selected : colors.card,
-                borderColor: selectedType === "All" ? colors.selectedBorder : colors.cardBorder,
+                backgroundColor:
+                  selectedType === "All" ? colors.selected : colors.card,
+                borderColor:
+                  selectedType === "All"
+                    ? colors.selectedBorder
+                    : colors.cardBorder,
               },
             ]}
           >
@@ -203,7 +252,8 @@ export default function ReferenceLibraryScreen() {
               style={[
                 styles.filterText,
                 {
-                  color: selectedType === "All" ? colors.icon : colors.secondaryText,
+                  color:
+                    selectedType === "All" ? colors.icon : colors.secondaryText,
                 },
               ]}
             >
@@ -221,7 +271,9 @@ export default function ReferenceLibraryScreen() {
                   styles.filterButton,
                   {
                     backgroundColor: selected ? colors.selected : colors.card,
-                    borderColor: selected ? colors.selectedBorder : colors.cardBorder,
+                    borderColor: selected
+                      ? colors.selectedBorder
+                      : colors.cardBorder,
                   },
                 ]}
               >
@@ -263,8 +315,12 @@ export default function ReferenceLibraryScreen() {
             >
               <Ionicons name="library-outline" size={27} color={colors.icon} />
             </View>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>No References Yet</Text>
-            <Text style={[styles.emptyDescription, { color: colors.secondaryText }]}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              No References Yet
+            </Text>
+            <Text
+              style={[styles.emptyDescription, { color: colors.secondaryText }]}
+            >
               Add books, articles, websites, journals, and other sources here.
             </Text>
             <TouchableOpacity
@@ -303,7 +359,11 @@ export default function ReferenceLibraryScreen() {
                       },
                     ]}
                   >
-                    <Text style={[styles.typeBadgeText, { color: colors.icon }]}>{reference.type}</Text>
+                    <Text
+                      style={[styles.typeBadgeText, { color: colors.icon }]}
+                    >
+                      {reference.type}
+                    </Text>
                   </View>
                   <View style={styles.referenceActions}>
                     <TouchableOpacity
@@ -319,16 +379,34 @@ export default function ReferenceLibraryScreen() {
                       }
                       style={styles.actionButton}
                     >
-                      <Ionicons name="create-outline" size={18} color={colors.secondaryText} />
+                      <Ionicons
+                        name="create-outline"
+                        size={18}
+                        color={colors.secondaryText}
+                      />
                     </TouchableOpacity>
-                    <TouchableOpacity activeOpacity={0.7} onPress={() => confirmDelete(reference)} style={styles.actionButton}>
-                      <Ionicons name="trash-outline" size={18} color={colors.secondaryText} />
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => confirmDelete(reference)}
+                      style={styles.actionButton}
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={18}
+                        color={colors.secondaryText}
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
-                <Text style={[styles.author, { color: colors.secondaryText }]}>{reference.author}</Text>
-                <Text style={[styles.referenceTitle, { color: colors.text }]}>{reference.title}</Text>
-                <Text style={[styles.publication, { color: colors.secondaryText }]}>
+                <Text style={[styles.author, { color: colors.secondaryText }]}>
+                  {reference.author}
+                </Text>
+                <Text style={[styles.referenceTitle, { color: colors.text }]}>
+                  {reference.title}
+                </Text>
+                <Text
+                  style={[styles.publication, { color: colors.secondaryText }]}
+                >
                   {reference.publication || "Publication not specified"}
                   {reference.year ? ` · ${reference.year}` : ""}
                 </Text>
@@ -341,25 +419,53 @@ export default function ReferenceLibraryScreen() {
                   ]}
                 />
                 <Text style={[styles.citation, { color: colors.text }]}>
-                  {reference.author}. <Text style={styles.citationTitle}>{reference.title}</Text>
+                  {reference.author}.{" "}
+                  <Text style={styles.citationTitle}>{reference.title}</Text>
                   {reference.publication ? `. ${reference.publication}` : ""}
                   {reference.year ? `, ${reference.year}` : ""}.
                 </Text>
                 {!!reference.url && (
-                  <TouchableOpacity activeOpacity={0.75} onPress={() => openReference(reference.url)} style={styles.linkRow}>
-                    <Ionicons name="link-outline" size={15} color={colors.icon} />
-                    <Text numberOfLines={2} style={[styles.linkText, { color: colors.icon }]}>
+                  <TouchableOpacity
+                    activeOpacity={0.75}
+                    onPress={() => openReference(reference.url)}
+                    style={styles.linkRow}
+                  >
+                    <Ionicons
+                      name="link-outline"
+                      size={15}
+                      color={colors.icon}
+                    />
+                    <Text
+                      numberOfLines={2}
+                      style={[styles.linkText, { color: colors.icon }]}
+                    >
                       {reference.url}
                     </Text>
                   </TouchableOpacity>
                 )}
                 {!!reference.notes && (
                   <View style={styles.notesBox}>
-                    <Text style={[styles.notesLabel, { color: colors.secondaryText }]}>NOTES</Text>
-                    <Text style={[styles.notes, { color: colors.text }]}>{reference.notes}</Text>
+                    <Text
+                      style={[
+                        styles.notesLabel,
+                        { color: colors.secondaryText },
+                      ]}
+                    >
+                      NOTES
+                    </Text>
+                    <Text style={[styles.notes, { color: colors.text }]}>
+                      {reference.notes}
+                    </Text>
                   </View>
                 )}
-                <Text style={[styles.referenceNumber, { color: colors.secondaryText }]}>[{index + 1}]</Text>
+                <Text
+                  style={[
+                    styles.referenceNumber,
+                    { color: colors.secondaryText },
+                  ]}
+                >
+                  [{index + 1}]
+                </Text>
               </View>
             ))}
           </View>
