@@ -13,7 +13,7 @@ ABOUT WILL GO HERE
 	├── components/      
 	├── context/     
 	├── storage/    
-	├── .env    
+	├── utils/ 
 	├── app.json        
 	├── package.json    
 	└── tsconfig.json 
