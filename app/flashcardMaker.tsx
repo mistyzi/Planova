@@ -12,7 +12,7 @@ import {
   FlashcardDeck,
   getFlashcardDeckById,
   updateFlashcardDeck,
-} from "./flashcardStorage";
+} from "../storage/flashcardStorage";
 
 type CardDraft = {
   id: string;

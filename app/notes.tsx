@@ -19,7 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { addNote, getNotes, StoredNote } from "./noteStorage";
+import { addNote, getNotes, StoredNote } from "../storage/noteStorage";
 import { scanMultipleImages } from "./ocr";
 
 type NoteFilter = "All" | "Text" | "Images";

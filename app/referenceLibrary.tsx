@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteReference, getReferences, Reference, ReferenceType } from "./referenceStorage";
+import { deleteReference, getReferences, Reference, ReferenceType } from "../storage/referenceStorage";
 
 const referenceTypes: ReferenceType[] = ["Book", "Article", "Website", "Journal", "Video", "Other"];
 

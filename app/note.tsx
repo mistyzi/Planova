@@ -6,7 +6,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import * as Speech from "expo-speech";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { addNote, getNoteById, StoredNote, updateNote } from "./noteStorage";
+import { addNote, getNoteById, StoredNote, updateNote } from "../storage/noteStorage";
 
 export default function NoteScreen() {
   const { isDark } = useTheme();

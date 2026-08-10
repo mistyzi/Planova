@@ -12,7 +12,7 @@ import {
   StudyGuide,
   StudyGuideSection,
   updateStudyGuide,
-} from "./studyGuideStorage";
+} from "../storage/studyGuideStorage";
 
 type SectionDraft = {
   id: string;

@@ -12,7 +12,7 @@ import {
   Reference,
   ReferenceType,
   updateReference,
-} from "./referenceStorage";
+} from "../storage/referenceStorage";
 
 const referenceTypes: ReferenceType[] = ["Book", "Article", "Website", "Journal", "Video", "Other"];
 

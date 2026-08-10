@@ -6,7 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Speech from "expo-speech";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteFlashcardDeck, FlashcardDeck, getFlashcardDeckById } from "./flashcardStorage";
+import { deleteFlashcardDeck, FlashcardDeck, getFlashcardDeckById } from "../storage/flashcardStorage";
 
 export default function FlashcardScreen() {
   const { isDark } = useTheme();

@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteFlashcardDeck, FlashcardDeck, getFlashcardDecks } from "./flashcardStorage";
+import { deleteFlashcardDeck, FlashcardDeck, getFlashcardDecks } from "../storage/flashcardStorage";
 
 export default function FlashcardsScreen() {
   const { isDark } = useTheme();

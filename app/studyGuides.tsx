@@ -5,7 +5,7 @@ import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteStudyGuide, getStudyGuides, StudyGuide } from "./studyGuideStorage";
+import { deleteStudyGuide, getStudyGuides, StudyGuide } from "../storage/studyGuideStorage";
 
 export default function StudyGuidesScreen() {
   const { isDark } = useTheme();

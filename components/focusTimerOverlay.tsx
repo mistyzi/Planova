@@ -9,7 +9,7 @@ import {
   getActiveFocusSession,
   pauseActiveFocusSession,
   resumeActiveFocusSession,
-} from "@/app/focusTimerStorage";
+} from "@/storage/focusTimerStorage";
 
 export default function FocusTimerOverlay() {
   const { isDark } = useTheme();

@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { deleteStudyGuide, getStudyGuideById, StudyGuide } from "./studyGuideStorage";
+import { deleteStudyGuide, getStudyGuideById, StudyGuide } from "../storage/studyGuideStorage";
 
 export default function StudyGuideScreen() {
   const { isDark } = useTheme();

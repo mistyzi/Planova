@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import StarryBackground from "@/components/starrybackground";
 import { useTheme } from "@/context/themecontext";
-import { addBookmark, createBookmarkId, getBookmarkById, updateBookmark, Bookmark } from "./bookmarkStorage";
+import { addBookmark, createBookmarkId, getBookmarkById, updateBookmark, Bookmark } from "../storage/bookmarkStorage";
 
 export default function BookmarkMakerScreen() {
   const { isDark } = useTheme();
