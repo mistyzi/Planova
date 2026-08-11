@@ -8,7 +8,6 @@ import React, {
 import {
   Alert,
   Image,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -33,7 +32,6 @@ import { useTheme } from "../context/themecontext";
 import MusicSelector from "./musicselector";
 
 const PROFILE_STORAGE_KEY = "@planova_profile";
-const AUTH_STORAGE_KEY = "@planova_auth";
 const TASKS_STORAGE_KEY = "@planova_tasks";
 const STREAK_STORAGE_KEY = "@planova_streak";
 const FOCUS_STORAGE_KEY = "@planova_focus_time";
@@ -50,13 +48,6 @@ type ProfileStats = {
   tasksCompleted: number;
   currentStreak: number;
   focusHours: number;
-};
-
-type AuthData = {
-  isLoggedIn: boolean;
-  email?: string;
-  userId?: string;
-  loginTime?: number;
 };
 
 type ProfileSheetProps = {
@@ -80,10 +71,6 @@ const DEFAULT_STATS: ProfileStats = {
   focusHours: 0,
 };
 
-const DEFAULT_AUTH: AuthData = {
-  isLoggedIn: false,
-};
-
 const ProfileSheet = forwardRef<any, ProfileSheetProps>(
   ({ onLogout, onLogin }, ref) => {
     const snapPoints = useMemo(() => ["90%"], []);
@@ -94,20 +81,12 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     const [stats, setStats] =
       useState<ProfileStats>(DEFAULT_STATS);
 
-    const [auth, setAuth] = useState<AuthData>(DEFAULT_AUTH);
-
     const [showEditProfile, setShowEditProfile] =
       useState(false);
 
     const [editName, setEditName] = useState("");
     const [editSchool, setEditSchool] = useState("");
     const [editProgram, setEditProgram] = useState("");
-
-    // Login state
-    const [showLoginModal, setShowLoginModal] = useState(false);
-    const [loginEmail, setLoginEmail] = useState("");
-    const [loginPassword, setLoginPassword] = useState("");
-    const [isLoginMode, setIsLoginMode] = useState(true); // true = login, false = signup
 
     const { theme, setTheme, isDark } = useTheme();
 
@@ -184,32 +163,7 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     useEffect(() => {
       loadProfile();
       loadStats();
-      loadAuth();
     }, []);
-
-    const loadAuth = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-        if (!stored) {
-          setAuth(DEFAULT_AUTH);
-          return;
-        }
-        const parsed = JSON.parse(stored);
-        setAuth(parsed);
-      } catch (error) {
-        console.log("Failed to load auth:", error);
-        setAuth(DEFAULT_AUTH);
-      }
-    };
-
-    const saveAuth = async (authData: AuthData) => {
-      try {
-        await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
-        setAuth(authData);
-      } catch (error) {
-        console.log("Failed to save auth:", error);
-      }
-    };
 
     const loadProfile = async () => {
       try {
@@ -413,13 +367,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const openEditProfile = () => {
-      if (!auth.isLoggedIn) {
-        Alert.alert(
-          "Login Required",
-          "Please log in to edit your profile."
-        );
-        return;
-      }
       setEditName(profile.name);
       setEditSchool(profile.school);
       setEditProgram(profile.program);
@@ -472,14 +419,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const pickProfilePicture = async () => {
-      if (!auth.isLoggedIn) {
-        Alert.alert(
-          "Login Required",
-          "Please log in to change your profile picture."
-        );
-        return;
-      }
-
       try {
         const permission =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -526,14 +465,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const takeProfilePicture = async () => {
-      if (!auth.isLoggedIn) {
-        Alert.alert(
-          "Login Required",
-          "Please log in to change your profile picture."
-        );
-        return;
-      }
-
       try {
         const permission =
           await ImagePicker.requestCameraPermissionsAsync();
@@ -579,14 +510,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const pickBackground = async () => {
-      if (!auth.isLoggedIn) {
-        Alert.alert(
-          "Login Required",
-          "Please log in to change your background."
-        );
-        return;
-      }
-
       try {
         const permission =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -633,14 +556,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const takeBackgroundPhoto = async () => {
-      if (!auth.isLoggedIn) {
-        Alert.alert(
-          "Login Required",
-          "Please log in to change your background."
-        );
-        return;
-      }
-
       try {
         const permission =
           await ImagePicker.requestCameraPermissionsAsync();
@@ -686,14 +601,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const showAvatarOptions = () => {
-      if (!auth.isLoggedIn) {
-        Alert.alert(
-          "Login Required",
-          "Please log in to change your profile picture."
-        );
-        return;
-      }
-
       Alert.alert(
         "Profile Picture",
         "How would you like to change your profile picture?",
@@ -715,14 +622,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const showBackgroundOptions = () => {
-      if (!auth.isLoggedIn) {
-        Alert.alert(
-          "Login Required",
-          "Please log in to change your background."
-        );
-        return;
-      }
-
       Alert.alert(
         "Profile Background",
         "How would you like to change your profile background?",
@@ -741,144 +640,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
           },
         ]
       );
-    };
-
-    // Login/Logout functions
-    const handleLogin = async () => {
-      const trimmedEmail = loginEmail.trim().toLowerCase();
-      const trimmedPassword = loginPassword.trim();
-
-      if (!trimmedEmail) {
-        Alert.alert("Missing Email", "Please enter your email address.");
-        return;
-      }
-
-      if (!trimmedPassword || trimmedPassword.length < 6) {
-        Alert.alert("Invalid Password", "Password must be at least 6 characters.");
-        return;
-      }
-
-      try {
-        // Check if user exists in AsyncStorage
-        const storedUsers = await AsyncStorage.getItem("@planova_users");
-        let users: Record<string, { email: string; password: string; userId: string }> = {};
-
-        if (storedUsers) {
-          users = JSON.parse(storedUsers);
-        }
-
-        if (isLoginMode) {
-          // Login logic
-          const userEntry = Object.values(users).find(
-            (u) => u.email.toLowerCase() === trimmedEmail
-          );
-
-          if (!userEntry) {
-            Alert.alert("Login Failed", "No account found with this email.");
-            return;
-          }
-
-          if (userEntry.password !== trimmedPassword) {
-            Alert.alert("Login Failed", "Incorrect password.");
-            return;
-          }
-
-          // Login successful
-          const authData: AuthData = {
-            isLoggedIn: true,
-            email: trimmedEmail,
-            userId: userEntry.userId,
-            loginTime: Date.now(),
-          };
-
-          await saveAuth(authData);
-          setShowLoginModal(false);
-          setLoginEmail("");
-          setLoginPassword("");
-
-          if (onLogin) {
-            onLogin();
-          }
-
-          Alert.alert("Welcome Back!", `You've successfully logged in as ${trimmedEmail}`);
-        } else {
-          // Signup logic
-          if (users[trimmedEmail]) {
-            Alert.alert("Signup Failed", "An account with this email already exists.");
-            return;
-          }
-
-          // Create new user
-          const userId = `user_${Date.now()}`;
-          users[trimmedEmail] = {
-            email: trimmedEmail,
-            password: trimmedPassword,
-            userId: userId,
-          };
-
-          await AsyncStorage.setItem("@planova_users", JSON.stringify(users));
-
-          // Auto-login after signup
-          const authData: AuthData = {
-            isLoggedIn: true,
-            email: trimmedEmail,
-            userId: userId,
-            loginTime: Date.now(),
-          };
-
-          await saveAuth(authData);
-          setShowLoginModal(false);
-          setLoginEmail("");
-          setLoginPassword("");
-
-          if (onLogin) {
-            onLogin();
-          }
-
-          Alert.alert("Welcome!", `Account created successfully for ${trimmedEmail}`);
-        }
-      } catch (error) {
-        console.log("Failed to handle login:", error);
-        Alert.alert("Error", "Something went wrong. Please try again.");
-      }
-    };
-
-    const handleLogout = () => {
-      Alert.alert(
-        "Log Out",
-        "Are you sure you want to log out of Planova?",
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          {
-            text: "Log Out",
-            style: "destructive",
-            onPress: async () => {
-              const authData: AuthData = {
-                isLoggedIn: false,
-              };
-              await saveAuth(authData);
-
-              if (onLogout) {
-                onLogout();
-              }
-
-              Alert.alert("Logged Out", "You've been successfully logged out.");
-            },
-          },
-        ]
-      );
-    };
-
-    const handleLogoutPress = () => {
-      if (!auth.isLoggedIn) {
-        // Show login modal instead
-        setShowLoginModal(true);
-        return;
-      }
-      handleLogout();
     };
 
     const formattedFocusHours =
@@ -1056,15 +817,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
                   {profile.school} •{" "}
                   {profile.program}
                 </Text>
-
-                {auth.isLoggedIn && (
-                  <View style={styles.loginBadge}>
-                    <Ionicons name="checkmark-circle" size={14} color="#4CAF50" />
-                    <Text style={[styles.loginBadgeText, { color: colors.textSecondary }]}>
-                      Logged in as {auth.email}
-                    </Text>
-                  </View>
-                )}
               </View>
 
               <View style={styles.statsRow}>
@@ -1312,74 +1064,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
 
               <MusicSelector />
 
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={handleLogoutPress}
-                style={[
-                  styles.logoutCard,
-                  {
-                    backgroundColor:
-                      colors.card,
-                    borderColor:
-                      colors.cardBorder,
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.settingIcon,
-                    {
-                      backgroundColor:
-                        colors.iconBackground,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={auth.isLoggedIn ? "log-out-outline" : "log-in-outline"}
-                    size={19}
-                    color={colors.logoutTitle}
-                  />
-                </View>
-
-                <View
-                  style={
-                    styles.logoutTextContainer
-                  }
-                >
-                  <Text
-                    style={[
-                      styles.logoutTitle,
-                      {
-                        color:
-                          colors.logoutTitle,
-                      },
-                    ]}
-                  >
-                    {auth.isLoggedIn ? "Log Out" : "Log In"}
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.logoutDescription,
-                      {
-                        color:
-                          colors.logoutDescription,
-                      },
-                    ]}
-                  >
-                    {auth.isLoggedIn
-                      ? "Sign out of your Planova account."
-                      : "Sign in to sync your progress."}
-                  </Text>
-                </View>
-
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={colors.logoutTitle}
-                />
-              </TouchableOpacity>
-
               <View
                 style={styles.bottomSpacer}
               />
@@ -1387,138 +1071,145 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
           </BottomSheetScrollView>
         </BottomSheet>
 
-        {/* Login/Signup Modal */}
+        {/* Edit Profile Modal */}
         <Modal
-          visible={showLoginModal}
+          visible={showEditProfile}
           transparent
           animationType="fade"
           onRequestClose={() => {
-            setShowLoginModal(false);
-            setLoginEmail("");
-            setLoginPassword("");
+            setShowEditProfile(false);
           }}
         >
-          <KeyboardAvoidingView
-            style={styles.keyboardAvoidingView}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-          >
-            <View style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.55)" }]}>
-              <View style={[
-                styles.loginModal,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.cardBorder,
-                }
-              ]}>
-                <ScrollView
-                  style={styles.editProfileScroll}
-                  contentContainerStyle={styles.editProfileScrollContent}
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                  keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-                  nestedScrollEnabled
-                >
-                  <View style={styles.modalHeader}>
-                    <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                      {isLoginMode ? "Welcome Back" : "Create Account"}
+          <View style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.55)" }]}>
+            <View style={[
+              styles.profileEditModal,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.cardBorder,
+              }
+            ]}>
+              <ScrollView
+                style={styles.editProfileScroll}
+                contentContainerStyle={styles.editProfileScrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+                nestedScrollEnabled
+              >
+                <View style={styles.modalHeader}>
+                  <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                    Edit Profile
+                  </Text>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      setShowEditProfile(false);
+                    }}
+                  >
+                    <Ionicons name="close" size={23} color={colors.textMuted} />
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+                  Update your profile information
+                </Text>
+
+                <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
+                  Full Name
+                </Text>
+                <TextInput
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder="Your full name"
+                  placeholderTextColor={colors.textMuted}
+                  returnKeyType="next"
+                  style={[
+                    styles.modalInput,
+                    {
+                      color: colors.textPrimary,
+                      backgroundColor: colors.iconBackground,
+                      borderColor: colors.cardBorder,
+                    },
+                  ]}
+                />
+
+                <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
+                  School / Institution
+                </Text>
+                <TextInput
+                  value={editSchool}
+                  onChangeText={setEditSchool}
+                  placeholder="Your school or institution"
+                  placeholderTextColor={colors.textMuted}
+                  returnKeyType="next"
+                  style={[
+                    styles.modalInput,
+                    {
+                      color: colors.textPrimary,
+                      backgroundColor: colors.iconBackground,
+                      borderColor: colors.cardBorder,
+                    },
+                  ]}
+                />
+
+                <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
+                  Program / Field of Study
+                </Text>
+                <TextInput
+                  value={editProgram}
+                  onChangeText={setEditProgram}
+                  placeholder="Your program or field of study"
+                  placeholderTextColor={colors.textMuted}
+                  returnKeyType="done"
+                  onSubmitEditing={saveProfile}
+                  style={[
+                    styles.modalInput,
+                    {
+                      color: colors.textPrimary,
+                      backgroundColor: colors.iconBackground,
+                      borderColor: colors.cardBorder,
+                    },
+                  ]}
+                />
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      setShowEditProfile(false);
+                    }}
+                    style={[
+                      styles.cancelButton,
+                      {
+                        borderColor: colors.cardBorder,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.cancelButtonText, { color: colors.textMuted }]}>
+                      Cancel
                     </Text>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => {
-                        setShowLoginModal(false);
-                        setLoginEmail("");
-                        setLoginPassword("");
-                      }}
-                    >
-                      <Ionicons name="close" size={23} color={colors.textMuted} />
-                    </TouchableOpacity>
-                  </View>
+                  </TouchableOpacity>
 
-                  <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
-                    {isLoginMode
-                      ? "Sign in to your Planova account to sync your progress."
-                      : "Create a new account to start your Planova journey."}
-                  </Text>
-
-                  <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
-                    Email Address
-                  </Text>
-                  <TextInput
-                    value={loginEmail}
-                    onChangeText={setLoginEmail}
-                    placeholder="your@email.com"
-                    placeholderTextColor={colors.textMuted}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    returnKeyType="next"
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={saveProfile}
                     style={[
-                      styles.modalInput,
+                      styles.saveProfileButton,
                       {
-                        color: colors.textPrimary,
-                        backgroundColor: colors.iconBackground,
-                        borderColor: colors.cardBorder,
+                        backgroundColor: colors.button,
                       },
                     ]}
-                  />
+                  >
+                    <Text style={styles.saveProfileText}>
+                      Save Profile
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
-                  <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
-                    Password
-                  </Text>
-                  <TextInput
-                    value={loginPassword}
-                    onChangeText={setLoginPassword}
-                    placeholder="••••••••"
-                    placeholderTextColor={colors.textMuted}
-                    secureTextEntry
-                    returnKeyType="done"
-                    onSubmitEditing={handleLogin}
-                    style={[
-                      styles.modalInput,
-                      {
-                        color: colors.textPrimary,
-                        backgroundColor: colors.iconBackground,
-                        borderColor: colors.cardBorder,
-                      },
-                    ]}
-                  />
-
-                  <View style={styles.modalActions}>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => {
-                        setIsLoginMode(!isLoginMode);
-                        setLoginEmail("");
-                        setLoginPassword("");
-                      }}
-                      style={styles.switchModeButton}
-                    >
-                      <Text style={[styles.switchModeText, { color: colors.textSecondary }]}>
-                        {isLoginMode ? "Need an account? Sign Up" : "Already have an account? Log In"}
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={handleLogin}
-                      style={[
-                        styles.saveProfileButton,
-                        {
-                          backgroundColor: colors.button,
-                          marginTop: 10,
-                        },
-                      ]}
-                    >
-                      <Text style={styles.saveProfileText}>
-                        {isLoginMode ? "Log In" : "Create Account"}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.keyboardBottomSpacer} />
-                </ScrollView>
-              </View>
+                <View style={styles.keyboardBottomSpacer} />
+              </ScrollView>
             </View>
-          </KeyboardAvoidingView>
+          </View>
         </Modal>
       </>
     );
@@ -1648,19 +1339,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
 
-  loginBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 4,
-    marginBottom: 4,
-  },
-
-  loginBadgeText: {
-    fontFamily: "Bitter",
-    fontSize: 12,
-  },
-
   statsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1746,39 +1424,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  logoutCard: {
-    width: "100%",
-    borderRadius: 22,
-    padding: 18,
-    marginBottom: 16,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  logoutTextContainer: {
-    flex: 1,
-    marginLeft: 12,
-    marginRight: 10,
-  },
-
-  logoutTitle: {
-    fontFamily: "BitterBold",
-    fontSize: 17,
-  },
-
-  logoutDescription: {
-    fontFamily: "Bitter",
-    marginTop: 4,
-    fontSize: 13,
-  },
-
   bottomSpacer: {
     height: 30,
-  },
-
-  keyboardAvoidingView: {
-    flex: 1,
   },
 
   modalOverlay: {
@@ -1792,14 +1439,6 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 430,
     height: "90%",
-    borderRadius: 24,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
-
-  loginModal: {
-    width: "100%",
-    maxWidth: 430,
     borderRadius: 24,
     borderWidth: 1,
     overflow: "hidden",
@@ -1833,62 +1472,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  modalSectionTitle: {
-    fontFamily: "BitterBold",
-    fontSize: 14,
-    marginBottom: 9,
-  },
-
-  photoButtonsRow: {
-    flexDirection: "row",
-    gap: 9,
-    marginBottom: 17,
-  },
-
-  photoButton: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-  },
-
-  photoButtonText: {
-    fontFamily: "BitterBold",
-    fontSize: 12,
-  },
-
-  backgroundPreview: {
-    width: "100%",
-    height: 90,
-    borderRadius: 15,
-    borderWidth: 1,
-    overflow: "hidden",
-    marginBottom: 9,
-  },
-
-  backgroundPreviewImage: {
-    width: "100%",
-    height: "100%",
-  },
-
-  backgroundPreviewOverlay: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: "60%",
-  },
-
-  backgroundPreviewIcon: {
-    position: "absolute",
-    right: 12,
-    bottom: 12,
-  },
-
   modalLabel: {
     fontFamily: "BitterBold",
     fontSize: 12,
@@ -1907,24 +1490,19 @@ const styles = StyleSheet.create({
   },
 
   modalActions: {
-    flexDirection: "column",
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 10,
     marginTop: 4,
   },
 
-  switchModeButton: {
-    paddingVertical: 8,
-    alignItems: "center",
-  },
-
-  switchModeText: {
-    fontFamily: "Bitter",
-    fontSize: 13,
-  },
-
   cancelButton: {
-    paddingHorizontal: 13,
+    flex: 1,
+    borderRadius: 13,
+    paddingHorizontal: 18,
     paddingVertical: 11,
+    alignItems: "center",
+    borderWidth: 1,
   },
 
   cancelButtonText: {
@@ -1933,6 +1511,7 @@ const styles = StyleSheet.create({
   },
 
   saveProfileButton: {
+    flex: 1,
     borderRadius: 13,
     paddingHorizontal: 18,
     paddingVertical: 11,
