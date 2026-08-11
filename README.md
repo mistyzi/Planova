@@ -78,8 +78,15 @@ With essentials like a task tracker, focus timer, notes, and flashcards, Planova
 	│	├── profilesheetcontext.tsx
 	│   └── themecontext.tsx
 	│
-	├── storage/    TO DO
-	│
+	├── storage/    				# Storage System
+	│ 	├── bookmarkStorage.tsx
+	│ 	├── customFocusStorage.tsx
+	│ 	├── flashcardStorage.tsz
+	│ 	├── focusTimerStorage.tsx
+	│ 	├── noteStorage.tsx
+	│ 	├── referanceStorage.tsx
+	│ 	└── studyGuideStorage.tsx
+	│  
 	├── utils/   					# Secure OCR Key Loader
 	│   └── ocr.ts
 	│
