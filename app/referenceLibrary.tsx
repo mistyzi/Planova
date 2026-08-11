@@ -5,22 +5,22 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Linking,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Linking,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {
-  deleteReference,
-  getReferences,
-  Reference,
-  ReferenceType,
+    deleteReference,
+    getReferences,
+    Reference,
+    ReferenceType,
 } from "../storage/referenceStorage";
 
 const referenceTypes: ReferenceType[] = [
@@ -34,11 +34,11 @@ const referenceTypes: ReferenceType[] = [
 
 export default function ReferenceLibraryScreen() {
   const { isDark } = useTheme();
-
   const [references, setReferences] = useState<Reference[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedType, setSelectedType] =
-    useState<ReferenceType | "All">("All");
+  const [selectedType, setSelectedType] = useState<ReferenceType | "All">(
+    "All",
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const backgroundColors: [string, string] = isDark
@@ -90,16 +90,13 @@ export default function ReferenceLibraryScreen() {
 
   const filteredReferences = references.filter((reference) => {
     const query = search.trim().toLowerCase();
-
     const matchesSearch =
       !query ||
       reference.author.toLowerCase().includes(query) ||
       reference.title.toLowerCase().includes(query) ||
       reference.publication.toLowerCase().includes(query);
-
     const matchesType =
       selectedType === "All" || reference.type === selectedType;
-
     return matchesSearch && matchesType;
   });
 
@@ -134,10 +131,8 @@ export default function ReferenceLibraryScreen() {
 
   const openReference = async (url: string) => {
     if (!url.trim()) return;
-
     try {
       const supported = await Linking.canOpenURL(url);
-
       if (supported) {
         await Linking.openURL(url);
       } else {
@@ -156,25 +151,20 @@ export default function ReferenceLibraryScreen() {
         end={{ x: 0.5, y: 1 }}
         style={StyleSheet.absoluteFillObject}
       />
-
       <View pointerEvents="none" style={styles.stars}>
         <StarryBackground />
       </View>
-
       <View style={styles.topBar}>
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.back()}
           style={styles.headerButton}
         >
-          <Ionicons
-            name="arrow-back"
-            size={25}
-            color={colors.title}
-          />
+          <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-
-        {/* PLUS BUTTON -> REFERENCE MAKER */}
+        <Text style={[styles.topTitle, { color: colors.title }]}>
+          Reference Library
+        </Text>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push("/referenceMaker")}
@@ -185,14 +175,9 @@ export default function ReferenceLibraryScreen() {
             },
           ]}
         >
-          <Ionicons
-            name="add"
-            size={23}
-            color={colors.icon}
-          />
+          <Ionicons name="add" size={23} color={colors.icon} />
         </TouchableOpacity>
       </View>
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -200,28 +185,12 @@ export default function ReferenceLibraryScreen() {
       >
         <View style={styles.pageIntro}>
           <Text style={[styles.pageTitle, { color: colors.title }]}>
-            Reference Library
+            References
           </Text>
-
-          <View
-            style={[
-              styles.bottomDivider,
-              {
-                backgroundColor: colors.divider,
-              },
-            ]}
-          />
-
-          <Text
-            style={[
-              styles.pageSubtitle,
-              { color: colors.secondaryText },
-            ]}
-          >
+          <Text style={[styles.pageSubtitle, { color: colors.secondaryText }]}>
             Keep your sources organized and ready to cite.
           </Text>
         </View>
-
         <View
           style={[
             styles.searchBox,
@@ -236,7 +205,6 @@ export default function ReferenceLibraryScreen() {
             size={19}
             color={colors.secondaryText}
           />
-
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -249,7 +217,6 @@ export default function ReferenceLibraryScreen() {
               },
             ]}
           />
-
           {!!search && (
             <TouchableOpacity onPress={() => setSearch("")}>
               <Ionicons
@@ -260,7 +227,6 @@ export default function ReferenceLibraryScreen() {
             </TouchableOpacity>
           )}
         </View>
-
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -274,9 +240,7 @@ export default function ReferenceLibraryScreen() {
               styles.filterButton,
               {
                 backgroundColor:
-                  selectedType === "All"
-                    ? colors.selected
-                    : colors.card,
+                  selectedType === "All" ? colors.selected : colors.card,
                 borderColor:
                   selectedType === "All"
                     ? colors.selectedBorder
@@ -289,19 +253,15 @@ export default function ReferenceLibraryScreen() {
                 styles.filterText,
                 {
                   color:
-                    selectedType === "All"
-                      ? colors.icon
-                      : colors.secondaryText,
+                    selectedType === "All" ? colors.icon : colors.secondaryText,
                 },
               ]}
             >
               All
             </Text>
           </TouchableOpacity>
-
           {referenceTypes.map((referenceType) => {
             const selected = selectedType === referenceType;
-
             return (
               <TouchableOpacity
                 key={referenceType}
@@ -310,9 +270,7 @@ export default function ReferenceLibraryScreen() {
                 style={[
                   styles.filterButton,
                   {
-                    backgroundColor: selected
-                      ? colors.selected
-                      : colors.card,
+                    backgroundColor: selected ? colors.selected : colors.card,
                     borderColor: selected
                       ? colors.selectedBorder
                       : colors.cardBorder,
@@ -323,9 +281,7 @@ export default function ReferenceLibraryScreen() {
                   style={[
                     styles.filterText,
                     {
-                      color: selected
-                        ? colors.icon
-                        : colors.secondaryText,
+                      color: selected ? colors.icon : colors.secondaryText,
                     },
                   ]}
                 >
@@ -335,13 +291,9 @@ export default function ReferenceLibraryScreen() {
             );
           })}
         </ScrollView>
-
         {isLoading ? (
           <View style={styles.loading}>
-            <ActivityIndicator
-              size="large"
-              color={colors.icon}
-            />
+            <ActivityIndicator size="large" color={colors.icon} />
           </View>
         ) : filteredReferences.length === 0 ? (
           <View
@@ -361,32 +313,16 @@ export default function ReferenceLibraryScreen() {
                 },
               ]}
             >
-              <Ionicons
-                name="library-outline"
-                size={27}
-                color={colors.icon}
-              />
+              <Ionicons name="library-outline" size={27} color={colors.icon} />
             </View>
-
-            <Text
-              style={[
-                styles.emptyTitle,
-                { color: colors.text },
-              ]}
-            >
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
               No References Yet
             </Text>
-
             <Text
-              style={[
-                styles.emptyDescription,
-                { color: colors.secondaryText },
-              ]}
+              style={[styles.emptyDescription, { color: colors.secondaryText }]}
             >
-              Add books, articles, websites, journals, and other
-              sources here.
+              Add books, articles, websites, journals, and other sources here.
             </Text>
-
             <TouchableOpacity
               activeOpacity={0.82}
               onPress={() => router.push("/referenceMaker")}
@@ -397,14 +333,8 @@ export default function ReferenceLibraryScreen() {
                 },
               ]}
             >
-              <Ionicons
-                name="add"
-                size={19}
-                color="#ffffff"
-              />
-              <Text style={styles.addButtonText}>
-                Add Reference
-              </Text>
+              <Ionicons name="add" size={19} color="#ffffff" />
+              <Text style={styles.addButtonText}>Add Reference</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -425,21 +355,16 @@ export default function ReferenceLibraryScreen() {
                     style={[
                       styles.typeBadge,
                       {
-                        backgroundColor:
-                          colors.iconBackground,
+                        backgroundColor: colors.iconBackground,
                       },
                     ]}
                   >
                     <Text
-                      style={[
-                        styles.typeBadgeText,
-                        { color: colors.icon },
-                      ]}
+                      style={[styles.typeBadgeText, { color: colors.icon }]}
                     >
                       {reference.type}
                     </Text>
                   </View>
-
                   <View style={styles.referenceActions}>
                     <TouchableOpacity
                       activeOpacity={0.7}
@@ -460,12 +385,9 @@ export default function ReferenceLibraryScreen() {
                         color={colors.secondaryText}
                       />
                     </TouchableOpacity>
-
                     <TouchableOpacity
                       activeOpacity={0.7}
-                      onPress={() =>
-                        confirmDelete(reference)
-                      }
+                      onPress={() => confirmDelete(reference)}
                       style={styles.actionButton}
                     >
                       <Ionicons
@@ -476,36 +398,18 @@ export default function ReferenceLibraryScreen() {
                     </TouchableOpacity>
                   </View>
                 </View>
-
-                <Text
-                  style={[
-                    styles.author,
-                    { color: colors.secondaryText },
-                  ]}
-                >
+                <Text style={[styles.author, { color: colors.secondaryText }]}>
                   {reference.author}
                 </Text>
-
-                <Text
-                  style={[
-                    styles.referenceTitle,
-                    { color: colors.text },
-                  ]}
-                >
+                <Text style={[styles.referenceTitle, { color: colors.text }]}>
                   {reference.title}
                 </Text>
-
                 <Text
-                  style={[
-                    styles.publication,
-                    { color: colors.secondaryText },
-                  ]}
+                  style={[styles.publication, { color: colors.secondaryText }]}
                 >
-                  {reference.publication ||
-                    "Publication not specified"}
+                  {reference.publication || "Publication not specified"}
                   {reference.year ? ` · ${reference.year}` : ""}
                 </Text>
-
                 <View
                   style={[
                     styles.citationLine,
@@ -514,32 +418,16 @@ export default function ReferenceLibraryScreen() {
                     },
                   ]}
                 />
-
-                <Text
-                  style={[
-                    styles.citation,
-                    { color: colors.text },
-                  ]}
-                >
+                <Text style={[styles.citation, { color: colors.text }]}>
                   {reference.author}.{" "}
-                  <Text style={styles.citationTitle}>
-                    {reference.title}
-                  </Text>
-                  {reference.publication
-                    ? `. ${reference.publication}`
-                    : ""}
-                  {reference.year
-                    ? `, ${reference.year}`
-                    : ""}
-                  .
+                  <Text style={styles.citationTitle}>{reference.title}</Text>
+                  {reference.publication ? `. ${reference.publication}` : ""}
+                  {reference.year ? `, ${reference.year}` : ""}.
                 </Text>
-
                 {!!reference.url && (
                   <TouchableOpacity
                     activeOpacity={0.75}
-                    onPress={() =>
-                      openReference(reference.url)
-                    }
+                    onPress={() => openReference(reference.url)}
                     style={styles.linkRow}
                   >
                     <Ionicons
@@ -547,49 +435,33 @@ export default function ReferenceLibraryScreen() {
                       size={15}
                       color={colors.icon}
                     />
-
                     <Text
                       numberOfLines={2}
-                      style={[
-                        styles.linkText,
-                        { color: colors.icon },
-                      ]}
+                      style={[styles.linkText, { color: colors.icon }]}
                     >
                       {reference.url}
                     </Text>
                   </TouchableOpacity>
                 )}
-
                 {!!reference.notes && (
                   <View style={styles.notesBox}>
                     <Text
                       style={[
                         styles.notesLabel,
-                        {
-                          color: colors.secondaryText,
-                        },
+                        { color: colors.secondaryText },
                       ]}
                     >
                       NOTES
                     </Text>
-
-                    <Text
-                      style={[
-                        styles.notes,
-                        { color: colors.text },
-                      ]}
-                    >
+                    <Text style={[styles.notes, { color: colors.text }]}>
                       {reference.notes}
                     </Text>
                   </View>
                 )}
-
                 <Text
                   style={[
                     styles.referenceNumber,
-                    {
-                      color: colors.secondaryText,
-                    },
+                    { color: colors.secondaryText },
                   ]}
                 >
                   [{index + 1}]
@@ -598,7 +470,6 @@ export default function ReferenceLibraryScreen() {
             ))}
           </View>
         )}
-
         <View
           style={[
             styles.bottomDivider,
@@ -617,12 +488,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
-
   stars: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 1,
   },
-
   topBar: {
     height: 65,
     paddingHorizontal: 20,
@@ -631,7 +500,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     zIndex: 10,
   },
-
   headerButton: {
     width: 42,
     height: 42,
@@ -639,7 +507,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   topTitle: {
     flex: 1,
     fontFamily: "BitterBold",
@@ -647,37 +514,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginHorizontal: 10,
   },
-
   scroll: {
     flex: 1,
     backgroundColor: "transparent",
     zIndex: 2,
   },
-
   content: {
     paddingHorizontal: 24,
     paddingTop: 15,
     paddingBottom: 60,
   },
-
   pageIntro: {
     alignItems: "center",
     marginBottom: 22,
   },
-
   pageTitle: {
     fontFamily: "BitterBold",
     fontSize: 27,
     marginBottom: 7,
   },
-
   pageSubtitle: {
     fontFamily: "Bitter",
     fontSize: 10.5,
     textAlign: "center",
     lineHeight: 17,
   },
-
   searchBox: {
     width: "100%",
     minHeight: 48,
@@ -687,7 +548,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 13,
   },
-
   searchInput: {
     flex: 1,
     fontFamily: "Bitter",
@@ -695,16 +555,13 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     paddingVertical: 0,
   },
-
   filterScroll: {
     marginTop: 13,
     marginBottom: 20,
   },
-
   filterContent: {
     gap: 8,
   },
-
   filterButton: {
     minHeight: 35,
     paddingHorizontal: 12,
@@ -713,18 +570,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   filterText: {
     fontFamily: "BitterBold",
     fontSize: 9,
   },
-
   loading: {
     paddingVertical: 70,
     alignItems: "center",
     justifyContent: "center",
   },
-
   emptyCard: {
     width: "100%",
     borderRadius: 22,
@@ -733,7 +587,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 5,
   },
-
   emptyIcon: {
     width: 58,
     height: 58,
@@ -742,13 +595,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 14,
   },
-
   emptyTitle: {
     fontFamily: "BitterBold",
     fontSize: 16,
     marginBottom: 7,
   },
-
   emptyDescription: {
     fontFamily: "Bitter",
     fontSize: 10.5,
@@ -756,7 +607,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     maxWidth: 280,
   },
-
   addButton: {
     minHeight: 47,
     paddingHorizontal: 20,
@@ -766,18 +616,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 18,
   },
-
   addButtonText: {
     color: "#ffffff",
     fontFamily: "BitterBold",
     fontSize: 10.5,
     marginLeft: 7,
   },
-
   referenceList: {
     gap: 14,
   },
-
   referenceCard: {
     width: "100%",
     borderRadius: 20,
@@ -785,32 +632,27 @@ const styles = StyleSheet.create({
     padding: 18,
     position: "relative",
   },
-
   referenceTop: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 14,
   },
-
   typeBadge: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 9,
   },
-
   typeBadgeText: {
     fontFamily: "BitterBold",
     fontSize: 8,
     textTransform: "uppercase",
   },
-
   referenceActions: {
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
   },
-
   actionButton: {
     width: 34,
     height: 34,
@@ -818,13 +660,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   author: {
     fontFamily: "BitterBold",
     fontSize: 10,
     marginBottom: 5,
   },
-
   referenceTitle: {
     fontFamily: "BitterBold",
     fontSize: 16,
@@ -832,35 +672,29 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     paddingRight: 5,
   },
-
   publication: {
     fontFamily: "Bitter",
     fontSize: 10,
     lineHeight: 16,
   },
-
   citationLine: {
     width: "100%",
     height: 1,
     marginVertical: 14,
   },
-
   citation: {
     fontFamily: "Bitter",
     fontSize: 10.5,
     lineHeight: 18,
   },
-
   citationTitle: {
     fontFamily: "BitterBold",
   },
-
   linkRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     marginTop: 12,
   },
-
   linkText: {
     flex: 1,
     fontFamily: "Bitter",
@@ -869,24 +703,20 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     textDecorationLine: "underline",
   },
-
   notesBox: {
     marginTop: 14,
   },
-
   notesLabel: {
     fontFamily: "BitterBold",
     fontSize: 7.5,
     letterSpacing: 0.7,
     marginBottom: 5,
   },
-
   notes: {
     fontFamily: "Bitter",
     fontSize: 9.5,
     lineHeight: 16,
   },
-
   referenceNumber: {
     position: "absolute",
     right: 17,
@@ -894,12 +724,10 @@ const styles = StyleSheet.create({
     fontFamily: "BitterBold",
     fontSize: 8,
   },
-
   bottomDivider: {
     width: "60%",
     height: 1,
     alignSelf: "center",
-    marginTop: 13,
-    marginBottom: 13,
+    marginTop: 35,
   },
 });

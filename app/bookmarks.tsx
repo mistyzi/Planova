@@ -5,26 +5,21 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Linking,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Linking,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import {
-  Bookmark,
-  deleteBookmark,
-  getBookmarks,
-} from "../storage/bookmarkStorage";
+import { Bookmark, deleteBookmark, getBookmarks } from "../storage/bookmarkStorage";
 
 export default function BookmarksScreen() {
   const { isDark } = useTheme();
-
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -84,9 +79,7 @@ export default function BookmarksScreen() {
 
   const filteredBookmarks = useMemo(() => {
     const query = search.trim().toLowerCase();
-
     if (!query) return bookmarks;
-
     return bookmarks.filter(
       (bookmark) =>
         bookmark.title.toLowerCase().includes(query) ||
@@ -110,15 +103,11 @@ export default function BookmarksScreen() {
           onPress: async () => {
             try {
               await deleteBookmark(bookmark.id);
-
               setBookmarks((current) =>
-                current.filter(
-                  (item) => item.id !== bookmark.id,
-                ),
+                current.filter((item) => item.id !== bookmark.id),
               );
             } catch (error) {
               console.log("Failed to delete bookmark:", error);
-
               Alert.alert(
                 "Delete failed",
                 "The bookmark could not be removed.",
@@ -133,31 +122,18 @@ export default function BookmarksScreen() {
   const openBookmark = async (url: string) => {
     try {
       const formattedUrl =
-        url.startsWith("http://") ||
-        url.startsWith("https://")
+        url.startsWith("http://") || url.startsWith("https://")
           ? url
           : `https://${url}`;
-
-      const supported = await Linking.canOpenURL(
-        formattedUrl,
-      );
-
+      const supported = await Linking.canOpenURL(formattedUrl);
       if (!supported) {
-        Alert.alert(
-          "Unable to open",
-          "This link could not be opened.",
-        );
+        Alert.alert("Unable to open", "This link could not be opened.");
         return;
       }
-
       await Linking.openURL(formattedUrl);
     } catch (error) {
       console.log("Failed to open bookmark:", error);
-
-      Alert.alert(
-        "Unable to open",
-        "This link could not be opened.",
-      );
+      Alert.alert("Unable to open", "This link could not be opened.");
     }
   };
 
@@ -168,19 +144,11 @@ export default function BookmarksScreen() {
           colors={backgroundColors}
           style={StyleSheet.absoluteFillObject}
         />
-
-        <View
-          pointerEvents="none"
-          style={styles.stars}
-        >
+        <View pointerEvents="none" style={styles.stars}>
           <StarryBackground />
         </View>
-
         <View style={styles.loading}>
-          <ActivityIndicator
-            size="large"
-            color={colors.icon}
-          />
+          <ActivityIndicator size="large" color={colors.icon} />
         </View>
       </SafeAreaView>
     );
@@ -194,46 +162,28 @@ export default function BookmarksScreen() {
         end={{ x: 0.5, y: 1 }}
         style={StyleSheet.absoluteFillObject}
       />
-
-      <View
-        pointerEvents="none"
-        style={styles.stars}
-      >
+      <View pointerEvents="none" style={styles.stars}>
         <StarryBackground />
       </View>
-
       <View style={styles.topBar}>
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Ionicons
-            name="arrow-back"
-            size={25}
-            color={colors.title}
-          />
+          <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-
-        {/* PLUS BUTTON -> BOOKMARK MAKER */}
+        <Text style={[styles.topTitle, { color: colors.title }]}>
+          Bookmarks
+        </Text>
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.push("/bookmarkMaker")}
-          style={[
-            styles.addButton,
-            {
-              backgroundColor: colors.iconBackground,
-            },
-          ]}
+          style={styles.addButton}
         >
-          <Ionicons
-            name="add"
-            size={24}
-            color={colors.title}
-          />
+          <Ionicons name="add" size={24} color={colors.title} />
         </TouchableOpacity>
       </View>
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -241,33 +191,19 @@ export default function BookmarksScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.titleSection}>
-          <Text
-            style={[
-              styles.pageTitle,
-              { color: colors.title },
-            ]}
-          >
-            Bookmarks
+          <Text style={[styles.pageTitle, { color: colors.title }]}>
+            Saved Resources
           </Text>
-
           <View
             style={[
               styles.constellationLine,
               { backgroundColor: colors.divider },
             ]}
           />
-
-          <Text
-            style={[
-              styles.pageSubtitle,
-              { color: colors.secondaryText },
-            ]}
-          >
-            Keep useful websites, articles, and study
-            resources in one place.
+          <Text style={[styles.pageSubtitle, { color: colors.secondaryText }]}>
+            Keep useful websites, articles, and study resources in one place.
           </Text>
         </View>
-
         <View
           style={[
             styles.searchContainer,
@@ -282,7 +218,6 @@ export default function BookmarksScreen() {
             size={19}
             color={colors.secondaryText}
           />
-
           <TextInput
             value={search}
             onChangeText={setSearch}
@@ -295,12 +230,8 @@ export default function BookmarksScreen() {
               },
             ]}
           />
-
           {search.length > 0 && (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setSearch("")}
-            >
+            <TouchableOpacity activeOpacity={0.7} onPress={() => setSearch("")}>
               <Ionicons
                 name="close-circle"
                 size={18}
@@ -309,31 +240,18 @@ export default function BookmarksScreen() {
             </TouchableOpacity>
           )}
         </View>
-
         <View style={styles.listHeader}>
           <View>
-            <Text
-              style={[
-                styles.listTitle,
-                { color: colors.title },
-              ]}
-            >
+            <Text style={[styles.listTitle, { color: colors.title }]}>
               My Bookmarks
             </Text>
-
             <Text
-              style={[
-                styles.listSubtitle,
-                { color: colors.secondaryText },
-              ]}
+              style={[styles.listSubtitle, { color: colors.secondaryText }]}
             >
               {filteredBookmarks.length}{" "}
-              {filteredBookmarks.length === 1
-                ? "resource"
-                : "resources"}
+              {filteredBookmarks.length === 1 ? "resource" : "resources"}
             </Text>
           </View>
-
           <View
             style={[
               styles.bookmarkCount,
@@ -342,23 +260,12 @@ export default function BookmarksScreen() {
               },
             ]}
           >
-            <Ionicons
-              name="bookmark"
-              size={15}
-              color={colors.icon}
-            />
-
-            <Text
-              style={[
-                styles.bookmarkCountText,
-                { color: colors.icon },
-              ]}
-            >
+            <Ionicons name="bookmark" size={15} color={colors.icon} />
+            <Text style={[styles.bookmarkCountText, { color: colors.icon }]}>
               {bookmarks.length}
             </Text>
           </View>
         </View>
-
         {filteredBookmarks.length === 0 && (
           <View
             style={[
@@ -378,44 +285,25 @@ export default function BookmarksScreen() {
               ]}
             >
               <Ionicons
-                name={
-                  search.length > 0
-                    ? "search-outline"
-                    : "bookmark-outline"
-                }
+                name={search.length > 0 ? "search-outline" : "bookmark-outline"}
                 size={29}
                 color={colors.icon}
               />
             </View>
-
-            <Text
-              style={[
-                styles.emptyTitle,
-                { color: colors.text },
-              ]}
-            >
-              {search.length > 0
-                ? "No bookmarks found"
-                : "No bookmarks yet"}
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              {search.length > 0 ? "No bookmarks found" : "No bookmarks yet"}
             </Text>
-
             <Text
-              style={[
-                styles.emptyDescription,
-                { color: colors.secondaryText },
-              ]}
+              style={[styles.emptyDescription, { color: colors.secondaryText }]}
             >
               {search.length > 0
                 ? "Try searching for a different resource."
                 : "Save useful websites and study resources here so you can find them later."}
             </Text>
-
             {search.length === 0 && (
               <TouchableOpacity
                 activeOpacity={0.82}
-                onPress={() =>
-                  router.push("/bookmarkMaker")
-                }
+                onPress={() => router.push("/bookmarkMaker")}
                 style={[
                   styles.emptyButton,
                   {
@@ -423,20 +311,12 @@ export default function BookmarksScreen() {
                   },
                 ]}
               >
-                <Ionicons
-                  name="add"
-                  size={18}
-                  color="#ffffff"
-                />
-
-                <Text style={styles.emptyButtonText}>
-                  Add Bookmark
-                </Text>
+                <Ionicons name="add" size={18} color="#ffffff" />
+                <Text style={styles.emptyButtonText}>Add Bookmark</Text>
               </TouchableOpacity>
             )}
           </View>
         )}
-
         <View style={styles.bookmarkList}>
           {filteredBookmarks.map((bookmark) => (
             <View
@@ -454,42 +334,29 @@ export default function BookmarksScreen() {
                   style={[
                     styles.bookmarkIcon,
                     {
-                      backgroundColor:
-                        colors.iconBackground,
+                      backgroundColor: colors.iconBackground,
                     },
                   ]}
                 >
-                  <Ionicons
-                    name="bookmark"
-                    size={21}
-                    color={colors.icon}
-                  />
+                  <Ionicons name="bookmark" size={21} color={colors.icon} />
                 </View>
-
                 <View style={styles.bookmarkInfo}>
                   <Text
                     numberOfLines={2}
-                    style={[
-                      styles.bookmarkTitle,
-                      { color: colors.text },
-                    ]}
+                    style={[styles.bookmarkTitle, { color: colors.text }]}
                   >
                     {bookmark.title}
                   </Text>
-
                   <Text
                     numberOfLines={1}
                     style={[
                       styles.bookmarkUrl,
-                      {
-                        color: colors.secondaryText,
-                      },
+                      { color: colors.secondaryText },
                     ]}
                   >
                     {bookmark.url}
                   </Text>
                 </View>
-
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => handleDelete(bookmark)}
@@ -502,21 +369,17 @@ export default function BookmarksScreen() {
                   />
                 </TouchableOpacity>
               </View>
-
               {!!bookmark.description && (
                 <Text
                   numberOfLines={3}
                   style={[
                     styles.bookmarkDescription,
-                    {
-                      color: colors.secondaryText,
-                    },
+                    { color: colors.secondaryText },
                   ]}
                 >
                   {bookmark.description}
                 </Text>
               )}
-
               <View style={styles.bookmarkBottom}>
                 <View style={styles.dateContainer}>
                   <Ionicons
@@ -524,59 +387,33 @@ export default function BookmarksScreen() {
                     size={13}
                     color={colors.secondaryText}
                   />
-
                   <Text
-                    style={[
-                      styles.dateText,
-                      {
-                        color: colors.secondaryText,
-                      },
-                    ]}
+                    style={[styles.dateText, { color: colors.secondaryText }]}
                   >
                     {bookmark.date}
                   </Text>
                 </View>
-
                 <TouchableOpacity
                   activeOpacity={0.82}
-                  onPress={() =>
-                    openBookmark(bookmark.url)
-                  }
+                  onPress={() => openBookmark(bookmark.url)}
                   style={[
                     styles.openButton,
                     {
-                      backgroundColor:
-                        colors.iconBackground,
+                      backgroundColor: colors.iconBackground,
                     },
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.openButtonText,
-                      {
-                        color: colors.icon,
-                      },
-                    ]}
-                  >
+                  <Text style={[styles.openButtonText, { color: colors.icon }]}>
                     Open
                   </Text>
-
-                  <Ionicons
-                    name="open-outline"
-                    size={15}
-                    color={colors.icon}
-                  />
+                  <Ionicons name="open-outline" size={15} color={colors.icon} />
                 </TouchableOpacity>
               </View>
             </View>
           ))}
         </View>
-
         <View
-          style={[
-            styles.finalDivider,
-            { backgroundColor: colors.divider },
-          ]}
+          style={[styles.finalDivider, { backgroundColor: colors.divider }]}
         />
       </ScrollView>
     </SafeAreaView>
@@ -588,19 +425,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
-
   stars: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 1,
   },
-
   loading: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
   },
-
   topBar: {
     height: 65,
     paddingHorizontal: 20,
@@ -609,7 +443,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     zIndex: 10,
   },
-
   backButton: {
     width: 42,
     height: 42,
@@ -617,7 +450,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   topTitle: {
     flex: 1,
     fontFamily: "BitterBold",
@@ -625,7 +457,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginHorizontal: 10,
   },
-
   addButton: {
     width: 42,
     height: 42,
@@ -633,38 +464,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   scroll: {
     flex: 1,
     backgroundColor: "transparent",
     zIndex: 2,
   },
-
   content: {
     paddingHorizontal: 24,
     paddingTop: 15,
     paddingBottom: 60,
   },
-
   titleSection: {
     alignItems: "center",
     marginBottom: 25,
   },
-
   pageTitle: {
     fontFamily: "BitterBold",
     fontSize: 24,
     textAlign: "center",
     marginBottom: 13,
   },
-
   constellationLine: {
     width: "60%",
     height: 1,
     alignSelf: "center",
     marginBottom: 13,
   },
-
   pageSubtitle: {
     fontFamily: "Bitter",
     fontSize: 10.5,
@@ -672,7 +497,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     maxWidth: 310,
   },
-
   searchContainer: {
     width: "100%",
     minHeight: 50,
@@ -683,7 +507,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 25,
   },
-
   searchInput: {
     flex: 1,
     fontFamily: "Bitter",
@@ -691,25 +514,21 @@ const styles = StyleSheet.create({
     marginLeft: 9,
     paddingVertical: 10,
   },
-
   listHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 14,
   },
-
   listTitle: {
     fontFamily: "BitterBold",
     fontSize: 19,
   },
-
   listSubtitle: {
     fontFamily: "Bitter",
     fontSize: 9.5,
     marginTop: 3,
   },
-
   bookmarkCount: {
     minWidth: 38,
     height: 32,
@@ -719,29 +538,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   bookmarkCountText: {
     fontFamily: "BitterBold",
     fontSize: 10,
     marginLeft: 5,
   },
-
   bookmarkList: {
     gap: 13,
   },
-
   bookmarkCard: {
     width: "100%",
     borderRadius: 20,
     borderWidth: 1,
     padding: 17,
   },
-
   bookmarkTop: {
     flexDirection: "row",
     alignItems: "flex-start",
   },
-
   bookmarkIcon: {
     width: 45,
     height: 45,
@@ -750,24 +564,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 11,
   },
-
   bookmarkInfo: {
     flex: 1,
     paddingRight: 8,
   },
-
   bookmarkTitle: {
     fontFamily: "BitterBold",
     fontSize: 14,
     lineHeight: 19,
   },
-
   bookmarkUrl: {
     fontFamily: "Bitter",
     fontSize: 9,
     marginTop: 4,
   },
-
   deleteButton: {
     width: 32,
     height: 32,
@@ -775,32 +585,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   bookmarkDescription: {
     fontFamily: "Bitter",
     fontSize: 10.5,
     lineHeight: 17,
     marginTop: 13,
   },
-
   bookmarkBottom: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginTop: 15,
   },
-
   dateContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
-
   dateText: {
     fontFamily: "Bitter",
     fontSize: 8.5,
     marginLeft: 5,
   },
-
   openButton: {
     minHeight: 35,
     paddingHorizontal: 12,
@@ -809,13 +614,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   openButtonText: {
     fontFamily: "BitterBold",
     fontSize: 9.5,
     marginRight: 5,
   },
-
   emptyCard: {
     width: "100%",
     borderRadius: 20,
@@ -823,7 +626,6 @@ const styles = StyleSheet.create({
     padding: 25,
     alignItems: "center",
   },
-
   emptyIcon: {
     width: 55,
     height: 55,
@@ -832,13 +634,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 13,
   },
-
   emptyTitle: {
     fontFamily: "BitterBold",
     fontSize: 16,
     textAlign: "center",
   },
-
   emptyDescription: {
     fontFamily: "Bitter",
     fontSize: 10.5,
@@ -847,7 +647,6 @@ const styles = StyleSheet.create({
     maxWidth: 290,
     marginTop: 7,
   },
-
   emptyButton: {
     minHeight: 44,
     paddingHorizontal: 18,
@@ -857,19 +656,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 18,
   },
-
   emptyButtonText: {
     color: "#ffffff",
     fontFamily: "BitterBold",
     fontSize: 10,
     marginLeft: 6,
   },
-
   finalDivider: {
     width: "60%",
     height: 1,
     alignSelf: "center",
-    marginTop: 13,
-    marginBottom: 13,
+    marginTop: 35,
   },
 });

@@ -4,21 +4,22 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
 } from "react";
 import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
-const TASKS_STORAGE_KEY = "@planova_tasks";
+const TASKS_STORAGE_KEY =
+  "@planova_tasks";
 
 const PROFILE_STORAGE_KEYS = [
   "@planova_profile",
@@ -27,7 +28,8 @@ const PROFILE_STORAGE_KEYS = [
   "@planova_profile_data",
 ];
 
-const STREAK_STORAGE_KEY = "@planova_streak";
+const STREAK_STORAGE_KEY =
+  "@planova_streak";
 
 type Task = {
   id: string;
@@ -59,22 +61,29 @@ type TaskCategory =
 const pad = (value: number) =>
   String(value).padStart(2, "0");
 
-const formatDateKey = (date: Date) => {
+const formatDateKey = (
+  date: Date
+) => {
   return `${date.getFullYear()}-${pad(
     date.getMonth() + 1
   )}-${pad(date.getDate())}`;
 };
 
 const getTodayKey = () => {
-  return formatDateKey(new Date());
+  return formatDateKey(
+    new Date()
+  );
 };
 
-const parseDateSafe = (dateString?: string) => {
+const parseDateSafe = (
+  dateString?: string
+) => {
   if (!dateString) {
     return new Date();
   }
 
-  const parts = dateString.split("-");
+  const parts =
+    dateString.split("-");
 
   if (parts.length !== 3) {
     return new Date();
@@ -109,190 +118,25 @@ const getDaysBetween = (
   const later =
     parseDateSafe(laterDate);
 
-  earlier.setHours(0, 0, 0, 0);
-  later.setHours(0, 0, 0, 0);
+  earlier.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+  later.setHours(
+    0,
+    0,
+    0,
+    0
+  );
 
   return Math.round(
     (later.getTime() -
       earlier.getTime()) /
       (1000 * 60 * 60 * 24)
   );
-};
-
-/*
- * ============================================================
- * TASK DATE/TIME HELPERS
- * ============================================================
- *
- * IMPORTANT:
- * These functions are now the single source of truth for
- * whether a task is missed, due today, or upcoming.
- */
-
-const parseTimeParts = (timeString?: string) => {
-  if (!timeString) {
-    return {
-      hours: 23,
-      minutes: 59,
-    };
-  }
-
-  const trimmed =
-    timeString.trim().toLowerCase();
-
-  /*
-   * Supports:
-   * 14:30
-   * 2:30 PM
-   * 2 PM
-   * 09:00
-   */
-
-  const amPmMatch =
-    trimmed.match(
-      /^(\d{1,2})(?::(\d{1,2}))?\s*(am|pm)$/
-    );
-
-  if (amPmMatch) {
-    let hours = Number(
-      amPmMatch[1]
-    );
-
-    const minutes = Number(
-      amPmMatch[2] || 0
-    );
-
-    const period = amPmMatch[3];
-
-    if (
-      !Number.isFinite(hours) ||
-      !Number.isFinite(minutes)
-    ) {
-      return {
-        hours: 23,
-        minutes: 59,
-      };
-    }
-
-    if (period === "pm" && hours !== 12) {
-      hours += 12;
-    }
-
-    if (period === "am" && hours === 12) {
-      hours = 0;
-    }
-
-    return {
-      hours: Math.min(
-        Math.max(hours, 0),
-        23
-      ),
-      minutes: Math.min(
-        Math.max(minutes, 0),
-        59
-      ),
-    };
-  }
-
-  const twentyFourHourMatch =
-    trimmed.match(
-      /^(\d{1,2}):(\d{1,2})/
-    );
-
-  if (twentyFourHourMatch) {
-    const hours = Number(
-      twentyFourHourMatch[1]
-    );
-
-    const minutes = Number(
-      twentyFourHourMatch[2]
-    );
-
-    if (
-      Number.isFinite(hours) &&
-      Number.isFinite(minutes)
-    ) {
-      return {
-        hours: Math.min(
-          Math.max(hours, 0),
-          23
-        ),
-        minutes: Math.min(
-          Math.max(minutes, 0),
-          59
-        ),
-      };
-    }
-  }
-
-  /*
-   * If the time cannot be parsed, treating it as the end
-   * of the day prevents a valid task from becoming missed
-   * prematurely.
-   */
-
-  return {
-    hours: 23,
-    minutes: 59,
-  };
-};
-
-const getTaskDueDateTime = (
-  task: Task
-) => {
-  const date = parseDateSafe(
-    task.date
-  );
-
-  const {
-    hours,
-    minutes,
-  } = parseTimeParts(task.time);
-
-  date.setHours(
-    hours,
-    minutes,
-    0,
-    0
-  );
-
-  return date;
-};
-
-const getTaskStatus = (
-  task: Task,
-  now: Date = new Date()
-): "completed" | "missed" | "today" | "upcoming" => {
-  if (task.completed) {
-    return "completed";
-  }
-
-  const dueDateTime =
-    getTaskDueDateTime(task);
-
-  const currentTime =
-    now.getTime();
-
-  if (
-    dueDateTime.getTime() <
-    currentTime
-  ) {
-    return "missed";
-  }
-
-  const todayKey =
-    formatDateKey(now);
-
-  const taskDateKey =
-    task.date;
-
-  if (
-    taskDateKey === todayKey
-  ) {
-    return "today";
-  }
-
-  return "upcoming";
 };
 
 const DAILY_AFFIRMATIONS = [
@@ -311,18 +155,6 @@ const DAILY_AFFIRMATIONS = [
   "The universe is vast, and there is room for me to become everything I am meant to be.",
   "I am patient with my growth and persistent with my dreams.",
   "Every day is another opportunity to add light to my own sky.",
-  "I am bold, unstoppable, and choose courage to take inspired action today.",
-  "I shine my light brightly, and my own validation is what matters most.",
-  "I choose to trust every leap of faith and grow with freedom and joy.",
-  "I am more abundant and deeply grounded when I honor my rest.",
-  "I trust in my abilities and create peace through clear purpose.",
-  "I build my dreams with patience, and my success is inevitable.",
-  "My curiosity and fluid communication attract wonderful new opportunities.",
-  "I cultivate inner peace and choose harmony in all my connections.",
-  "I am meant to do things differently, and my ideas benefit the collective.",
-  "I nurture myself with compassion and create a safe space for my emotions.",
-  "I transform challenges into strength and let my intuition guide me.",
-  "I flow with creative light, and magic unfolds when I surrender to the universe."
 ];
 
 const getDailyAffirmation = (
@@ -369,15 +201,8 @@ export default function HomeScreen() {
       "today"
     );
 
-  /*
-   * This state forces the task status to refresh as the clock
-   * moves forward, even if AsyncStorage has not changed.
-   */
-  const [now, setNow] =
-    useState(() => new Date());
-
   const todayKey =
-    formatDateKey(now);
+    getTodayKey();
 
   const dailyAffirmation =
     useMemo(() => {
@@ -592,29 +417,6 @@ export default function HomeScreen() {
           "#403465",
       };
 
-  /*
-   * ============================================================
-   * REFRESH CLOCK
-   * ============================================================
-   */
-
-  useEffect(() => {
-    const interval =
-      setInterval(() => {
-        setNow(new Date());
-      }, 30 * 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  /*
-   * ============================================================
-   * LOAD TASKS
-   * ============================================================
-   */
-
   const loadTasks =
     useCallback(async () => {
       try {
@@ -684,182 +486,175 @@ export default function HomeScreen() {
       }
     }, []);
 
-  /*
-   * ============================================================
-   * LOAD PROFILE
-   * ============================================================
-   */
-
   const loadProfile =
-    useCallback(async () => {
-      try {
-        for (
-          const key of PROFILE_STORAGE_KEYS
-        ) {
-          const storedProfile =
-            await AsyncStorage.getItem(
-              key
-            );
-
-          if (!storedProfile) {
-            continue;
-          }
-
-          try {
-            const parsed: Profile =
-              JSON.parse(
-                storedProfile
+    useCallback(
+      async () => {
+        try {
+          for (const key of PROFILE_STORAGE_KEYS) {
+            const storedProfile =
+              await AsyncStorage.getItem(
+                key
               );
 
-            const possibleName =
-              parsed.name ||
-              parsed.displayName ||
-              parsed.fullName ||
-              parsed.username;
+            if (!storedProfile) {
+              continue;
+            }
 
-            if (
-              typeof possibleName ===
-                "string" &&
-              possibleName.trim()
-                .length > 0
-            ) {
-              setUserName(
+            try {
+              const parsed: Profile =
+                JSON.parse(
+                  storedProfile
+                );
+
+              const possibleName =
+                parsed.name ||
+                parsed.displayName ||
+                parsed.fullName ||
+                parsed.username;
+
+              if (
+                typeof possibleName ===
+                  "string" &&
                 possibleName.trim()
-              );
+                  .length > 0
+              ) {
+                setUserName(
+                  possibleName.trim()
+                );
 
-              return;
-            }
-          } catch {
-            if (
-              storedProfile
-                .trim()
-                .length > 0
-            ) {
-              setUserName(
-                storedProfile.trim()
-              );
+                return;
+              }
+            } catch {
+              if (
+                storedProfile
+                  .trim()
+                  .length > 0
+              ) {
+                setUserName(
+                  storedProfile.trim()
+                );
 
-              return;
+                return;
+              }
             }
           }
+        } catch (error) {
+          console.log(
+            "Failed to load profile:",
+            error
+          );
         }
-      } catch (error) {
-        console.log(
-          "Failed to load profile:",
-          error
-        );
-      }
-    }, []);
-
-  /*
-   * ============================================================
-   * LOAD STREAK
-   * ============================================================
-   */
+      },
+      []
+    );
 
   const loadStreak =
-    useCallback(async () => {
-      try {
-        const storedStreak =
-          await AsyncStorage.getItem(
-            STREAK_STORAGE_KEY
-          );
+    useCallback(
+      async () => {
+        try {
+          const storedStreak =
+            await AsyncStorage.getItem(
+              STREAK_STORAGE_KEY
+            );
 
-        if (!storedStreak) {
-          setStreak({
-            currentStreak: 0,
-            lastCheckIn: null,
-          });
+          if (!storedStreak) {
+            setStreak({
+              currentStreak: 0,
+              lastCheckIn: null,
+            });
 
-          return;
-        }
+            return;
+          }
 
-        const parsed =
-          JSON.parse(
-            storedStreak
-          );
+          const parsed =
+            JSON.parse(
+              storedStreak
+            );
 
-        if (!parsed) {
-          return;
-        }
+          if (!parsed) {
+            return;
+          }
 
-        const today =
-          getTodayKey();
+          const today =
+            getTodayKey();
 
-        const currentStreak =
-          Number(
-            parsed.currentStreak
-          ) || 0;
+          const currentStreak =
+            Number(
+              parsed.currentStreak
+            ) || 0;
 
-        const lastCheckIn =
-          parsed.lastCheckIn ||
-          null;
+          const lastCheckIn =
+            parsed.lastCheckIn ||
+            null;
 
-        if (
-          lastCheckIn ===
-          today
-        ) {
-          setStreak({
-            currentStreak,
-            lastCheckIn: today,
-          });
-
-          return;
-        }
-
-        if (
-          lastCheckIn &&
-          getDaysBetween(
-            lastCheckIn,
+          if (
+            lastCheckIn ===
             today
-          ) === 1
-        ) {
-          setStreak({
-            currentStreak,
-            lastCheckIn,
-          });
+          ) {
+            setStreak({
+              currentStreak,
+              lastCheckIn:
+                today,
+            });
 
-          return;
-        }
+            return;
+          }
 
-        if (
-          lastCheckIn &&
-          getDaysBetween(
-            lastCheckIn,
-            today
-          ) > 1
-        ) {
-          const resetStreak:
-            StreakData = {
-            currentStreak: 0,
-            lastCheckIn: null,
-          };
+          if (
+            lastCheckIn &&
+            getDaysBetween(
+              lastCheckIn,
+              today
+            ) === 1
+          ) {
+            setStreak({
+              currentStreak,
+              lastCheckIn,
+            });
 
-          setStreak(
-            resetStreak
-          );
+            return;
+          }
 
-          await AsyncStorage.setItem(
-            STREAK_STORAGE_KEY,
-            JSON.stringify(
+          if (
+            lastCheckIn &&
+            getDaysBetween(
+              lastCheckIn,
+              today
+            ) > 1
+          ) {
+            const resetStreak:
+              StreakData = {
+              currentStreak: 0,
+              lastCheckIn: null,
+            };
+
+            setStreak(
               resetStreak
-            )
+            );
+
+            await AsyncStorage.setItem(
+              STREAK_STORAGE_KEY,
+              JSON.stringify(
+                resetStreak
+              )
+            );
+
+            return;
+          }
+
+          setStreak({
+            currentStreak,
+            lastCheckIn,
+          });
+        } catch (error) {
+          console.log(
+            "Failed to load streak:",
+            error
           );
-
-          return;
         }
-
-        setStreak({
-          currentStreak,
-          lastCheckIn,
-        });
-      } catch (error) {
-        console.log(
-          "Failed to load streak:",
-          error
-        );
-      }
-    }, []);
+      },
+      []
+    );
 
   useEffect(() => {
     loadTasks();
@@ -871,10 +666,6 @@ export default function HomeScreen() {
     loadStreak,
   ]);
 
-  /*
-   * Keep the existing live-refresh behaviour.
-   */
-
   useEffect(() => {
     const interval =
       setInterval(() => {
@@ -884,7 +675,9 @@ export default function HomeScreen() {
       }, 3000);
 
     return () => {
-      clearInterval(interval);
+      clearInterval(
+        interval
+      );
     };
   }, [
     loadTasks,
@@ -892,32 +685,14 @@ export default function HomeScreen() {
     loadStreak,
   ]);
 
-  /*
-   * ============================================================
-   * TASK CATEGORIES
-   * ============================================================
-   *
-   * THIS IS THE IMPORTANT FIX.
-   *
-   * Previously:
-   *
-   *     task.date === todayKey
-   *
-   * meant every task scheduled for today remained "Due Today"
-   * forever, even after its time had passed.
-   *
-   * Now we compare the complete task date + time against `now`.
-   */
-
   const dueTodayTasks =
     useMemo(() => {
       return tasks
         .filter(
           (task) =>
-            getTaskStatus(
-              task,
-              now
-            ) === "today"
+            !task.completed &&
+            task.date ===
+              todayKey
         )
         .sort((a, b) =>
           `${a.date} ${a.time}`.localeCompare(
@@ -926,7 +701,7 @@ export default function HomeScreen() {
         );
     }, [
       tasks,
-      now,
+      todayKey,
     ]);
 
   const missedTasks =
@@ -934,18 +709,18 @@ export default function HomeScreen() {
       return tasks
         .filter(
           (task) =>
-            getTaskStatus(
-              task,
-              now
-            ) === "missed"
+            !task.completed &&
+            task.date <
+              todayKey
         )
         .sort((a, b) =>
-          getTaskDueDateTime(b).getTime() -
-          getTaskDueDateTime(a).getTime()
+          `${b.date} ${b.time}`.localeCompare(
+            `${a.date} ${a.time}`
+          )
         );
     }, [
       tasks,
-      now,
+      todayKey,
     ]);
 
   const upcomingTasks =
@@ -953,18 +728,18 @@ export default function HomeScreen() {
       return tasks
         .filter(
           (task) =>
-            getTaskStatus(
-              task,
-              now
-            ) === "upcoming"
+            !task.completed &&
+            task.date >
+              todayKey
         )
         .sort((a, b) =>
-          getTaskDueDateTime(a).getTime() -
-          getTaskDueDateTime(b).getTime()
+          `${a.date} ${a.time}`.localeCompare(
+            `${b.date} ${b.time}`
+          )
         );
     }, [
       tasks,
-      now,
+      todayKey,
     ]);
 
   const completedTasks =
@@ -1020,12 +795,6 @@ export default function HomeScreen() {
       upcomingTasks,
     ]);
 
-  /*
-   * ============================================================
-   * MOST USED CATEGORY
-   * ============================================================
-   */
-
   const mostUsedCategory =
     useMemo(() => {
       if (tasks.length === 0) {
@@ -1060,12 +829,6 @@ export default function HomeScreen() {
       );
     }, [tasks]);
 
-  /*
-   * ============================================================
-   * SCHEDULE TEXT
-   * ============================================================
-   */
-
   const scheduleText =
     useMemo(() => {
       const dueToday =
@@ -1077,6 +840,7 @@ export default function HomeScreen() {
       if (tasks.length === 0) {
         return {
           first: `Your schedule is completely open today, ${userName}, so you have plenty of space to decide what deserves your attention.`,
+
           second:
             "Since you don't have anything waiting on your Starpath yet, starting with one small study task could be a great way to build momentum.",
         };
@@ -1084,11 +848,11 @@ export default function HomeScreen() {
 
       if (
         completedToday > 0 &&
-        dueToday === 0 &&
-        missedTasks.length === 0
+        dueToday === 0
       ) {
         return {
           first: `You've completed everything that was scheduled for today, ${userName}.`,
+
           second:
             mostUsedCategory
               ? `You've been putting a lot of energy into ${mostUsedCategory} work, so you've earned some breathing room — or you can use the momentum to get ahead.`
@@ -1103,15 +867,18 @@ export default function HomeScreen() {
           first: `${userName}, you have ${
             missedTasks.length
           } missed task${
-            missedTasks.length === 1
+            missedTasks.length ===
+            1
               ? ""
               : "s"
           }, so clearing one of those would be a strong place to start.`,
 
           second:
-            remainingToday > 0
+            remainingToday >
+            0
               ? `You still have ${remainingToday} task${
-                  remainingToday === 1
+                  remainingToday ===
+                  1
                     ? ""
                     : "s"
                 } planned for today, so finishing a missed item first could make the rest of your day feel much lighter.`
@@ -1124,7 +891,8 @@ export default function HomeScreen() {
       ) {
         return {
           first: `${userName}, you have ${remainingToday} task${
-            remainingToday === 1
+            remainingToday ===
+            1
               ? ""
               : "s"
           } left today, and you've already completed ${completedToday}.`,
@@ -1169,12 +937,6 @@ export default function HomeScreen() {
       mostUsedCategory,
       completedToday,
     ]);
-
-  /*
-   * ============================================================
-   * MOMENTUM
-   * ============================================================
-   */
 
   const momentumText =
     useMemo(() => {
@@ -1263,43 +1025,13 @@ export default function HomeScreen() {
       streak.currentStreak,
     ]);
 
-  /*
-   * ============================================================
-   * TASK STATUS LABEL
-   * ============================================================
-   */
-
   const getRemainingText =
-    (task: Task) => {
+    (
+      task: Task
+    ) => {
       if (task.completed) {
         return "Completed";
       }
-
-      const status =
-        getTaskStatus(
-          task,
-          now
-        );
-
-      if (
-        status === "missed"
-      ) {
-        return "Missed";
-      }
-
-      if (
-        status === "today"
-      ) {
-        return "Due Today";
-      }
-
-      /*
-       * Upcoming task.
-       *
-       * Calculate calendar-day difference rather than raw
-       * milliseconds so tomorrow stays "Tomorrow" regardless
-       * of the current time.
-       */
 
       const today =
         parseDateSafe(
@@ -1336,25 +1068,25 @@ export default function HomeScreen() {
         );
 
       if (
+        difference < 0
+      ) {
+        return "Missed";
+      }
+
+      if (
+        difference === 0
+      ) {
+        return "Due Today";
+      }
+
+      if (
         difference === 1
       ) {
         return "Tomorrow";
       }
 
-      if (
-        difference > 1
-      ) {
-        return `${difference} Days Remaining`;
-      }
-
-      return "Due Today";
+      return `${difference} Days Remaining`;
     };
-
-  /*
-   * ============================================================
-   * STREAK CHECK-IN
-   * ============================================================
-   */
 
   const checkInToday =
     async () => {
@@ -2043,8 +1775,7 @@ export default function HomeScreen() {
                       },
                     ]}
                   >
-                    <Text
-                      style={[
+                    <Text                      style={[
                         styles.chipText,
                         {
                           color:
@@ -2176,10 +1907,7 @@ export default function HomeScreen() {
                       styles.taskRemaining,
                       {
                         color:
-                          getTaskStatus(
-                            task,
-                            now
-                          ) ===
+                          selectedCategory ===
                           "missed"
                             ? colors.missedText
                             : colors.taskRemaining,

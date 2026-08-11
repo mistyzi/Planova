@@ -28,12 +28,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
 
 import { useTheme } from "../context/themecontext";
 import MusicSelector from "./musicselector";
 
 const PROFILE_STORAGE_KEY = "@planova_profile";
+const AUTH_STORAGE_KEY = "@planova_auth";
 const TASKS_STORAGE_KEY = "@planova_tasks";
 const STREAK_STORAGE_KEY = "@planova_streak";
 const FOCUS_STORAGE_KEY = "@planova_focus_time";
@@ -52,8 +52,16 @@ type ProfileStats = {
   focusHours: number;
 };
 
+type AuthData = {
+  isLoggedIn: boolean;
+  email?: string;
+  userId?: string;
+  loginTime?: number;
+};
+
 type ProfileSheetProps = {
   onLogout?: () => void;
+  onLogin?: () => void;
 };
 
 const DEFAULT_PROFILE: ProfileData = {
@@ -72,10 +80,12 @@ const DEFAULT_STATS: ProfileStats = {
   focusHours: 0,
 };
 
-const ProfileSheet = forwardRef<any, ProfileSheetProps>(
-  ({ onLogout }, ref) => {
-    const router = useRouter();
+const DEFAULT_AUTH: AuthData = {
+  isLoggedIn: false,
+};
 
+const ProfileSheet = forwardRef<any, ProfileSheetProps>(
+  ({ onLogout, onLogin }, ref) => {
     const snapPoints = useMemo(() => ["90%"], []);
 
     const [profile, setProfile] =
@@ -84,12 +94,20 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     const [stats, setStats] =
       useState<ProfileStats>(DEFAULT_STATS);
 
+    const [auth, setAuth] = useState<AuthData>(DEFAULT_AUTH);
+
     const [showEditProfile, setShowEditProfile] =
       useState(false);
 
     const [editName, setEditName] = useState("");
     const [editSchool, setEditSchool] = useState("");
     const [editProgram, setEditProgram] = useState("");
+
+    // Login state
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [loginEmail, setLoginEmail] = useState("");
+    const [loginPassword, setLoginPassword] = useState("");
+    const [isLoginMode, setIsLoginMode] = useState(true); // true = login, false = signup
 
     const { theme, setTheme, isDark } = useTheme();
 
@@ -166,7 +184,32 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     useEffect(() => {
       loadProfile();
       loadStats();
+      loadAuth();
     }, []);
+
+    const loadAuth = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+        if (!stored) {
+          setAuth(DEFAULT_AUTH);
+          return;
+        }
+        const parsed = JSON.parse(stored);
+        setAuth(parsed);
+      } catch (error) {
+        console.log("Failed to load auth:", error);
+        setAuth(DEFAULT_AUTH);
+      }
+    };
+
+    const saveAuth = async (authData: AuthData) => {
+      try {
+        await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
+        setAuth(authData);
+      } catch (error) {
+        console.log("Failed to save auth:", error);
+      }
+    };
 
     const loadProfile = async () => {
       try {
@@ -370,6 +413,13 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const openEditProfile = () => {
+      if (!auth.isLoggedIn) {
+        Alert.alert(
+          "Login Required",
+          "Please log in to edit your profile."
+        );
+        return;
+      }
       setEditName(profile.name);
       setEditSchool(profile.school);
       setEditProgram(profile.program);
@@ -422,6 +472,14 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const pickProfilePicture = async () => {
+      if (!auth.isLoggedIn) {
+        Alert.alert(
+          "Login Required",
+          "Please log in to change your profile picture."
+        );
+        return;
+      }
+
       try {
         const permission =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -468,6 +526,14 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const takeProfilePicture = async () => {
+      if (!auth.isLoggedIn) {
+        Alert.alert(
+          "Login Required",
+          "Please log in to change your profile picture."
+        );
+        return;
+      }
+
       try {
         const permission =
           await ImagePicker.requestCameraPermissionsAsync();
@@ -513,6 +579,14 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const pickBackground = async () => {
+      if (!auth.isLoggedIn) {
+        Alert.alert(
+          "Login Required",
+          "Please log in to change your background."
+        );
+        return;
+      }
+
       try {
         const permission =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -559,6 +633,14 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const takeBackgroundPhoto = async () => {
+      if (!auth.isLoggedIn) {
+        Alert.alert(
+          "Login Required",
+          "Please log in to change your background."
+        );
+        return;
+      }
+
       try {
         const permission =
           await ImagePicker.requestCameraPermissionsAsync();
@@ -604,6 +686,14 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const showAvatarOptions = () => {
+      if (!auth.isLoggedIn) {
+        Alert.alert(
+          "Login Required",
+          "Please log in to change your profile picture."
+        );
+        return;
+      }
+
       Alert.alert(
         "Profile Picture",
         "How would you like to change your profile picture?",
@@ -625,6 +715,14 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
     };
 
     const showBackgroundOptions = () => {
+      if (!auth.isLoggedIn) {
+        Alert.alert(
+          "Login Required",
+          "Please log in to change your background."
+        );
+        return;
+      }
+
       Alert.alert(
         "Profile Background",
         "How would you like to change your profile background?",
@@ -645,26 +743,106 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
       );
     };
 
-    /*
-     * LOGOUT
-     *
-     * Your auth screens are inside:
-     *
-     * app/
-     *   auth/
-     *     index.tsx
-     *
-     * and your main app screens are inside:
-     *
-     * app/
-     *   (tabs)/
-     *     index.tsx
-     *     task.tsx
-     *     study.tsx
-     *
-     * Therefore router.replace("/auth") sends the
-     * user out of the tabs and back to authentication.
-     */
+    // Login/Logout functions
+    const handleLogin = async () => {
+      const trimmedEmail = loginEmail.trim().toLowerCase();
+      const trimmedPassword = loginPassword.trim();
+
+      if (!trimmedEmail) {
+        Alert.alert("Missing Email", "Please enter your email address.");
+        return;
+      }
+
+      if (!trimmedPassword || trimmedPassword.length < 6) {
+        Alert.alert("Invalid Password", "Password must be at least 6 characters.");
+        return;
+      }
+
+      try {
+        // Check if user exists in AsyncStorage
+        const storedUsers = await AsyncStorage.getItem("@planova_users");
+        let users: Record<string, { email: string; password: string; userId: string }> = {};
+
+        if (storedUsers) {
+          users = JSON.parse(storedUsers);
+        }
+
+        if (isLoginMode) {
+          // Login logic
+          const userEntry = Object.values(users).find(
+            (u) => u.email.toLowerCase() === trimmedEmail
+          );
+
+          if (!userEntry) {
+            Alert.alert("Login Failed", "No account found with this email.");
+            return;
+          }
+
+          if (userEntry.password !== trimmedPassword) {
+            Alert.alert("Login Failed", "Incorrect password.");
+            return;
+          }
+
+          // Login successful
+          const authData: AuthData = {
+            isLoggedIn: true,
+            email: trimmedEmail,
+            userId: userEntry.userId,
+            loginTime: Date.now(),
+          };
+
+          await saveAuth(authData);
+          setShowLoginModal(false);
+          setLoginEmail("");
+          setLoginPassword("");
+
+          if (onLogin) {
+            onLogin();
+          }
+
+          Alert.alert("Welcome Back!", `You've successfully logged in as ${trimmedEmail}`);
+        } else {
+          // Signup logic
+          if (users[trimmedEmail]) {
+            Alert.alert("Signup Failed", "An account with this email already exists.");
+            return;
+          }
+
+          // Create new user
+          const userId = `user_${Date.now()}`;
+          users[trimmedEmail] = {
+            email: trimmedEmail,
+            password: trimmedPassword,
+            userId: userId,
+          };
+
+          await AsyncStorage.setItem("@planova_users", JSON.stringify(users));
+
+          // Auto-login after signup
+          const authData: AuthData = {
+            isLoggedIn: true,
+            email: trimmedEmail,
+            userId: userId,
+            loginTime: Date.now(),
+          };
+
+          await saveAuth(authData);
+          setShowLoginModal(false);
+          setLoginEmail("");
+          setLoginPassword("");
+
+          if (onLogin) {
+            onLogin();
+          }
+
+          Alert.alert("Welcome!", `Account created successfully for ${trimmedEmail}`);
+        }
+      } catch (error) {
+        console.log("Failed to handle login:", error);
+        Alert.alert("Error", "Something went wrong. Please try again.");
+      }
+    };
+
     const handleLogout = () => {
       Alert.alert(
         "Log Out",
@@ -677,34 +855,30 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
           {
             text: "Log Out",
             style: "destructive",
-            onPress: () => {
-              try {
-                // Close the profile sheet first.
-                if (ref && typeof ref !== "function") {
-                  ref.current?.close?.();
-                }
+            onPress: async () => {
+              const authData: AuthData = {
+                isLoggedIn: false,
+              };
+              await saveAuth(authData);
 
-                // Keep support for an optional parent
-                // logout callback if you already use one.
-                if (onLogout) {
-                  onLogout();
-                }
-
-                // Send the user to the auth screen.
-                router.replace("/auth");
-              } catch (error) {
-                console.log(
-                  "Logout navigation failed:",
-                  error
-                );
-
-                // Fallback navigation.
-                router.replace("/auth");
+              if (onLogout) {
+                onLogout();
               }
+
+              Alert.alert("Logged Out", "You've been successfully logged out.");
             },
           },
         ]
       );
+    };
+
+    const handleLogoutPress = () => {
+      if (!auth.isLoggedIn) {
+        // Show login modal instead
+        setShowLoginModal(true);
+        return;
+      }
+      handleLogout();
     };
 
     const formattedFocusHours =
@@ -715,144 +889,80 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
           ).toString();
 
     return (
-      <BottomSheet
-        ref={ref}
-        index={-1}
-        snapPoints={snapPoints}
-        enablePanDownToClose
-        enableContentPanningGesture
-        enableHandlePanningGesture
-        enableDynamicSizing={false}
-        backgroundStyle={[
-          styles.sheetBackground,
-          {
-            backgroundColor:
-              colors.sheetBackground,
-          },
-        ]}
-        handleIndicatorStyle={[
-          styles.handle,
-          {
-            backgroundColor:
-              colors.handle,
-          },
-        ]}
-        backdropComponent={(backdropProps) => (
-          <BottomSheetBackdrop
-            {...backdropProps}
-            appearsOnIndex={0}
-            disappearsOnIndex={-1}
-            opacity={0.3}
-            pressBehavior="none"
-          />
-        )}
-      >
-        <BottomSheetScrollView
-          style={styles.scrollView}
-          contentContainerStyle={
-            styles.scrollContent
-          }
-          showsVerticalScrollIndicator={false}
+      <>
+        <BottomSheet
+          ref={ref}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose
+          enableContentPanningGesture
+          enableHandlePanningGesture
+          enableDynamicSizing={false}
+          backgroundStyle={[
+            styles.sheetBackground,
+            {
+              backgroundColor:
+                colors.sheetBackground,
+            },
+          ]}
+          handleIndicatorStyle={[
+            styles.handle,
+            {
+              backgroundColor:
+                colors.handle,
+            },
+          ]}
+          backdropComponent={(backdropProps) => (
+            <BottomSheetBackdrop
+              {...backdropProps}
+              appearsOnIndex={0}
+              disappearsOnIndex={-1}
+              opacity={0.3}
+              pressBehavior="none"
+            />
+          )}
         >
-          <LinearGradient
-            colors={[
-              colors.gradientTop,
-              colors.gradientBottom,
-            ]}
-            style={styles.gradient}
+          <BottomSheetScrollView
+            style={styles.scrollView}
+            contentContainerStyle={
+              styles.scrollContent
+            }
+            showsVerticalScrollIndicator={false}
           >
-            <View style={styles.profileHeader}>
-              <Image
-                source={{
-                  uri: profile.backgroundUri,
-                }}
-                style={styles.profileBackground}
-              />
-
-              <LinearGradient
-                colors={[
-                  "rgba(10,16,36,0.05)",
-                  colors.gradientTop,
-                  colors.gradientTop,
-                ]}
-                locations={[0, 0.72, 1]}
-                style={
-                  styles.profileBackgroundOverlay
-                }
-              />
-
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={
-                  showBackgroundOptions
-                }
-                style={[
-                  styles.backgroundEditButton,
-                  {
-                    backgroundColor:
-                      colors.iconBackground,
-                    borderColor:
-                      colors.cardBorder,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="image-outline"
-                  size={17}
-                  color={colors.icon}
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={
-                  showAvatarOptions
-                }
-              >
+            <LinearGradient
+              colors={[
+                colors.gradientTop,
+                colors.gradientBottom,
+              ]}
+              style={styles.gradient}
+            >
+              <View style={styles.profileHeader}>
                 <Image
                   source={{
-                    uri: profile.avatarUri,
+                    uri: profile.backgroundUri,
                   }}
-                  style={styles.avatar}
+                  style={styles.profileBackground}
                 />
 
-                <View
-                  style={[
-                    styles.avatarEditButton,
-                    {
-                      backgroundColor:
-                        colors.button,
-                    },
+                <LinearGradient
+                  colors={[
+                    "rgba(10,16,36,0.05)",
+                    colors.gradientTop,
+                    colors.gradientTop,
                   ]}
-                >
-                  <Ionicons
-                    name="camera"
-                    size={14}
-                    color="#FFFFFF"
-                  />
-                </View>
-              </TouchableOpacity>
-
-              <View style={styles.nameRow}>
-                <Text
-                  style={[
-                    styles.name,
-                    {
-                      color:
-                        colors.textPrimary,
-                    },
-                  ]}
-                >
-                  {profile.name}
-                </Text>
+                  locations={[0, 0.72, 1]}
+                  style={
+                    styles.profileBackgroundOverlay
+                  }
+                />
 
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={
-                    openEditProfile
+                    showBackgroundOptions
                   }
                   style={[
-                    styles.nameEditButton,
+                    styles.backgroundEditButton,
                     {
                       backgroundColor:
                         colors.iconBackground,
@@ -862,131 +972,359 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
                   ]}
                 >
                   <Ionicons
-                    name="pencil"
-                    size={15}
+                    name="image-outline"
+                    size={17}
                     color={colors.icon}
                   />
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={
+                    showAvatarOptions
+                  }
+                >
+                  <Image
+                    source={{
+                      uri: profile.avatarUri,
+                    }}
+                    style={styles.avatar}
+                  />
+
+                  <View
+                    style={[
+                      styles.avatarEditButton,
+                      {
+                        backgroundColor:
+                          colors.button,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="camera"
+                      size={14}
+                      color="#FFFFFF"
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                <View style={styles.nameRow}>
+                  <Text
+                    style={[
+                      styles.name,
+                      {
+                        color:
+                          colors.textPrimary,
+                      },
+                    ]}
+                  >
+                    {profile.name}
+                  </Text>
+
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={
+                      openEditProfile
+                    }
+                    style={[
+                      styles.nameEditButton,
+                      {
+                        backgroundColor:
+                          colors.iconBackground,
+                        borderColor:
+                          colors.cardBorder,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="pencil"
+                      size={15}
+                      color={colors.icon}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <Text
+                  style={[
+                    styles.subtitle,
+                    {
+                      color:
+                        colors.textSecondary,
+                    },
+                  ]}
+                >
+                  {profile.school} •{" "}
+                  {profile.program}
+                </Text>
+
+                {auth.isLoggedIn && (
+                  <View style={styles.loginBadge}>
+                    <Ionicons name="checkmark-circle" size={14} color="#4CAF50" />
+                    <Text style={[styles.loginBadgeText, { color: colors.textSecondary }]}>
+                      Logged in as {auth.email}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.statsRow}>
+                <View style={styles.stat}>
+                  <Text
+                    style={[
+                      styles.statNumber,
+                      {
+                        color:
+                          colors.textPrimary,
+                      },
+                    ]}
+                  >
+                    {stats.tasksCompleted}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.statLabel,
+                      {
+                        color:
+                          colors.textMuted,
+                      },
+                    ]}
+                  >
+                    Tasks Completed
+                  </Text>
+                </View>
+
+                <View style={styles.stat}>
+                  <Text
+                    style={[
+                      styles.statNumber,
+                      {
+                        color:
+                          colors.textPrimary,
+                      },
+                    ]}
+                  >
+                    {stats.currentStreak}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.statLabel,
+                      {
+                        color:
+                          colors.textMuted,
+                      },
+                    ]}
+                  >
+                    Current Streak
+                  </Text>
+                </View>
+
+                <View style={styles.stat}>
+                  <Text
+                    style={[
+                      styles.statNumber,
+                      {
+                        color:
+                          colors.textPrimary,
+                      },
+                    ]}
+                  >
+                    {formattedFocusHours}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.statLabel,
+                      {
+                        color:
+                          colors.textMuted,
+                      },
+                    ]}
+                  >
+                    Focus Hours
+                  </Text>
+                </View>
               </View>
 
               <Text
                 style={[
-                  styles.subtitle,
+                  styles.heading,
                   {
                     color:
-                      colors.textSecondary,
+                      colors.textPrimary,
                   },
                 ]}
               >
-                {profile.school} •{" "}
-                {profile.program}
+                Settings
               </Text>
-            </View>
 
-            <View style={styles.statsRow}>
-              <View style={styles.stat}>
+              <View
+                style={[
+                  styles.settingCard,
+                  {
+                    backgroundColor:
+                      colors.card,
+                    borderColor:
+                      colors.cardBorder,
+                  },
+                ]}
+              >
+                <View style={styles.settingRow}>
+                  <View
+                    style={[
+                      styles.settingIcon,
+                      {
+                        backgroundColor:
+                          colors.iconBackground,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="color-palette-outline"
+                      size={18}
+                      color={colors.icon}
+                    />
+                  </View>
+                </View>
+
                 <Text
                   style={[
-                    styles.statNumber,
+                    styles.settingTitle,
                     {
                       color:
                         colors.textPrimary,
                     },
                   ]}
                 >
-                  {stats.tasksCompleted}
+                  System Theme
                 </Text>
 
                 <Text
                   style={[
-                    styles.statLabel,
+                    styles.settingDescription,
                     {
                       color:
-                        colors.textMuted,
+                        colors.description,
                     },
                   ]}
                 >
-                  Tasks Completed
+                  Select the atmosphere that
+                  aligns with your focus cycles.
                 </Text>
+
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      setTheme("light")
+                    }
+                    style={[
+                      styles.themeOption,
+                      {
+                        borderColor:
+                          theme === "light"
+                            ? "#B6A8FF"
+                            : colors.optionBorder,
+
+                        backgroundColor:
+                          theme === "light"
+                            ? isDark
+                              ? "rgba(124,93,255,0.18)"
+                              : "rgba(124,93,255,0.10)"
+                            : "transparent",
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="moon-outline"
+                      size={17}
+                      color={
+                        theme === "light"
+                          ? colors.textPrimary
+                          : colors.optionText
+                      }
+                    />
+
+                    <Text
+                      style={[
+                        styles.themeOptionText,
+                        {
+                          color:
+                            theme === "light"
+                              ? colors.textPrimary
+                              : colors.optionText,
+                        },
+                      ]}
+                    >
+                      Stellar
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      setTheme("dark")
+                    }
+                    style={[
+                      styles.themeOption,
+                      {
+                        borderColor:
+                          theme === "dark"
+                            ? "#B6A8FF"
+                            : colors.optionBorder,
+
+                        backgroundColor:
+                          theme === "dark"
+                            ? isDark
+                              ? "rgba(124,93,255,0.18)"
+                              : "rgba(124,93,255,0.10)"
+                            : "transparent",
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="sunny-outline"
+                      size={17}
+                      color={
+                        theme === "dark"
+                          ? colors.textPrimary
+                          : colors.optionText
+                      }
+                    />
+
+                    <Text
+                      style={[
+                        styles.themeOptionText,
+                        {
+                          color:
+                            theme === "dark"
+                              ? colors.textPrimary
+                              : colors.optionText,
+                        },
+                      ]}
+                    >
+                      Lunar
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              <View style={styles.stat}>
-                <Text
-                  style={[
-                    styles.statNumber,
-                    {
-                      color:
-                        colors.textPrimary,
-                    },
-                  ]}
-                >
-                  {stats.currentStreak}
-                </Text>
+              <MusicSelector />
 
-                <Text
-                  style={[
-                    styles.statLabel,
-                    {
-                      color:
-                        colors.textMuted,
-                    },
-                  ]}
-                >
-                  Current Streak
-                </Text>
-              </View>
-
-              <View style={styles.stat}>
-                <Text
-                  style={[
-                    styles.statNumber,
-                    {
-                      color:
-                        colors.textPrimary,
-                    },
-                  ]}
-                >
-                  {formattedFocusHours}
-                </Text>
-
-                <Text
-                  style={[
-                    styles.statLabel,
-                    {
-                      color:
-                        colors.textMuted,
-                    },
-                  ]}
-                >
-                  Focus Hours
-                </Text>
-              </View>
-            </View>
-
-            <Text
-              style={[
-                styles.heading,
-                {
-                  color:
-                    colors.textPrimary,
-                },
-              ]}
-            >
-              Settings
-            </Text>
-
-            <View
-              style={[
-                styles.settingCard,
-                {
-                  backgroundColor:
-                    colors.card,
-                  borderColor:
-                    colors.cardBorder,
-                },
-              ]}
-            >
-              <View style={styles.settingRow}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleLogoutPress}
+                style={[
+                  styles.logoutCard,
+                  {
+                    backgroundColor:
+                      colors.card,
+                    borderColor:
+                      colors.cardBorder,
+                  },
+                ]}
+              >
                 <View
                   style={[
                     styles.settingIcon,
@@ -997,676 +1335,192 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
                   ]}
                 >
                   <Ionicons
-                    name="color-palette-outline"
-                    size={18}
-                    color={colors.icon}
+                    name={auth.isLoggedIn ? "log-out-outline" : "log-in-outline"}
+                    size={19}
+                    color={colors.logoutTitle}
                   />
                 </View>
-              </View>
 
-              <Text
-                style={[
-                  styles.settingTitle,
-                  {
-                    color:
-                      colors.textPrimary,
-                  },
-                ]}
-              >
-                System Theme
-              </Text>
-
-              <Text
-                style={[
-                  styles.settingDescription,
-                  {
-                    color:
-                      colors.description,
-                  },
-                ]}
-              >
-                Select the atmosphere that
-                aligns with your focus cycles.
-              </Text>
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() =>
-                    setTheme("light")
+                <View
+                  style={
+                    styles.logoutTextContainer
                   }
-                  style={[
-                    styles.themeOption,
-                    {
-                      borderColor:
-                        theme === "light"
-                          ? "#B6A8FF"
-                          : colors.optionBorder,
-
-                      backgroundColor:
-                        theme === "light"
-                          ? isDark
-                            ? "rgba(124,93,255,0.18)"
-                            : "rgba(124,93,255,0.10)"
-                          : "transparent",
-                    },
-                  ]}
                 >
-                  <Ionicons
-                    name="moon-outline"
-                    size={17}
-                    color={
-                      theme === "light"
-                        ? colors.textPrimary
-                        : colors.optionText
-                    }
-                  />
-
                   <Text
                     style={[
-                      styles.themeOptionText,
+                      styles.logoutTitle,
                       {
                         color:
-                          theme === "light"
-                            ? colors.textPrimary
-                            : colors.optionText,
+                          colors.logoutTitle,
                       },
                     ]}
                   >
-                    Stellar
+                    {auth.isLoggedIn ? "Log Out" : "Log In"}
                   </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() =>
-                    setTheme("dark")
-                  }
-                  style={[
-                    styles.themeOption,
-                    {
-                      borderColor:
-                        theme === "dark"
-                          ? "#B6A8FF"
-                          : colors.optionBorder,
-
-                      backgroundColor:
-                        theme === "dark"
-                          ? isDark
-                            ? "rgba(124,93,255,0.18)"
-                            : "rgba(124,93,255,0.10)"
-                          : "transparent",
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="sunny-outline"
-                    size={17}
-                    color={
-                      theme === "dark"
-                        ? colors.textPrimary
-                        : colors.optionText
-                    }
-                  />
 
                   <Text
                     style={[
-                      styles.themeOptionText,
+                      styles.logoutDescription,
                       {
                         color:
-                          theme === "dark"
-                            ? colors.textPrimary
-                            : colors.optionText,
+                          colors.logoutDescription,
                       },
                     ]}
                   >
-                    Lunar
+                    {auth.isLoggedIn
+                      ? "Sign out of your Planova account."
+                      : "Sign in to sync your progress."}
                   </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                </View>
 
-            <MusicSelector />
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={handleLogout}
-              style={[
-                styles.logoutCard,
-                {
-                  backgroundColor:
-                    colors.card,
-                  borderColor:
-                    colors.cardBorder,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.settingIcon,
-                  {
-                    backgroundColor:
-                      colors.iconBackground,
-                  },
-                ]}
-              >
                 <Ionicons
-                  name="log-out-outline"
-                  size={19}
+                  name="chevron-forward"
+                  size={18}
                   color={colors.logoutTitle}
                 />
-              </View>
+              </TouchableOpacity>
 
               <View
-                style={
-                  styles.logoutTextContainer
-                }
-              >
-                <Text
-                  style={[
-                    styles.logoutTitle,
-                    {
-                      color:
-                        colors.logoutTitle,
-                    },
-                  ]}
-                >
-                  Log Out
-                </Text>
-
-                <Text
-                  style={[
-                    styles.logoutDescription,
-                    {
-                      color:
-                        colors.logoutDescription,
-                    },
-                  ]}
-                >
-                  Sign out of your Planova
-                  account.
-                </Text>
-              </View>
-
-              <Ionicons
-                name="chevron-forward"
-                size={18}
-                color={colors.logoutTitle}
+                style={styles.bottomSpacer}
               />
-            </TouchableOpacity>
+            </LinearGradient>
+          </BottomSheetScrollView>
+        </BottomSheet>
 
-            <View
-              style={styles.bottomSpacer}
-            />
-          </LinearGradient>
-        </BottomSheetScrollView>
-
+        {/* Login/Signup Modal */}
         <Modal
-          visible={showEditProfile}
+          visible={showLoginModal}
           transparent
           animationType="fade"
-          onRequestClose={() =>
-            setShowEditProfile(false)
-          }
+          onRequestClose={() => {
+            setShowLoginModal(false);
+            setLoginEmail("");
+            setLoginPassword("");
+          }}
         >
           <KeyboardAvoidingView
-            style={
-              styles.keyboardAvoidingView
-            }
-            behavior={
-              Platform.OS === "ios"
-                ? "padding"
-                : "height"
-            }
+            style={styles.keyboardAvoidingView}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
-            <View
-              style={[
-                styles.modalOverlay,
+            <View style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.55)" }]}>
+              <View style={[
+                styles.loginModal,
                 {
-                  backgroundColor:
-                    "rgba(0,0,0,0.55)",
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.profileEditModal,
-                  {
-                    backgroundColor:
-                      colors.card,
-                    borderColor:
-                      colors.cardBorder,
-                  },
-                ]}
-              >
+                  backgroundColor: colors.card,
+                  borderColor: colors.cardBorder,
+                }
+              ]}>
                 <ScrollView
-                  style={
-                    styles.editProfileScroll
-                  }
-                  contentContainerStyle={
-                    styles.editProfileScrollContent
-                  }
-                  showsVerticalScrollIndicator={
-                    false
-                  }
+                  style={styles.editProfileScroll}
+                  contentContainerStyle={styles.editProfileScrollContent}
+                  showsVerticalScrollIndicator={false}
                   keyboardShouldPersistTaps="handled"
-                  keyboardDismissMode={
-                    Platform.OS === "ios"
-                      ? "interactive"
-                      : "on-drag"
-                  }
+                  keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
                   nestedScrollEnabled
                 >
-                  <View
-                    style={
-                      styles.modalHeader
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.modalTitle,
-                        {
-                          color:
-                            colors.textPrimary,
-                        },
-                      ]}
-                    >
-                      Edit Profile
+                  <View style={styles.modalHeader}>
+                    <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                      {isLoginMode ? "Welcome Back" : "Create Account"}
                     </Text>
-
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={() =>
-                        setShowEditProfile(
-                          false
-                        )
-                      }
-                    >
-                      <Ionicons
-                        name="close"
-                        size={23}
-                        color={
-                          colors.textMuted
-                        }
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  <Text
-                    style={[
-                      styles.modalSectionTitle,
-                      {
-                        color:
-                          colors.textPrimary,
-                      },
-                    ]}
-                  >
-                    Profile Picture
-                  </Text>
-
-                  <View
-                    style={
-                      styles.photoButtonsRow
-                    }
-                  >
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={
-                        pickProfilePicture
-                      }
-                      style={[
-                        styles.photoButton,
-                        {
-                          backgroundColor:
-                            colors.iconBackground,
-                          borderColor:
-                            colors.cardBorder,
-                        },
-                      ]}
-                    >
-                      <Ionicons
-                        name="images-outline"
-                        size={19}
-                        color={colors.icon}
-                      />
-
-                      <Text
-                        style={[
-                          styles.photoButtonText,
-                          {
-                            color:
-                              colors.textPrimary,
-                          },
-                        ]}
-                      >
-                        Photos
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={
-                        takeProfilePicture
-                      }
-                      style={[
-                        styles.photoButton,
-                        {
-                          backgroundColor:
-                            colors.iconBackground,
-                          borderColor:
-                            colors.cardBorder,
-                        },
-                      ]}
-                    >
-                      <Ionicons
-                        name="camera-outline"
-                        size={19}
-                        color={colors.icon}
-                      />
-
-                      <Text
-                        style={[
-                          styles.photoButtonText,
-                          {
-                            color:
-                              colors.textPrimary,
-                          },
-                        ]}
-                      >
-                        Camera
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  <Text
-                    style={[
-                      styles.modalSectionTitle,
-                      {
-                        color:
-                          colors.textPrimary,
-                      },
-                    ]}
-                  >
-                    Profile Background
-                  </Text>
-
-                  <View
-                    style={[
-                      styles.backgroundPreview,
-                      {
-                        borderColor:
-                          colors.cardBorder,
-                      },
-                    ]}
-                  >
-                    <Image
-                      source={{
-                        uri: profile.backgroundUri,
+                      onPress={() => {
+                        setShowLoginModal(false);
+                        setLoginEmail("");
+                        setLoginPassword("");
                       }}
-                      style={
-                        styles.backgroundPreviewImage
-                      }
-                    />
-
-                    <LinearGradient
-                      colors={[
-                        "transparent",
-                        "rgba(0,0,0,0.5)",
-                      ]}
-                      style={
-                        styles.backgroundPreviewOverlay
-                      }
-                    />
-
-                    <Ionicons
-                      name="image-outline"
-                      size={23}
-                      color="#FFFFFF"
-                      style={
-                        styles.backgroundPreviewIcon
-                      }
-                    />
-                  </View>
-
-                  <View
-                    style={
-                      styles.photoButtonsRow
-                    }
-                  >
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={pickBackground}
-                      style={[
-                        styles.photoButton,
-                        {
-                          backgroundColor:
-                            colors.iconBackground,
-                          borderColor:
-                            colors.cardBorder,
-                        },
-                      ]}
                     >
-                      <Ionicons
-                        name="images-outline"
-                        size={19}
-                        color={colors.icon}
-                      />
-
-                      <Text
-                        style={[
-                          styles.photoButtonText,
-                          {
-                            color:
-                              colors.textPrimary,
-                          },
-                        ]}
-                      >
-                        Photos
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={
-                        takeBackgroundPhoto
-                      }
-                      style={[
-                        styles.photoButton,
-                        {
-                          backgroundColor:
-                            colors.iconBackground,
-                          borderColor:
-                            colors.cardBorder,
-                        },
-                      ]}
-                    >
-                      <Ionicons
-                        name="camera-outline"
-                        size={19}
-                        color={colors.icon}
-                      />
-
-                      <Text
-                        style={[
-                          styles.photoButtonText,
-                          {
-                            color:
-                              colors.textPrimary,
-                          },
-                        ]}
-                      >
-                        Camera
-                      </Text>
+                      <Ionicons name="close" size={23} color={colors.textMuted} />
                     </TouchableOpacity>
                   </View>
 
-                  <Text
-                    style={[
-                      styles.modalLabel,
-                      {
-                        color:
-                          colors.textMuted,
-                      },
-                    ]}
-                  >
-                    Full Name
+                  <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+                    {isLoginMode
+                      ? "Sign in to your Planova account to sync your progress."
+                      : "Create a new account to start your Planova journey."}
                   </Text>
 
+                  <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
+                    Email Address
+                  </Text>
                   <TextInput
-                    value={editName}
-                    onChangeText={setEditName}
-                    placeholder="Your full name"
-                    placeholderTextColor={
-                      colors.textMuted
-                    }
+                    value={loginEmail}
+                    onChangeText={setLoginEmail}
+                    placeholder="your@email.com"
+                    placeholderTextColor={colors.textMuted}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
                     returnKeyType="next"
                     style={[
                       styles.modalInput,
                       {
-                        color:
-                          colors.textPrimary,
-                        backgroundColor:
-                          colors.iconBackground,
-                        borderColor:
-                          colors.cardBorder,
+                        color: colors.textPrimary,
+                        backgroundColor: colors.iconBackground,
+                        borderColor: colors.cardBorder,
                       },
                     ]}
                   />
 
-                  <Text
-                    style={[
-                      styles.modalLabel,
-                      {
-                        color:
-                          colors.textMuted,
-                      },
-                    ]}
-                  >
-                    School / Educational
-                    Institution
+                  <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
+                    Password
                   </Text>
-
                   <TextInput
-                    value={editSchool}
-                    onChangeText={
-                      setEditSchool
-                    }
-                    placeholder="e.g. SAIT, Central High School"
-                    placeholderTextColor={
-                      colors.textMuted
-                    }
-                    returnKeyType="next"
-                    style={[
-                      styles.modalInput,
-                      {
-                        color:
-                          colors.textPrimary,
-                        backgroundColor:
-                          colors.iconBackground,
-                        borderColor:
-                          colors.cardBorder,
-                      },
-                    ]}
-                  />
-
-                  <Text
-                    style={[
-                      styles.modalLabel,
-                      {
-                        color:
-                          colors.textMuted,
-                      },
-                    ]}
-                  >
-                    Grade / Program / Field
-                    of Study
-                  </Text>
-
-                  <TextInput
-                    value={editProgram}
-                    onChangeText={
-                      setEditProgram
-                    }
-                    placeholder="e.g. Grade 11, Software Development"
-                    placeholderTextColor={
-                      colors.textMuted
-                    }
+                    value={loginPassword}
+                    onChangeText={setLoginPassword}
+                    placeholder="••••••••"
+                    placeholderTextColor={colors.textMuted}
+                    secureTextEntry
                     returnKeyType="done"
-                    onSubmitEditing={
-                      saveProfile
-                    }
+                    onSubmitEditing={handleLogin}
                     style={[
                       styles.modalInput,
                       {
-                        color:
-                          colors.textPrimary,
-                        backgroundColor:
-                          colors.iconBackground,
-                        borderColor:
-                          colors.cardBorder,
+                        color: colors.textPrimary,
+                        backgroundColor: colors.iconBackground,
+                        borderColor: colors.cardBorder,
                       },
                     ]}
                   />
 
-                  <View
-                    style={styles.modalActions}
-                  >
+                  <View style={styles.modalActions}>
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={() =>
-                        setShowEditProfile(
-                          false
-                        )
-                      }
-                      style={
-                        styles.cancelButton
-                      }
+                      onPress={() => {
+                        setIsLoginMode(!isLoginMode);
+                        setLoginEmail("");
+                        setLoginPassword("");
+                      }}
+                      style={styles.switchModeButton}
                     >
-                      <Text
-                        style={[
-                          styles.cancelButtonText,
-                          {
-                            color:
-                              colors.textSecondary,
-                          },
-                        ]}
-                      >
-                        Cancel
+                      <Text style={[styles.switchModeText, { color: colors.textSecondary }]}>
+                        {isLoginMode ? "Need an account? Sign Up" : "Already have an account? Log In"}
                       </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={saveProfile}
+                      onPress={handleLogin}
                       style={[
                         styles.saveProfileButton,
                         {
-                          backgroundColor:
-                            colors.button,
+                          backgroundColor: colors.button,
+                          marginTop: 10,
                         },
                       ]}
                     >
-                      <Text
-                        style={
-                          styles.saveProfileText
-                        }
-                      >
-                        Save Profile
+                      <Text style={styles.saveProfileText}>
+                        {isLoginMode ? "Log In" : "Create Account"}
                       </Text>
                     </TouchableOpacity>
                   </View>
 
-                  <View
-                    style={
-                      styles.keyboardBottomSpacer
-                    }
-                  />
+                  <View style={styles.keyboardBottomSpacer} />
                 </ScrollView>
               </View>
             </View>
           </KeyboardAvoidingView>
         </Modal>
-      </BottomSheet>
+      </>
     );
   }
 );
@@ -1792,6 +1646,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 6,
     marginBottom: 24,
+  },
+
+  loginBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+
+  loginBadgeText: {
+    fontFamily: "Bitter",
+    fontSize: 12,
   },
 
   statsRow: {
@@ -1930,6 +1797,14 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
+  loginModal: {
+    width: "100%",
+    maxWidth: 430,
+    borderRadius: 24,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+
   editProfileScroll: {
     flex: 1,
   },
@@ -1949,6 +1824,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontFamily: "BitterBold",
     fontSize: 24,
+  },
+
+  modalSubtitle: {
+    fontFamily: "Bitter",
+    fontSize: 14,
+    marginBottom: 18,
+    lineHeight: 20,
   },
 
   modalSectionTitle: {
@@ -2025,11 +1907,19 @@ const styles = StyleSheet.create({
   },
 
   modalActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
+    flexDirection: "column",
     gap: 10,
     marginTop: 4,
+  },
+
+  switchModeButton: {
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+
+  switchModeText: {
+    fontFamily: "Bitter",
+    fontSize: 13,
   },
 
   cancelButton: {
@@ -2046,6 +1936,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     paddingHorizontal: 18,
     paddingVertical: 11,
+    alignItems: "center",
   },
 
   saveProfileText: {
