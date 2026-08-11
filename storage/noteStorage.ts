@@ -1,161 +1,78 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ACTIVE_FOCUS_SESSION_KEY = "@planova_active_focus_session";
+export type NoteType = "Text" | "Images";
 
-export type ActiveFocusSession = {
+export type StoredNote = {
   id: string;
-  name: string;
-  durationSeconds: number;
-  startedAt: number;
-  endsAt: number;
-  remainingSeconds: number;
-  isRunning: boolean;
-  isCompleted: boolean;
+  title: string;
+  type: NoteType;
+  preview: string;
+  date: string;
+  text?: string;
+  images?: string[];
+  extractedText?: string;
 };
 
-export async function saveActiveFocusSession(
-  session: ActiveFocusSession,
-): Promise<void> {
-  try {
-    await AsyncStorage.setItem(
-      ACTIVE_FOCUS_SESSION_KEY,
-      JSON.stringify(session),
-    );
-  } catch (error) {
-    console.log("Failed to save active focus session:", error);
-  }
-}
+const STORAGE_KEY = "@planova_notes";
 
-export async function getActiveFocusSession(): Promise<ActiveFocusSession | null> {
+export async function getNotes(): Promise<StoredNote[]> {
   try {
-    const stored = await AsyncStorage.getItem(ACTIVE_FOCUS_SESSION_KEY);
+    const stored = await AsyncStorage.getItem(STORAGE_KEY);
 
     if (!stored) {
-      return null;
+      return [];
     }
 
-    const parsed = JSON.parse(stored) as ActiveFocusSession;
+    const parsed = JSON.parse(stored);
 
-    if (
-      !parsed ||
-      typeof parsed.id !== "string" ||
-      typeof parsed.name !== "string" ||
-      typeof parsed.durationSeconds !== "number" ||
-      typeof parsed.remainingSeconds !== "number"
-    ) {
-      await AsyncStorage.removeItem(ACTIVE_FOCUS_SESSION_KEY);
-      return null;
+    if (!Array.isArray(parsed)) {
+      return [];
     }
 
-    return parsed;
+    return parsed as StoredNote[];
   } catch (error) {
-    console.log("Failed to load active focus session:", error);
-    return null;
+    console.log("Failed to load notes:", error);
+
+    return [];
   }
 }
 
-export async function clearActiveFocusSession(): Promise<void> {
+export async function saveNotes(notes: StoredNote[]): Promise<void> {
   try {
-    await AsyncStorage.removeItem(ACTIVE_FOCUS_SESSION_KEY);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
   } catch (error) {
-    console.log("Failed to clear active focus session:", error);
+    console.log("Failed to save notes:", error);
+
+    throw error;
   }
 }
 
-export async function pauseActiveFocusSession(): Promise<ActiveFocusSession | null> {
-  try {
-    const session = await getActiveFocusSession();
+export async function addNote(note: StoredNote): Promise<void> {
+  const notes = await getNotes();
 
-    if (!session) {
-      return null;
-    }
-
-    if (session.isCompleted) {
-      return session;
-    }
-
-    if (!session.isRunning) {
-      return session;
-    }
-
-    const remainingSeconds = Math.max(
-      0,
-      Math.ceil((session.endsAt - Date.now()) / 1000),
-    );
-
-    if (remainingSeconds <= 0) {
-      const completedSession: ActiveFocusSession = {
-        ...session,
-        remainingSeconds: 0,
-        isRunning: false,
-        isCompleted: true,
-      };
-
-      await saveActiveFocusSession(completedSession);
-
-      return completedSession;
-    }
-
-    const pausedSession: ActiveFocusSession = {
-      ...session,
-      remainingSeconds,
-      isRunning: false,
-      isCompleted: false,
-    };
-
-    await saveActiveFocusSession(pausedSession);
-
-    return pausedSession;
-  } catch (error) {
-    console.log("Failed to pause active focus session:", error);
-    return null;
-  }
+  await saveNotes([note, ...notes]);
 }
 
-export async function resumeActiveFocusSession(): Promise<ActiveFocusSession | null> {
-  try {
-    const session = await getActiveFocusSession();
+export async function getNoteById(id: string): Promise<StoredNote | null> {
+  const notes = await getNotes();
 
-    if (!session) {
-      return null;
-    }
+  return notes.find((note) => note.id === id) ?? null;
+}
 
-    if (session.isCompleted) {
-      return null;
-    }
+export async function updateNote(updatedNote: StoredNote): Promise<void> {
+  const notes = await getNotes();
 
-    if (session.isRunning) {
-      return session;
-    }
+  const updatedNotes = notes.map((note) =>
+    note.id === updatedNote.id ? updatedNote : note
+  );
 
-    if (session.remainingSeconds <= 0) {
-      const completedSession: ActiveFocusSession = {
-        ...session,
-        remainingSeconds: 0,
-        isRunning: false,
-        isCompleted: true,
-      };
+  await saveNotes(updatedNotes);
+}
 
-      await saveActiveFocusSession(completedSession);
+export async function deleteNote(id: string): Promise<void> {
+  const notes = await getNotes();
 
-      return completedSession;
-    }
+  const remainingNotes = notes.filter((note) => note.id !== id);
 
-    const now = Date.now();
-
-    const resumedSession: ActiveFocusSession = {
-      ...session,
-      startedAt: now,
-      endsAt: now + session.remainingSeconds * 1000,
-      isRunning: true,
-      isCompleted: false,
-    };
-
-    await saveActiveFocusSession(resumedSession);
-
-    return resumedSession;
-  } catch (error) {
-    console.log("Failed to resume active focus session:", error);
-    return null;
-  }
+  await saveNotes(remainingNotes);
 }

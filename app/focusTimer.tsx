@@ -22,7 +22,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CUSTOM_FOCUSES_KEY = "@planova_custom_focuses";
 
@@ -35,9 +34,11 @@ export type FocusOption = {
 async function getCustomFocuses(): Promise<FocusOption[]> {
   try {
     const stored = await AsyncStorage.getItem(CUSTOM_FOCUSES_KEY);
+
     if (!stored) {
       return [];
     }
+
     return JSON.parse(stored) as FocusOption[];
   } catch (error) {
     console.log("Failed to load custom focuses:", error);
@@ -48,8 +49,13 @@ async function getCustomFocuses(): Promise<FocusOption[]> {
 async function saveCustomFocus(focus: FocusOption): Promise<void> {
   try {
     const existing = await getCustomFocuses();
+
     const updated = [...existing, focus];
-    await AsyncStorage.setItem(CUSTOM_FOCUSES_KEY, JSON.stringify(updated));
+
+    await AsyncStorage.setItem(
+      CUSTOM_FOCUSES_KEY,
+      JSON.stringify(updated),
+    );
   } catch (error) {
     console.log("Failed to save custom focus:", error);
   }
@@ -58,26 +64,38 @@ async function saveCustomFocus(focus: FocusOption): Promise<void> {
 async function deleteSavedCustomFocus(focusId: string): Promise<void> {
   try {
     const existing = await getCustomFocuses();
+
     const updated = existing.filter((focus) => focus.id !== focusId);
-    await AsyncStorage.setItem(CUSTOM_FOCUSES_KEY, JSON.stringify(updated));
+
+    await AsyncStorage.setItem(
+      CUSTOM_FOCUSES_KEY,
+      JSON.stringify(updated),
+    );
   } catch (error) {
     console.log("Failed to delete custom focus:", error);
   }
 }
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export default function FocusTimerScreen() {
   const { isDark } = useTheme();
+
   const scrollRef = useRef<ScrollView | null>(null);
   const expeditionY = useRef(0);
 
-  const [selectedFocus, setSelectedFocus] = useState<FocusOption | null>(null);
+  const [selectedFocus, setSelectedFocus] =
+    useState<FocusOption | null>(null);
+
   const [customModalVisible, setCustomModalVisible] = useState(false);
   const [customName, setCustomName] = useState("");
   const [customMinutes, setCustomMinutes] = useState("");
   const [customFocuses, setCustomFocuses] = useState<FocusOption[]>([]);
   const [hasActiveTimer, setHasActiveTimer] = useState(false);
 
-  const backgroundColors: [string, string] = isDark ? ["#0e1938", "#6b41bf"] : ["#EEF3FF", "#DCCFF5"];
+  const backgroundColors: [string, string] = isDark
+    ? ["#0e1938", "#6b41bf"]
+    : ["#EEF3FF", "#DCCFF5"];
 
   const colors = isDark
     ? {
@@ -114,12 +132,36 @@ export default function FocusTimerScreen() {
       };
 
   const presetPlanets: FocusOption[] = [
-    { id: "mercury", name: "Mercury", durationSeconds: 5 * 60 },
-    { id: "venus", name: "Venus", durationSeconds: 15 * 60 },
-    { id: "earth", name: "Earth", durationSeconds: 30 * 60 },
-    { id: "mars", name: "Mars", durationSeconds: 45 * 60 },
-    { id: "jupiter", name: "Jupiter", durationSeconds: 60 * 60 },
-    { id: "saturn", name: "Saturn", durationSeconds: 2 * 60 * 60 },
+    {
+      id: "mercury",
+      name: "Mercury",
+      durationSeconds: 5 * 60,
+    },
+    {
+      id: "venus",
+      name: "Venus",
+      durationSeconds: 15 * 60,
+    },
+    {
+      id: "earth",
+      name: "Earth",
+      durationSeconds: 30 * 60,
+    },
+    {
+      id: "mars",
+      name: "Mars",
+      durationSeconds: 45 * 60,
+    },
+    {
+      id: "jupiter",
+      name: "Jupiter",
+      durationSeconds: 60 * 60,
+    },
+    {
+      id: "saturn",
+      name: "Saturn",
+      durationSeconds: 2 * 60 * 60,
+    },
   ];
 
   useEffect(() => {
@@ -127,41 +169,59 @@ export default function FocusTimerScreen() {
       const saved = await getCustomFocuses();
       setCustomFocuses(saved);
     };
+
     loadCustomFocuses();
   }, []);
+
+  
+
+
+
+
 
   useEffect(() => {
     const checkActiveTimer = async () => {
       const session = await getActiveFocusSession();
+
       if (!session) {
         setHasActiveTimer(false);
         return;
       }
+
       if (session.isCompleted) {
         await clearActiveFocusSession();
         setHasActiveTimer(false);
         return;
       }
+
       if (!session.isRunning && session.remainingSeconds > 0) {
         setHasActiveTimer(true);
         return;
       }
+
       if (session.isRunning) {
-        const remaining = Math.ceil((session.endsAt - Date.now()) / 1000);
+        const remaining = Math.ceil(
+          (session.endsAt - Date.now()) / 1000,
+        );
+
         if (remaining > 0) {
           setHasActiveTimer(true);
           return;
         }
+
         await clearActiveFocusSession();
         setHasActiveTimer(false);
         return;
       }
+
       await clearActiveFocusSession();
       setHasActiveTimer(false);
     };
 
     checkActiveTimer();
+
     const interval = setInterval(checkActiveTimer, 1000);
+
     return () => {
       clearInterval(interval);
     };
@@ -169,19 +229,24 @@ export default function FocusTimerScreen() {
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
+
     if (minutes < 60) {
       return `${minutes} min`;
     }
+
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
+
     if (remainingMinutes === 0) {
       return `${hours} ${hours === 1 ? "hour" : "hours"}`;
     }
+
     return `${hours}h ${remainingMinutes}m`;
   };
 
   const selectFocus = (focus: FocusOption) => {
     setSelectedFocus(focus);
+
     setTimeout(() => {
       scrollRef.current?.scrollTo({
         y: expeditionY.current,
@@ -192,26 +257,34 @@ export default function FocusTimerScreen() {
 
   const openActiveTimer = async () => {
     const session = await getActiveFocusSession();
+
     if (!session) {
       setHasActiveTimer(false);
       return;
     }
+
     if (session.isCompleted) {
       await clearActiveFocusSession();
       setHasActiveTimer(false);
       return;
     }
+
     if (!session.isRunning && session.remainingSeconds > 0) {
       router.push("/focusSession");
       return;
     }
+
     if (session.isRunning) {
-      const remaining = Math.ceil((session.endsAt - Date.now()) / 1000);
+      const remaining = Math.ceil(
+        (session.endsAt - Date.now()) / 1000,
+      );
+
       if (remaining > 0) {
         router.push("/focusSession");
         return;
       }
     }
+
     await clearActiveFocusSession();
     setHasActiveTimer(false);
   };
@@ -223,36 +296,57 @@ export default function FocusTimerScreen() {
 
     const existing = await getActiveFocusSession();
 
+    
+
+
+
+
+
     if (existing) {
       if (existing.isCompleted) {
         await clearActiveFocusSession();
-      } else if (!existing.isRunning && existing.remainingSeconds > 0) {
+      } else if (
+        !existing.isRunning &&
+        existing.remainingSeconds > 0
+      ) {
         router.push("/focusSession");
         return;
       } else if (existing.isRunning) {
-        const remaining = Math.ceil((existing.endsAt - Date.now()) / 1000);
+        const remaining = Math.ceil(
+          (existing.endsAt - Date.now()) / 1000,
+        );
+
         if (remaining > 0) {
           router.push("/focusSession");
           return;
         }
+
         await clearActiveFocusSession();
       }
     }
 
     const now = Date.now();
+
     const session: ActiveFocusSession = {
       id: `${selectedFocus.id}-${now}`,
       name: selectedFocus.name,
       durationSeconds: selectedFocus.durationSeconds,
       startedAt: now,
-      endsAt: now + selectedFocus.durationSeconds * 1000,
+      endsAt:
+        now + selectedFocus.durationSeconds * 1000,
       remainingSeconds: selectedFocus.durationSeconds,
       isRunning: true,
       isCompleted: false,
     };
 
+    
+
+
+
     await saveActiveFocusSession(session);
+
     setHasActiveTimer(true);
+
     router.push("/focusSession");
   };
 
@@ -261,15 +355,30 @@ export default function FocusTimerScreen() {
     const minutes = Number(customMinutes);
 
     if (!trimmedName) {
-      Alert.alert("Missing Focus Name", "Please give your cosmic focus a name.");
+      Alert.alert(
+        "Missing Focus Name",
+        "Please give your cosmic focus a name.",
+      );
       return;
     }
-    if (!customMinutes.trim() || !Number.isFinite(minutes) || minutes <= 0) {
-      Alert.alert("Invalid Focus Time", "Please enter a number of minutes greater than 0.");
+
+    if (
+      !customMinutes.trim() ||
+      !Number.isFinite(minutes) ||
+      minutes <= 0
+    ) {
+      Alert.alert(
+        "Invalid Focus Time",
+        "Please enter a number of minutes greater than 0.",
+      );
       return;
     }
+
     if (minutes > 1440) {
-      Alert.alert("Focus Time Too Long", "Please choose a focus time of 24 hours or less.");
+      Alert.alert(
+        "Focus Time Too Long",
+        "Please choose a focus time of 24 hours or less.",
+      );
       return;
     }
 
@@ -280,65 +389,159 @@ export default function FocusTimerScreen() {
     };
 
     await saveCustomFocus(customFocus);
-    setCustomFocuses((current) => [...current, customFocus]);
+
+    setCustomFocuses((current) => [
+      ...current,
+      customFocus,
+    ]);
+
     setCustomModalVisible(false);
     setCustomName("");
     setCustomMinutes("");
+
     selectFocus(customFocus);
   };
 
   const deleteCustomFocus = async (focusId: string) => {
-    Alert.alert("Delete Cosmic Focus", "Do you want to remove this saved focus?", [
-      { text: "Keep", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await deleteSavedCustomFocus(focusId);
-          setCustomFocuses((current) => current.filter((focus) => focus.id !== focusId));
-          if (selectedFocus?.id === focusId) {
-            setSelectedFocus(null);
-          }
+    Alert.alert(
+      "Delete Cosmic Focus",
+      "Do you want to remove this saved focus?",
+      [
+        {
+          text: "Keep",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteSavedCustomFocus(focusId);
+
+            setCustomFocuses((current) =>
+              current.filter((focus) => focus.id !== focusId),
+            );
+
+            if (selectedFocus?.id === focusId) {
+              setSelectedFocus(null);
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={backgroundColors} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={StyleSheet.absoluteFillObject} />
+      <LinearGradient
+        colors={backgroundColors}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+      />
 
       <StarryBackground />
 
-      <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.replace("/(tabs)/study")} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={23} color={colors.title} />
+      <ScrollView
+        ref={scrollRef}
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() =>
+            router.replace("/(tabs)/study")
+          }
+          style={styles.backButton}
+        >
+          <Ionicons
+            name="chevron-back"
+            size={23}
+            color={colors.title}
+          />
         </TouchableOpacity>
 
         {hasActiveTimer && (
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={openActiveTimer}
-            style={[styles.activeTimerButton, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+            style={[
+              styles.activeTimerButton,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.cardBorder,
+              },
+            ]}
           >
-            <Ionicons name="timer-outline" size={14} color={colors.title} />
-            <Text style={[styles.activeTimerText, { color: colors.title }]}>Ongoing Focus</Text>
+            <Ionicons
+              name="timer-outline"
+              size={14}
+              color={colors.title}
+            />
+
+            <Text
+              style={[
+                styles.activeTimerText,
+                { color: colors.title },
+              ]}
+            >
+              Ongoing Focus
+            </Text>
           </TouchableOpacity>
         )}
 
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.title }]}>Cosmic Focus</Text>
-          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-          <Text style={[styles.subtitle, { color: colors.secondaryText }]}>Choose your orbit and focus on the task ahead.</Text>
+          <Text
+            style={[
+              styles.title,
+              { color: colors.title },
+            ]}
+          >
+            Cosmic Focus
+          </Text>
+
+          <View
+            style={[
+              styles.divider,
+              { backgroundColor: colors.divider },
+            ]}
+          />
+
+          <Text
+            style={[
+              styles.subtitle,
+              { color: colors.secondaryText },
+            ]}
+          >
+            Choose your orbit and focus on the task
+            ahead.
+          </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>Choose Cosmic Focus</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.secondaryText }]}>Select a planet to begin your focus session.</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.title },
+            ]}
+          >
+            Choose Cosmic Focus
+          </Text>
+
+          <Text
+            style={[
+              styles.sectionSubtitle,
+              { color: colors.secondaryText },
+            ]}
+          >
+            Select a planet to begin your focus session.
+          </Text>
 
           <View style={styles.grid}>
             {presetPlanets.map((planet) => {
-              const selected = selectedFocus?.id === planet.id;
+              const selected =
+                selectedFocus?.id === planet.id;
+
               return (
                 <TouchableOpacity
                   key={planet.id}
@@ -347,17 +550,51 @@ export default function FocusTimerScreen() {
                   style={[
                     styles.planetCard,
                     {
-                      backgroundColor: selected ? colors.selectedCard : colors.card,
-                      borderColor: selected ? colors.selectedBorder : colors.cardBorder,
+                      backgroundColor: selected
+                        ? colors.selectedCard
+                        : colors.card,
+                      borderColor: selected
+                        ? colors.selectedBorder
+                        : colors.cardBorder,
                     },
                   ]}
                 >
-                  <View style={[styles.planetIcon, { backgroundColor: colors.iconBackground }]}>
-                    <Ionicons name="planet-outline" size={22} color={colors.icon} />
+                  <View
+                    style={[
+                      styles.planetIcon,
+                      {
+                        backgroundColor:
+                          colors.iconBackground,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="planet-outline"
+                      size={22}
+                      color={colors.icon}
+                    />
                   </View>
-                  <Text style={[styles.planetName, { color: colors.text }]}>{planet.name}</Text>
-                  <Text style={[styles.planetTime, { color: colors.secondaryText }]}>
-                    {formatDuration(planet.durationSeconds)}
+
+                  <Text
+                    style={[
+                      styles.planetName,
+                      { color: colors.text },
+                    ]}
+                  >
+                    {planet.name}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.planetTime,
+                      {
+                        color: colors.secondaryText,
+                      },
+                    ]}
+                  >
+                    {formatDuration(
+                      planet.durationSeconds,
+                    )}
                   </Text>
                 </TouchableOpacity>
               );
@@ -366,36 +603,103 @@ export default function FocusTimerScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>My Cosmic Focuses</Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.secondaryText }]}>Your saved custom focus sessions.</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.title },
+            ]}
+          >
+            My Cosmic Focuses
+          </Text>
+
+          <Text
+            style={[
+              styles.sectionSubtitle,
+              { color: colors.secondaryText },
+            ]}
+          >
+            Your saved custom focus sessions.
+          </Text>
 
           <View style={styles.customList}>
             {customFocuses.map((focus) => {
-              const selected = selectedFocus?.id === focus.id;
+              const selected =
+                selectedFocus?.id === focus.id;
+
               return (
                 <View
                   key={focus.id}
                   style={[
                     styles.customCard,
                     {
-                      backgroundColor: selected ? colors.selectedCard : colors.card,
-                      borderColor: selected ? colors.selectedBorder : colors.cardBorder,
+                      backgroundColor: selected
+                        ? colors.selectedCard
+                        : colors.card,
+                      borderColor: selected
+                        ? colors.selectedBorder
+                        : colors.cardBorder,
                     },
                   ]}
                 >
-                  <TouchableOpacity activeOpacity={0.8} onPress={() => selectFocus(focus)} style={styles.customMain}>
-                    <View style={[styles.customIcon, { backgroundColor: colors.iconBackground }]}>
-                      <Ionicons name="sparkles-outline" size={22} color={colors.icon} />
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => selectFocus(focus)}
+                    style={styles.customMain}
+                  >
+                    <View
+                      style={[
+                        styles.customIcon,
+                        {
+                          backgroundColor:
+                            colors.iconBackground,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="sparkles-outline"
+                        size={22}
+                        color={colors.icon}
+                      />
                     </View>
+
                     <View style={styles.customText}>
-                      <Text style={[styles.customName, { color: colors.text }]}>{focus.name}</Text>
-                      <Text style={[styles.customTime, { color: colors.secondaryText }]}>
-                        {formatDuration(focus.durationSeconds)}
+                      <Text
+                        style={[
+                          styles.customName,
+                          { color: colors.text },
+                        ]}
+                      >
+                        {focus.name}
+                      </Text>
+
+                      <Text
+                        style={[
+                          styles.customTime,
+                          {
+                            color:
+                              colors.secondaryText,
+                          },
+                        ]}
+                      >
+                        {formatDuration(
+                          focus.durationSeconds,
+                        )}
                       </Text>
                     </View>
                   </TouchableOpacity>
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => deleteCustomFocus(focus.id)} style={styles.deleteButton}>
-                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
+
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() =>
+                      deleteCustomFocus(focus.id)
+                    }
+                    style={styles.deleteButton}
+                  >
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={colors.danger}
+                    />
                   </TouchableOpacity>
                 </View>
               );
@@ -403,15 +707,53 @@ export default function FocusTimerScreen() {
 
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => setCustomModalVisible(true)}
-              style={[styles.customCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+              onPress={() =>
+                setCustomModalVisible(true)
+              }
+              style={[
+                styles.customCard,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.cardBorder,
+                },
+              ]}
             >
-              <View style={[styles.customIcon, { backgroundColor: colors.iconBackground }]}>
-                <Ionicons name="add" size={23} color={colors.icon} />
+              <View
+                style={[
+                  styles.customIcon,
+                  {
+                    backgroundColor:
+                      colors.iconBackground,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="add"
+                  size={23}
+                  color={colors.icon}
+                />
               </View>
+
               <View style={styles.customText}>
-                <Text style={[styles.customName, { color: colors.text }]}>Create Custom Focus</Text>
-                <Text style={[styles.customTime, { color: colors.secondaryText }]}>Choose your own name and focus time</Text>
+                <Text
+                  style={[
+                    styles.customName,
+                    { color: colors.text },
+                  ]}
+                >
+                  Create Custom Focus
+                </Text>
+
+                <Text
+                  style={[
+                    styles.customTime,
+                    {
+                      color: colors.secondaryText,
+                    },
+                  ]}
+                >
+                  Choose your own name and focus time
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -420,53 +762,198 @@ export default function FocusTimerScreen() {
         {selectedFocus && (
           <View
             onLayout={(event) => {
-              expeditionY.current = event.nativeEvent.layout.y;
+              expeditionY.current =
+                event.nativeEvent.layout.y;
             }}
             style={styles.expedition}
           >
-            <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-            <Text style={[styles.sessionLabel, { color: colors.secondaryText }]}>CURRENT EXPEDITION</Text>
-            <View style={[styles.selectedCard, { backgroundColor: colors.selectedCard, borderColor: colors.selectedBorder }]}>
-              <View style={[styles.selectedIcon, { backgroundColor: colors.iconBackground }]}>
-                <Ionicons name="planet-outline" size={28} color={colors.icon} />
+            <View
+              style={[
+                styles.divider,
+                {
+                  backgroundColor: colors.divider,
+                },
+              ]}
+            />
+
+            <Text
+              style={[
+                styles.sessionLabel,
+                {
+                  color: colors.secondaryText,
+                },
+              ]}
+            >
+              CURRENT EXPEDITION
+            </Text>
+
+            <View
+              style={[
+                styles.selectedCard,
+                {
+                  backgroundColor:
+                    colors.selectedCard,
+                  borderColor:
+                    colors.selectedBorder,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.selectedIcon,
+                  {
+                    backgroundColor:
+                      colors.iconBackground,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="planet-outline"
+                  size={28}
+                  color={colors.icon}
+                />
               </View>
-              <Text style={[styles.selectedName, { color: colors.title }]}>{selectedFocus.name}</Text>
-              <Text style={[styles.selectedDuration, { color: colors.secondaryText }]}>
-                {formatDuration(selectedFocus.durationSeconds)}
+
+              <Text
+                style={[
+                  styles.selectedName,
+                  { color: colors.title },
+                ]}
+              >
+                {selectedFocus.name}
               </Text>
+
+              <Text
+                style={[
+                  styles.selectedDuration,
+                  {
+                    color: colors.secondaryText,
+                  },
+                ]}
+              >
+                {formatDuration(
+                  selectedFocus.durationSeconds,
+                )}
+              </Text>
+
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={startExpedition}
-                style={[styles.startButton, { backgroundColor: colors.button }]}
+                style={[
+                  styles.startButton,
+                  {
+                    backgroundColor: colors.button,
+                  },
+                ]}
               >
-                <Ionicons name="play" size={17} color={colors.buttonText} />
-                <Text style={[styles.startText, { color: colors.buttonText }]}>Start Expedition</Text>
+                <Ionicons
+                  name="play"
+                  size={17}
+                  color={colors.buttonText}
+                />
+
+                <Text
+                  style={[
+                    styles.startText,
+                    {
+                      color: colors.buttonText,
+                    },
+                  ]}
+                >
+                  Start Expedition
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-        <View style={[styles.finalDivider, { backgroundColor: colors.divider }]} />
+        <View
+          style={[
+            styles.finalDivider,
+            {
+              backgroundColor: colors.divider,
+            },
+          ]}
+        />
       </ScrollView>
 
-      <Modal visible={customModalVisible} transparent animationType="fade" onRequestClose={() => setCustomModalVisible(false)}>
-        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={[styles.modalCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={[styles.modalIcon, { backgroundColor: colors.iconBackground }]}>
-              <Ionicons name="sparkles-outline" size={25} color={colors.icon} />
+      <Modal
+        visible={customModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() =>
+          setCustomModalVisible(false)
+        }
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={
+            Platform.OS === "ios"
+              ? "padding"
+              : undefined
+          }
+        >
+          <View
+            style={[
+              styles.modalCard,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.cardBorder,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.modalIcon,
+                {
+                  backgroundColor:
+                    colors.iconBackground,
+                },
+              ]}
+            >
+              <Ionicons
+                name="sparkles-outline"
+                size={25}
+                color={colors.icon}
+              />
             </View>
 
-            <Text style={[styles.modalTitle, { color: colors.title }]}>Custom Cosmic Focus</Text>
-            <Text style={[styles.modalDescription, { color: colors.secondaryText }]}>
-              Give your focus a name and choose how long you want to focus.
+            <Text
+              style={[
+                styles.modalTitle,
+                { color: colors.title },
+              ]}
+            >
+              Custom Cosmic Focus
+            </Text>
+
+            <Text
+              style={[
+                styles.modalDescription,
+                {
+                  color: colors.secondaryText,
+                },
+              ]}
+            >
+              Give your focus a name and choose how
+              long you want to focus.
             </Text>
 
             <TextInput
               value={customName}
               onChangeText={setCustomName}
               placeholder="Focus name"
-              placeholderTextColor={colors.secondaryText}
-              style={[styles.modalInput, { backgroundColor: colors.input, borderColor: colors.cardBorder, color: colors.text }]}
+              placeholderTextColor={
+                colors.secondaryText
+              }
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: colors.input,
+                  borderColor: colors.cardBorder,
+                  color: colors.text,
+                },
+              ]}
             />
 
             <TextInput
@@ -474,8 +961,17 @@ export default function FocusTimerScreen() {
               onChangeText={setCustomMinutes}
               keyboardType="number-pad"
               placeholder="Minutes"
-              placeholderTextColor={colors.secondaryText}
-              style={[styles.modalInput, { backgroundColor: colors.input, borderColor: colors.cardBorder, color: colors.text }]}
+              placeholderTextColor={
+                colors.secondaryText
+              }
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: colors.input,
+                  borderColor: colors.cardBorder,
+                  color: colors.text,
+                },
+              ]}
             />
 
             <View style={styles.modalButtons}>
@@ -486,13 +982,45 @@ export default function FocusTimerScreen() {
                   setCustomName("");
                   setCustomMinutes("");
                 }}
-                style={[styles.cancelModalButton, { borderColor: colors.cardBorder }]}
+                style={[
+                  styles.cancelModalButton,
+                  {
+                    borderColor: colors.cardBorder,
+                  },
+                ]}
               >
-                <Text style={[styles.cancelText, { color: colors.secondaryText }]}>Cancel</Text>
+                <Text
+                  style={[
+                    styles.cancelText,
+                    {
+                      color: colors.secondaryText,
+                    },
+                  ]}
+                >
+                  Cancel
+                </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity activeOpacity={0.8} onPress={createCustomFocus} style={[styles.createButton, { backgroundColor: colors.button }]}>
-                <Text style={[styles.createText, { color: colors.buttonText }]}>Save Focus</Text>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={createCustomFocus}
+                style={[
+                  styles.createButton,
+                  {
+                    backgroundColor: colors.button,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.createText,
+                    {
+                      color: colors.buttonText,
+                    },
+                  ]}
+                >
+                  Save Focus
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -507,15 +1035,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
+
   scroll: {
     flex: 1,
     backgroundColor: "transparent",
   },
+
   content: {
     paddingHorizontal: 24,
     paddingTop: 72,
     paddingBottom: 60,
   },
+
   backButton: {
     position: "absolute",
     top: 16,
@@ -527,6 +1058,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     zIndex: 10,
   },
+
   activeTimerButton: {
     position: "absolute",
     top: 17,
@@ -540,25 +1072,30 @@ const styles = StyleSheet.create({
     gap: 6,
     zIndex: 10,
   },
+
   activeTimerText: {
     fontFamily: "BitterBold",
     fontSize: 9.5,
   },
+
   header: {
     alignItems: "center",
     marginBottom: 34,
   },
+
   title: {
     fontFamily: "BitterBold",
     fontSize: 29,
     marginBottom: 14,
     textAlign: "center",
   },
+
   divider: {
     width: "60%",
     height: 1,
     marginBottom: 16,
   },
+
   subtitle: {
     fontFamily: "Bitter",
     fontSize: 12.5,
@@ -566,16 +1103,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
     maxWidth: 310,
   },
+
   section: {
     width: "100%",
     marginBottom: 34,
   },
+
   sectionTitle: {
     fontFamily: "BitterBold",
     fontSize: 19,
     textAlign: "center",
     marginBottom: 7,
   },
+
   sectionSubtitle: {
     fontFamily: "Bitter",
     fontSize: 11,
@@ -583,11 +1123,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 18,
   },
+
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
+
   planetCard: {
     width: "31.5%",
     minHeight: 125,
@@ -598,6 +1140,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12,
   },
+
   planetIcon: {
     width: 43,
     height: 43,
@@ -606,18 +1149,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 9,
   },
+
   planetName: {
     fontFamily: "BitterBold",
     fontSize: 12.5,
     marginBottom: 4,
   },
+
   planetTime: {
     fontFamily: "Bitter",
     fontSize: 10.5,
   },
+
   customList: {
     gap: 11,
   },
+
   customCard: {
     minHeight: 76,
     borderRadius: 19,
@@ -627,11 +1174,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+
   customMain: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
   },
+
   customIcon: {
     width: 46,
     height: 46,
@@ -640,35 +1189,42 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 13,
   },
+
   customText: {
     flex: 1,
   },
+
   customName: {
     fontFamily: "BitterBold",
     fontSize: 14,
     marginBottom: 4,
   },
+
   customTime: {
     fontFamily: "Bitter",
     fontSize: 10.5,
   },
+
   deleteButton: {
     width: 38,
     height: 38,
     alignItems: "center",
     justifyContent: "center",
   },
+
   expedition: {
     width: "100%",
     alignItems: "center",
     marginTop: 5,
   },
+
   sessionLabel: {
     fontFamily: "BitterBold",
     fontSize: 9,
     letterSpacing: 1.5,
     marginBottom: 12,
   },
+
   selectedCard: {
     width: "100%",
     borderRadius: 22,
@@ -676,6 +1232,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
   },
+
   selectedIcon: {
     width: 58,
     height: 58,
@@ -684,16 +1241,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 13,
   },
+
   selectedName: {
     fontFamily: "BitterBold",
     fontSize: 21,
     marginBottom: 5,
   },
+
   selectedDuration: {
     fontFamily: "Bitter",
     fontSize: 12,
     marginBottom: 19,
   },
+
   startButton: {
     minWidth: 190,
     height: 49,
@@ -704,16 +1264,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     gap: 8,
   },
+
   startText: {
     fontFamily: "BitterBold",
     fontSize: 13,
   },
+
   finalDivider: {
     width: "60%",
     height: 1,
     alignSelf: "center",
     marginTop: 32,
   },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -721,6 +1284,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 25,
   },
+
   modalCard: {
     width: "100%",
     borderRadius: 24,
@@ -728,6 +1292,7 @@ const styles = StyleSheet.create({
     padding: 22,
     alignItems: "center",
   },
+
   modalIcon: {
     width: 55,
     height: 55,
@@ -736,12 +1301,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 13,
   },
+
   modalTitle: {
     fontFamily: "BitterBold",
     fontSize: 20,
     marginBottom: 7,
     textAlign: "center",
   },
+
   modalDescription: {
     fontFamily: "Bitter",
     fontSize: 11,
@@ -749,6 +1316,7 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     marginBottom: 18,
   },
+
   modalInput: {
     width: "100%",
     height: 50,
@@ -760,12 +1328,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 12,
   },
+
   modalButtons: {
     width: "100%",
     flexDirection: "row",
     gap: 10,
     marginTop: 5,
   },
+
   cancelModalButton: {
     flex: 1,
     height: 46,
@@ -774,10 +1344,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
   cancelText: {
     fontFamily: "BitterBold",
     fontSize: 11,
   },
+
   createButton: {
     flex: 1,
     height: 46,
@@ -785,6 +1357,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
   createText: {
     fontFamily: "BitterBold",
     fontSize: 11,

@@ -1,6 +1,15 @@
-import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import {
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioPlayerStatus,
+} from "expo-audio";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/themecontext";
 
@@ -34,11 +43,17 @@ const songs: Song[] = [
 
 export default function MusicSelector() {
   const { isDark } = useTheme();
+
   const [selectedSong, setSelectedSong] = useState<Song>(() => {
-    const randomIndex = Math.floor(Math.random() * songs.length);
+    const randomIndex = Math.floor(
+      Math.random() * songs.length
+    );
+
     return songs[randomIndex];
   });
+
   const [isOpen, setIsOpen] = useState(false);
+
   const player = useAudioPlayer(selectedSong.source);
   const status = useAudioPlayerStatus(player);
 
@@ -60,20 +75,22 @@ export default function MusicSelector() {
         player.loop = true;
         player.play();
       } catch {
-        // Ignore playback errors.
+        
       }
     }, 150);
+
     return () => clearTimeout(timer);
   }, [player]);
 
   const selectSong = (song: Song) => {
     try {
       setSelectedSong(song);
+
       player.replace(song.source);
       player.loop = true;
       player.play();
     } catch {
-      // Ignore playback errors.
+      
     }
   };
 
@@ -85,7 +102,7 @@ export default function MusicSelector() {
         player.play();
       }
     } catch {
-      // Ignore playback errors.
+      
     }
   };
 
@@ -93,71 +110,176 @@ export default function MusicSelector() {
     ? {
         card: "#1A1E52",
         dropdown: "#12163D",
+
         primary: "#F6F3FF",
         secondary: "#A6A5C9",
         muted: "#8585A8",
+
         iconBackground: "rgba(255,255,255,0.06)",
+
         songBackground: "rgba(255,255,255,0.035)",
+
         songIcon: "#242852",
+
         purple: "#7C5DFF",
         purpleLight: "#B6A8FF",
+
         activeBackground: "rgba(124,93,255,0.16)",
+
         border: "rgba(182,168,255,0.18)",
+
         songBorder: "rgba(255,255,255,0.04)",
       }
     : {
         card: "#FFFFFF",
         dropdown: "#F3F0FF",
+
         primary: "#211D35",
         secondary: "#716C88",
         muted: "#77738B",
+
         iconBackground: "rgba(124,93,255,0.08)",
+
         songBackground: "#FFFFFF",
+
         songIcon: "#EAE6FA",
+
         purple: "#7C5DFF",
         purpleLight: "#6658B5",
+
         activeBackground: "rgba(124,93,255,0.10)",
+
         border: "rgba(91,76,145,0.12)",
+
         songBorder: "rgba(124,93,255,0.08)",
       };
 
   return (
     <View style={styles.container}>
+      {}
+      {}
+      {}
+      {}
+
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => setIsOpen((previous) => !previous)}
-        style={[styles.musicCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[
+          styles.musicCard,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          },
+        ]}
       >
-        <View style={[styles.settingIcon, { backgroundColor: colors.iconBackground }]}>
-          <Ionicons name="musical-notes-outline" size={19} color={colors.purpleLight} />
+        {}
+        <View
+          style={[
+            styles.settingIcon,
+            {
+              backgroundColor: colors.iconBackground,
+            },
+          ]}
+        >
+          <Ionicons
+            name="musical-notes-outline"
+            size={19}
+            color={colors.purpleLight}
+          />
         </View>
+
+        {}
         <View style={styles.musicTextContainer}>
-          <Text style={[styles.smallTitle, { color: colors.primary }]}>Background Music</Text>
-          <Text style={[styles.smallSubtitle, { color: colors.secondary }]}>
+          <Text
+            style={[
+              styles.smallTitle,
+              {
+                color: colors.primary,
+              },
+            ]}
+          >
+            Background Music
+          </Text>
+
+          <Text
+            style={[
+              styles.smallSubtitle,
+              {
+                color: colors.secondary,
+              },
+            ]}
+          >
             {selectedSong.title} • {selectedSong.artist}
           </Text>
         </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.purpleLight} />
+
+        {}
+        <Ionicons
+          name="chevron-forward"
+          size={18}
+          color={colors.purpleLight}
+        />
       </TouchableOpacity>
 
+      {}
+      {}
+      {}
+
       {isOpen && (
-        <View style={[styles.dropdown, { backgroundColor: colors.dropdown, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.dropdown,
+            {
+              backgroundColor: colors.dropdown,
+              borderColor: colors.border,
+            },
+          ]}
+        >
           <View style={styles.dropdownHeader}>
             <View style={styles.dropdownHeaderText}>
-              <Text style={[styles.dropdownTitle, { color: colors.primary }]}>Choose Your Atmosphere</Text>
-              <Text style={[styles.dropdownSubtitle, { color: colors.muted }]}>Music will continue while you study.</Text>
+              <Text
+                style={[
+                  styles.dropdownTitle,
+                  {
+                    color: colors.primary,
+                  },
+                ]}
+              >
+                Choose Your Atmosphere
+              </Text>
+
+              <Text
+                style={[
+                  styles.dropdownSubtitle,
+                  {
+                    color: colors.muted,
+                  },
+                ]}
+              >
+                Music will continue while you study.
+              </Text>
             </View>
+
             <TouchableOpacity
-              style={[styles.playButton, { backgroundColor: colors.purple }]}
+              style={[
+                styles.playButton,
+                {
+                  backgroundColor: colors.purple,
+                },
+              ]}
               activeOpacity={0.8}
               onPress={togglePlayback}
             >
-              <Text style={styles.playButtonText}>{status.playing ? "Ⅱ" : "▶"}</Text>
+              <Text style={styles.playButtonText}>
+                {status.playing ? "Ⅱ" : "▶"}
+              </Text>
             </TouchableOpacity>
           </View>
 
           {songs.map((song) => {
-            const isSelected = selectedSong.id === song.id;
+            const isSelected =
+              selectedSong.id === song.id;
+
             return (
               <TouchableOpacity
                 key={song.id}
@@ -165,24 +287,85 @@ export default function MusicSelector() {
                 style={[
                   styles.songOption,
                   {
-                    backgroundColor: isSelected ? colors.activeBackground : colors.songBackground,
-                    borderColor: isSelected ? colors.border : colors.songBorder,
+                    backgroundColor: isSelected
+                      ? colors.activeBackground
+                      : colors.songBackground,
+
+                    borderColor: isSelected
+                      ? colors.border
+                      : colors.songBorder,
                   },
                 ]}
                 onPress={() => selectSong(song)}
               >
-                <View style={[styles.songIcon, { backgroundColor: isSelected ? colors.purple : colors.songIcon }]}>
-                  <Text style={[styles.songIconText, { color: isSelected ? "#FFFFFF" : colors.purpleLight }]}>
+                <View
+                  style={[
+                    styles.songIcon,
+                    {
+                      backgroundColor: isSelected
+                        ? colors.purple
+                        : colors.songIcon,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.songIconText,
+                      {
+                        color: isSelected
+                          ? "#FFFFFF"
+                          : colors.purpleLight,
+                      },
+                    ]}
+                  >
                     {isSelected ? "♪" : "♫"}
                   </Text>
                 </View>
+
                 <View style={styles.songInfo}>
-                  <Text style={[styles.songTitle, { color: colors.primary }]}>{song.title}</Text>
-                  <Text style={[styles.songArtist, { color: colors.muted }]}>{song.artist}</Text>
+                  <Text
+                    style={[
+                      styles.songTitle,
+                      {
+                        color: colors.primary,
+                      },
+                    ]}
+                  >
+                    {song.title}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.songArtist,
+                      {
+                        color: colors.muted,
+                      },
+                    ]}
+                  >
+                    {song.artist}
+                  </Text>
                 </View>
+
                 {isSelected && status.playing && (
-                  <View style={[styles.nowPlaying, { backgroundColor: colors.activeBackground }]}>
-                    <Text style={[styles.nowPlayingText, { color: colors.purpleLight }]}>PLAYING</Text>
+                  <View
+                    style={[
+                      styles.nowPlaying,
+                      {
+                        backgroundColor:
+                          colors.activeBackground,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.nowPlayingText,
+                        {
+                          color: colors.purpleLight,
+                        },
+                      ]}
+                    >
+                      PLAYING
+                    </Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -199,6 +382,11 @@ const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 0,
   },
+
+  
+
+
+
   musicCard: {
     width: "100%",
     borderRadius: 22,
@@ -208,6 +396,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+
   settingIcon: {
     width: 34,
     height: 34,
@@ -215,20 +404,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   musicTextContainer: {
     flex: 1,
     marginLeft: 12,
     marginRight: 10,
   },
+
   smallTitle: {
     fontFamily: "BitterBold",
     fontSize: 17,
   },
+
   smallSubtitle: {
     fontFamily: "Bitter",
     marginTop: 4,
     fontSize: 13,
   },
+
+  
+
+
   dropdown: {
     width: "100%",
     borderRadius: 22,
@@ -237,6 +433,7 @@ const styles = StyleSheet.create({
     marginTop: -6,
     marginBottom: 18,
   },
+
   dropdownHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -244,19 +441,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 4,
   },
+
   dropdownHeaderText: {
     flex: 1,
     paddingRight: 12,
   },
+
   dropdownTitle: {
     fontFamily: "BitterBold",
     fontSize: 16,
   },
+
   dropdownSubtitle: {
     fontFamily: "Bitter",
     fontSize: 12,
     marginTop: 4,
   },
+
   playButton: {
     width: 38,
     height: 38,
@@ -264,11 +465,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
   playButtonText: {
     fontFamily: "BitterBold",
     color: "#FFFFFF",
     fontSize: 15,
   },
+
   songOption: {
     flexDirection: "row",
     alignItems: "center",
@@ -277,6 +480,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderWidth: 1,
   },
+
   songIcon: {
     width: 38,
     height: 38,
@@ -284,28 +488,34 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
   songIconText: {
     fontFamily: "BitterBold",
     fontSize: 18,
   },
+
   songInfo: {
     flex: 1,
     marginLeft: 12,
   },
+
   songTitle: {
     fontFamily: "BitterBold",
     fontSize: 14,
   },
+
   songArtist: {
     fontFamily: "Bitter",
     fontSize: 12,
     marginTop: 3,
   },
+
   nowPlaying: {
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 5,
   },
+
   nowPlayingText: {
     fontFamily: "BitterBold",
     fontSize: 8,

@@ -1,5 +1,13 @@
-import React, { createContext, useContext, useRef } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import React, {
+  createContext,
+  useContext,
+  useRef,
+} from "react";
+
+import {
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
+
 import ProfileSheet from "@/components/profilesheet";
 
 type ProfileSheetContextType = {
@@ -7,9 +15,14 @@ type ProfileSheetContextType = {
   closeProfile: () => void;
 };
 
-const ProfileSheetContext = createContext<ProfileSheetContextType | null>(null);
+const ProfileSheetContext =
+  createContext<ProfileSheetContextType | null>(null);
 
-export function ProfileSheetProvider({ children }: { children: React.ReactNode }) {
+export function ProfileSheetProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const profileSheetRef = useRef<any>(null);
 
   const openProfile = () => {
@@ -21,20 +34,43 @@ export function ProfileSheetProvider({ children }: { children: React.ReactNode }
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ProfileSheetContext.Provider value={{ openProfile, closeProfile }}>
+    <GestureHandlerRootView
+      style={{
+        flex: 1,
+      }}
+    >
+      <ProfileSheetContext.Provider
+        value={{
+          openProfile,
+          closeProfile,
+        }}
+      >
         {children}
-        <ProfileSheet ref={profileSheetRef} />
+
+        {
+
+
+
+
+
+}
+
+        <ProfileSheet
+          ref={profileSheetRef}
+        />
       </ProfileSheetContext.Provider>
     </GestureHandlerRootView>
   );
 }
 
 export function useProfileSheet() {
-  const context = useContext(ProfileSheetContext);
+  const context =
+    useContext(ProfileSheetContext);
 
   if (!context) {
-    throw new Error("useProfileSheet must be used inside ProfileSheetProvider");
+    throw new Error(
+      "useProfileSheet must be used inside ProfileSheetProvider"
+    );
   }
 
   return context;
