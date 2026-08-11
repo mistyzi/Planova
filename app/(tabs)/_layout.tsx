@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Entypo } from "@react-native-vector-icons/entypo";
+import { Entypo } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -13,15 +13,12 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 export default function TabLayout() {
   const NAV_WIDTH = 280;
   const SIDE_MARGIN = (SCREEN_WIDTH - NAV_WIDTH) / 2;
+
   const { isDark } = useTheme();
 
-  const backgroundColors: [string, string] = isDark
-    ? ["#0e1938", "#6b41bf"]
-    : ["#EEF3FF", "#DCCFF5"];
+  const backgroundColors: [string, string] = isDark ? ["#0e1938", "#6b41bf"] : ["#EEF3FF", "#DCCFF5"];
 
-  const navBorderColors: [string, string, string] = isDark
-    ? ["#f9a8d4", "#c084fc", "#6366f1"]
-    : ["#D8B4FE", "#C4B5FD", "#A5B4FC"];
+  const navBorderColors: [string, string, string] = isDark ? ["#f9a8d4", "#c084fc", "#6366f1"] : ["#D8B4FE", "#C4B5FD", "#A5B4FC"];
 
   const navInnerColors: [string, string] = isDark
     ? ["rgba(14,25,56,0.96)", "rgba(14,25,56,0.96)"]
@@ -34,13 +31,10 @@ export default function TabLayout() {
     <GestureHandlerRootView style={styles.root}>
       <ProfileSheetProvider>
         <View style={styles.container}>
-          <LinearGradient
-            colors={backgroundColors}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={StyleSheet.absoluteFillObject}
-          />
+          <LinearGradient colors={backgroundColors} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={StyleSheet.absoluteFillObject} />
+
           <StarryBackground />
+
           <Tabs
             screenOptions={{
               headerShown: false,
@@ -70,23 +64,8 @@ export default function TabLayout() {
                 shadowRadius: 20,
               },
               tabBarBackground: () => (
-                <LinearGradient
-                  colors={navBorderColors}
-                  start={{ x: 0, y: 0.5 }}
-                  end={{ x: 1, y: 0.5 }}
-                  style={{
-                    flex: 1,
-                    borderRadius: 999,
-                    padding: 2,
-                  }}
-                >
-                  <LinearGradient
-                    colors={navInnerColors}
-                    style={{
-                      flex: 1,
-                      borderRadius: 999,
-                    }}
-                  />
+                <LinearGradient colors={navBorderColors} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={{ flex: 1, borderRadius: 999, padding: 2 }}>
+                  <LinearGradient colors={navInnerColors} style={{ flex: 1, borderRadius: 999 }} />
                 </LinearGradient>
               ),
               tabBarItemStyle: {
@@ -96,8 +75,8 @@ export default function TabLayout() {
               },
               tabBarLabelStyle: {
                 marginTop: 2,
+                fontFamily: "Bitter",
                 fontSize: 11,
-                fontWeight: "600",
               },
               tabBarActiveTintColor: activeTintColor,
               tabBarInactiveTintColor: inactiveTintColor,
@@ -115,22 +94,19 @@ export default function TabLayout() {
                     color={color}
                     style={{
                       opacity: focused ? 1 : 0.65,
-                      transform: [
-                        {
-                          scale: focused ? 1.08 : 1,
-                        },
-                      ],
+                      transform: [{ scale: focused ? 1.08 : 1 }],
                     }}
                   />
                 ),
                 tabBarLabelStyle: {
                   marginTop: 5,
+                  fontFamily: "BitterBold",
                   fontSize: 11,
-                  fontWeight: "600",
                   opacity: 1,
                 },
               }}
             />
+
             <Tabs.Screen
               name="tasks"
               options={{
@@ -142,21 +118,18 @@ export default function TabLayout() {
                     color={color}
                     style={{
                       opacity: focused ? 1 : 0.65,
-                      transform: [
-                        {
-                          scale: focused ? 1.08 : 1,
-                        },
-                      ],
+                      transform: [{ scale: focused ? 1.08 : 1 }],
                     }}
                   />
                 ),
                 tabBarLabelStyle: {
                   marginTop: 2,
+                  fontFamily: "BitterBold",
                   fontSize: 11,
-                  fontWeight: "600",
                 },
               }}
             />
+
             <Tabs.Screen
               name="study"
               options={{
@@ -168,18 +141,14 @@ export default function TabLayout() {
                     color={color}
                     style={{
                       opacity: focused ? 1 : 0.65,
-                      transform: [
-                        {
-                          scale: focused ? 1.08 : 1,
-                        },
-                      ],
+                      transform: [{ scale: focused ? 1.08 : 1 }],
                     }}
                   />
                 ),
                 tabBarLabelStyle: {
                   marginTop: 2,
+                  fontFamily: "BitterBold",
                   fontSize: 11,
-                  fontWeight: "600",
                 },
               }}
             />

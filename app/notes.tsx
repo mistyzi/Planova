@@ -6,19 +6,8 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
-import {
-    Alert,
-    Image,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { Alert, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { addNote, getNotes, StoredNote } from "../storage/noteStorage";
 import { scanMultipleImages } from "./ocr";
 
@@ -32,13 +21,11 @@ export default function NotesScreen() {
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [cameraRef, setCameraRef] = useState<CameraView | null>(null);
+  const cameraRef = useRef<CameraView | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const backgroundColors: [string, string] = isDark
-    ? ["#0e1938", "#6b41bf"]
-    : ["#EEF3FF", "#DCCFF5"];
+  const backgroundColors: [string, string] = isDark ? ["#0e1938", "#6b41bf"] : ["#EEF3FF", "#DCCFF5"];
 
   const colors = isDark
     ? {
@@ -82,17 +69,17 @@ export default function NotesScreen() {
 
   const loadNotes = useCallback(async () => {
     try {
-      const storedNotes = await getNotes();
-      setNotes(storedNotes);
+      const stored = await getNotes();
+      setNotes(stored);
     } catch (error) {
-      console.log("Failed to load notes:", error);
+      console.log("Failed loading notes:", error);
     }
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       loadNotes();
-    }, [loadNotes]),
+    }, [loadNotes])
   );
 
   const filteredNotes = useMemo(() => {
@@ -102,9 +89,8 @@ export default function NotesScreen() {
         !query ||
         note.title.toLowerCase().includes(query) ||
         note.preview.toLowerCase().includes(query) ||
-        note.extractedText?.toLowerCase().includes(query);
-      const matchesFilter =
-        activeFilter === "All" || note.type === activeFilter;
+        (note.extractedText ?? "").toLowerCase().includes(query);
+      const matchesFilter = activeFilter === "All" || note.type === activeFilter;
       return matchesSearch && matchesFilter;
     });
   }, [notes, search, activeFilter]);
@@ -121,27 +107,48 @@ export default function NotesScreen() {
   };
 
   const createImageNote = async (imageUris: string[]) => {
-    if (imageUris.length === 0) return;
+    const validUris = imageUris.filter((uri): uri is string => typeof uri === "string" && uri.trim().length > 0);
+
+    if (validUris.length === 0) {
+      Alert.alert("No Images", "No valid images were selected.");
+      return;
+    }
+
+    console.log("========================================");
+    console.log("STARTING IMAGE NOTE");
+    console.log("IMAGE COUNT:", validUris.length);
+    console.log("========================================");
+
+    setIsScanning(true);
+    setShowCreateMenu(false);
+
     try {
-      setIsScanning(true);
-      const combinedText = await scanMultipleImages(imageUris);
+      const extractedText = await scanMultipleImages(validUris);
+
+      console.log("========================================");
+      console.log("OCR COMPLETE");
+      console.log("EXTRACTED TEXT LENGTH:", extractedText.length);
+      console.log("========================================");
+
       const newNote: StoredNote = {
-        id: Date.now().toString() + Math.random().toString(36).slice(2),
-        title:
-          imageUris.length === 1
-            ? "Imported Study Notes"
-            : `Imported Study Notes (${imageUris.length} pages)`,
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        title: validUris.length === 1 ? "Imported Study Notes" : `Imported Study Notes (${validUris.length} pages)`,
         type: "Images",
-        preview:
-          combinedText.length > 0
-            ? combinedText.slice(0, 120)
-            : "Image study notes",
+        preview: extractedText.trim().slice(0, 120) || "Image study notes",
         date: "Just now",
-        images: imageUris,
-        extractedText: combinedText,
+        images: validUris,
+        extractedText: extractedText.trim(),
       };
+
+      console.log("SAVING NOTE");
+      console.log("SAVED IMAGE COUNT:", newNote.images?.length);
+      console.log("SAVED OCR LENGTH:", newNote.extractedText?.length);
+
       await addNote(newNote);
       await loadNotes();
+
+      console.log("NOTE SAVED SUCCESSFULLY");
+
       router.push({
         pathname: "/note",
         params: {
@@ -149,11 +156,8 @@ export default function NotesScreen() {
         },
       });
     } catch (error) {
-      console.log("Failed to create image note:", error);
-      Alert.alert(
-        "Scan Failed",
-        "The images were imported, but the text could not be scanned. Check your OCR API key and try again.",
-      );
+      console.log("IMAGE NOTE ERROR:", error);
+      Alert.alert("Scan Failed", "The images could not be scanned. Please try again.");
     } finally {
       setIsScanning(false);
     }
@@ -161,62 +165,29 @@ export default function NotesScreen() {
 
   const openCamera = async () => {
     setShowCreateMenu(false);
+
     if (!cameraPermission?.granted) {
       const permission = await requestCameraPermission();
       if (!permission.granted) {
-        Alert.alert(
-          "Camera Permission",
-          "Camera access is needed to take pictures of your study notes.",
-        );
+        Alert.alert("Camera Permission", "Camera access is needed to photograph your study notes.");
         return;
       }
     }
+
     setShowCamera(true);
   };
 
-  const pickFromGallery = async () => {
-    setShowCreateMenu(false);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert(
-        "Photo Permission",
-        "Photo library access is needed to import your study notes.",
-      );
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-      quality: 1,
-    });
-    if (result.canceled || !result.assets || result.assets.length === 0) {
-      return;
-    }
-    const imageUris = result.assets.map((asset) => asset.uri).filter(Boolean);
-    await createImageNote(imageUris);
-  };
-
-  const pickFiles = async () => {
-    setShowCreateMenu(false);
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ["image/*"],
-      multiple: true,
-      copyToCacheDirectory: true,
-    });
-    if (result.canceled || !result.assets || result.assets.length === 0) {
-      return;
-    }
-    const imageUris = result.assets.map((asset) => asset.uri).filter(Boolean);
-    await createImageNote(imageUris);
-  };
-
   const takePhoto = async () => {
-    if (!cameraRef) return;
+    if (!cameraRef.current || isSaving) {
+      return;
+    }
+
     try {
       setIsSaving(true);
-      const photo = await cameraRef.takePictureAsync({
+      const photo = await cameraRef.current.takePictureAsync({
         quality: 1,
       });
+
       if (photo?.uri) {
         setShowCamera(false);
         await createImageNote([photo.uri]);
@@ -229,521 +200,307 @@ export default function NotesScreen() {
     }
   };
 
+  const pickFromGallery = async () => {
+    setShowCreateMenu(false);
+
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert("Photo Permission", "Photo library access is needed to import your study notes.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsMultipleSelection: true,
+        selectionLimit: 0,
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const imageUris = result.assets.map((asset) => asset.uri).filter((uri): uri is string => typeof uri === "string" && uri.trim().length > 0);
+
+      console.log("GALLERY SELECTED:", imageUris.length);
+      await createImageNote(imageUris);
+    } catch (error) {
+      console.log("Gallery error:", error);
+      Alert.alert("Import Error", "The images could not be imported.");
+    }
+  };
+
+  const pickFiles = async () => {
+    setShowCreateMenu(false);
+
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*"],
+        multiple: true,
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const imageUris = result.assets.map((asset) => asset.uri).filter((uri): uri is string => typeof uri === "string" && uri.trim().length > 0);
+
+      console.log("FILES SELECTED:", imageUris.length);
+      await createImageNote(imageUris);
+    } catch (error) {
+      console.log("File picker error:", error);
+      Alert.alert("Import Error", "The image files could not be imported.");
+    }
+  };
+
   const filters: NoteFilter[] = ["All", "Text", "Images"];
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={backgroundColors}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <LinearGradient colors={backgroundColors} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={StyleSheet.absoluteFillObject} />
+
       <View pointerEvents="none" style={styles.stars}>
         <StarryBackground />
       </View>
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => router.back()}
-        style={styles.backButton}
-      >
+
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton} activeOpacity={0.75}>
         <Ionicons name="arrow-back" size={25} color={colors.title} />
       </TouchableOpacity>
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.title }]}>Notes</Text>
           <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-          <Text style={[styles.subtitle, { color: colors.secondaryText }]}>
-            Keep your written notes and scanned study pages together.
-          </Text>
+          <Text style={[styles.subtitle, { color: colors.secondaryText }]}>Keep your written notes and scanned study pages together.</Text>
         </View>
-        <View
-          style={[
-            styles.searchContainer,
-            {
-              backgroundColor: colors.input,
-              borderColor: colors.inputBorder,
-            },
-          ]}
-        >
-          <Ionicons
-            name="search-outline"
-            size={21}
-            color={colors.secondaryText}
-          />
+
+        <View style={[styles.searchContainer, { backgroundColor: colors.input, borderColor: colors.inputBorder }]}>
+          <Ionicons name="search-outline" size={21} color={colors.secondaryText} />
           <TextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Search your notes..."
             placeholderTextColor={colors.secondaryText}
-            style={[
-              styles.searchInput,
-              {
-                color: colors.text,
-              },
-            ]}
+            style={[styles.searchInput, { color: colors.text }]}
           />
           {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch("")}>
-              <Ionicons
-                name="close-circle"
-                size={19}
-                color={colors.secondaryText}
-              />
+            <TouchableOpacity onPress={() => setSearch("")} activeOpacity={0.7}>
+              <Ionicons name="close-circle" size={19} color={colors.secondaryText} />
             </TouchableOpacity>
           )}
         </View>
+
         <View style={styles.filterRow}>
           {filters.map((filter) => {
             const active = activeFilter === filter;
             return (
               <TouchableOpacity
                 key={filter}
-                activeOpacity={0.8}
                 onPress={() => setActiveFilter(filter)}
+                activeOpacity={0.75}
                 style={[
                   styles.filterButton,
                   {
-                    backgroundColor: active
-                      ? colors.activeFilter
-                      : colors.filterBackground,
-                    borderColor: active
-                      ? colors.activeFilterBorder
-                      : colors.filterBorder,
+                    backgroundColor: active ? colors.activeFilter : colors.filterBackground,
+                    borderColor: active ? colors.activeFilterBorder : colors.filterBorder,
                   },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.filterText,
-                    {
-                      color: active ? colors.title : colors.secondaryText,
-                    },
-                  ]}
-                >
-                  {filter}
-                </Text>
+                <Text style={[styles.filterText, { color: active ? colors.title : colors.secondaryText }]}>{filter}</Text>
               </TouchableOpacity>
             );
           })}
         </View>
+
         <View style={styles.actionRow}>
           <TouchableOpacity
-            activeOpacity={0.8}
             onPress={createTextNote}
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
+            activeOpacity={0.8}
+            style={[styles.actionButton, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
           >
-            <View
-              style={[
-                styles.actionIcon,
-                {
-                  backgroundColor: colors.iconBackground,
-                },
-              ]}
-            >
+            <View style={[styles.actionIcon, { backgroundColor: colors.iconBackground }]}>
               <Ionicons name="create-outline" size={21} color={colors.icon} />
             </View>
             <View style={styles.actionText}>
-              <Text style={[styles.actionTitle, { color: colors.text }]}>
-                New Note
-              </Text>
-              <Text
-                style={[styles.actionSubtitle, { color: colors.secondaryText }]}
-              >
-                Write something
-              </Text>
+              <Text style={[styles.actionTitle, { color: colors.text }]}>New Note</Text>
+              <Text style={[styles.actionSubtitle, { color: colors.secondaryText }]}>Write something</Text>
             </View>
           </TouchableOpacity>
+
           <TouchableOpacity
-            activeOpacity={0.8}
             onPress={() => setShowCreateMenu(true)}
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
+            activeOpacity={0.8}
+            style={[styles.actionButton, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
           >
-            <View
-              style={[
-                styles.actionIcon,
-                {
-                  backgroundColor: colors.iconBackground,
-                },
-              ]}
-            >
+            <View style={[styles.actionIcon, { backgroundColor: colors.iconBackground }]}>
               <Ionicons name="images-outline" size={21} color={colors.icon} />
             </View>
             <View style={styles.actionText}>
-              <Text style={[styles.actionTitle, { color: colors.text }]}>
-                Import
-              </Text>
-              <Text
-                style={[styles.actionSubtitle, { color: colors.secondaryText }]}
-              >
-                Scan study pages
-              </Text>
+              <Text style={[styles.actionTitle, { color: colors.text }]}>Import</Text>
+              <Text style={[styles.actionSubtitle, { color: colors.secondaryText }]}>Scan study pages</Text>
             </View>
           </TouchableOpacity>
         </View>
-        {(isScanning || isSaving) && (
-          <View
-            style={[
-              styles.processingCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
+
+        {isScanning && (
+          <View style={[styles.processingCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <Ionicons name="scan-outline" size={24} color={colors.icon} />
             <View style={styles.processingText}>
-              <Text style={[styles.processingTitle, { color: colors.text }]}>
-                Scanning your notes...
-              </Text>
-              <Text
-                style={[
-                  styles.processingSubtitle,
-                  { color: colors.secondaryText },
-                ]}
-              >
-                Reading the text from your study pages.
-              </Text>
+              <Text style={[styles.processingTitle, { color: colors.text }]}>Scanning your notes...</Text>
+              <Text style={[styles.processingSubtitle, { color: colors.secondaryText }]}>Reading every selected study page.</Text>
             </View>
           </View>
         )}
+
         <View style={styles.notesHeader}>
-          <Text style={[styles.notesTitle, { color: colors.title }]}>
-            Your Notes
-          </Text>
+          <Text style={[styles.notesTitle, { color: colors.title }]}>Your Notes</Text>
           <Text style={[styles.noteCount, { color: colors.secondaryText }]}>
-            {filteredNotes.length}{" "}
-            {filteredNotes.length === 1 ? "note" : "notes"}
+            {filteredNotes.length} {filteredNotes.length === 1 ? "note" : "notes"}
           </Text>
         </View>
+
         {filteredNotes.length > 0 ? (
           <View style={styles.notesList}>
             {filteredNotes.map((note) => (
               <TouchableOpacity
                 key={note.id}
-                activeOpacity={0.82}
-                onPress={() =>
+                activeOpacity={0.8}
+                onPress={() => {
+                  console.log("OPENING NOTE:", note.id);
                   router.push({
                     pathname: "/note",
                     params: {
                       id: note.id,
                     },
-                  })
-                }
-                style={[
-                  styles.noteCard,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
+                  });
+                }}
+                style={[styles.noteCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
               >
-                {note.type === "Images" &&
-                note.images &&
-                note.images.length > 0 ? (
+                {note.type === "Images" && note.images?.length ? (
                   <View style={styles.imagePreview}>
-                    <Image
-                      source={{ uri: note.images[0] }}
-                      style={styles.noteImage}
-                    />
+                    <Image source={{ uri: note.images[0] }} style={styles.noteImage} />
                     {note.images.length > 1 && (
-                      <View
-                        style={[
-                          styles.pageCount,
-                          {
-                            backgroundColor: colors.primary,
-                          },
-                        ]}
-                      >
-                        <Text style={styles.pageCountText}>
-                          +{note.images.length - 1}
-                        </Text>
+                      <View style={[styles.pageCount, { backgroundColor: colors.primary }]}>
+                        <Text style={styles.pageCountText}>+{note.images.length - 1}</Text>
                       </View>
                     )}
                   </View>
                 ) : (
-                  <View
-                    style={[
-                      styles.noteIcon,
-                      {
-                        backgroundColor: colors.iconBackground,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="document-text-outline"
-                      size={25}
-                      color={colors.icon}
-                    />
+                  <View style={[styles.noteIcon, { backgroundColor: colors.iconBackground }]}>
+                    <Ionicons name="document-text-outline" size={25} color={colors.icon} />
                   </View>
                 )}
+
                 <View style={styles.noteInfo}>
                   <View style={styles.noteTopRow}>
-                    <Text
-                      numberOfLines={1}
-                      style={[styles.noteTitle, { color: colors.text }]}
-                    >
+                    <Text numberOfLines={1} style={[styles.noteTitle, { color: colors.text }]}>
                       {note.title}
                     </Text>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={18}
-                      color={colors.secondaryText}
-                    />
+                    <Ionicons name="chevron-forward" size={18} color={colors.secondaryText} />
                   </View>
-                  <Text
-                    numberOfLines={2}
-                    style={[
-                      styles.notePreview,
-                      { color: colors.secondaryText },
-                    ]}
-                  >
+                  <Text numberOfLines={2} style={[styles.notePreview, { color: colors.secondaryText }]}>
                     {note.preview}
                   </Text>
                   <View style={styles.noteBottomRow}>
-                    <View
-                      style={[
-                        styles.typeBadge,
-                        {
-                          backgroundColor: colors.iconBackground,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.typeText,
-                          { color: colors.secondaryText },
-                        ]}
-                      >
-                        {note.type}
-                      </Text>
+                    <View style={[styles.typeBadge, { backgroundColor: colors.iconBackground }]}>
+                      <Text style={[styles.typeText, { color: colors.secondaryText }]}>{note.type}</Text>
                     </View>
-                    <Text
-                      style={[styles.noteDate, { color: colors.secondaryText }]}
-                    >
-                      {note.date}
-                    </Text>
+                    <Text style={[styles.noteDate, { color: colors.secondaryText }]}>{note.date}</Text>
                   </View>
                 </View>
               </TouchableOpacity>
             ))}
           </View>
         ) : (
-          <View
-            style={[
-              styles.emptyCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.emptyIcon,
-                {
-                  backgroundColor: colors.iconBackground,
-                },
-              ]}
-            >
-              <Ionicons name="document-outline" size={27} color={colors.icon} />
-            </View>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              No notes found
-            </Text>
-            <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
-              Create a text note or import your study pages.
-            </Text>
+          <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <Ionicons name="document-outline" size={27} color={colors.icon} />
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No notes found</Text>
+            <Text style={[styles.emptyText, { color: colors.secondaryText }]}>Create a text note or import your study pages.</Text>
           </View>
         )}
-        <View
-          style={[styles.finalDivider, { backgroundColor: colors.divider }]}
-        />
+
+        <View style={[styles.finalDivider, { backgroundColor: colors.divider }]} />
       </ScrollView>
 
-      <Modal
-        visible={showCreateMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowCreateMenu(false)}
-      >
-        <View
-          style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}
-        >
-          <View
-            style={[
-              styles.importMenu,
-              {
-                backgroundColor: isDark ? "#121c3d" : "#ffffff",
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
+      <Modal visible={showCreateMenu} transparent animationType="fade" onRequestClose={() => setShowCreateMenu(false)}>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.importMenu, { backgroundColor: isDark ? "#121c3d" : "#ffffff", borderColor: colors.cardBorder }]}>
             <View style={styles.modalHeader}>
               <View>
-                <Text style={[styles.modalTitle, { color: colors.text }]}>
-                  Add Study Notes
-                </Text>
-                <Text
-                  style={[
-                    styles.modalSubtitle,
-                    { color: colors.secondaryText },
-                  ]}
-                >
-                  Create one image note from one or more pages.
-                </Text>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Add Study Notes</Text>
+                <Text style={[styles.modalSubtitle, { color: colors.secondaryText }]}>Select one or more study pages to scan.</Text>
               </View>
-              <TouchableOpacity onPress={() => setShowCreateMenu(false)}>
+              <TouchableOpacity onPress={() => setShowCreateMenu(false)} activeOpacity={0.7}>
                 <Ionicons name="close" size={24} color={colors.secondaryText} />
               </TouchableOpacity>
             </View>
+
             <TouchableOpacity
-              activeOpacity={0.8}
               onPress={openCamera}
-              style={[
-                styles.menuOption,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.cardBorder,
-                },
-              ]}
+              activeOpacity={0.8}
+              style={[styles.menuOption, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
             >
-              <View
-                style={[
-                  styles.menuIcon,
-                  {
-                    backgroundColor: colors.iconBackground,
-                  },
-                ]}
-              >
+              <View style={[styles.menuIcon, { backgroundColor: colors.iconBackground }]}>
                 <Ionicons name="camera-outline" size={24} color={colors.icon} />
               </View>
               <View style={styles.menuText}>
-                <Text style={[styles.menuTitle, { color: colors.text }]}>
-                  Take Photo
-                </Text>
-                <Text
-                  style={[styles.menuSubtitle, { color: colors.secondaryText }]}
-                >
-                  Photograph your notes
-                </Text>
+                <Text style={[styles.menuTitle, { color: colors.text }]}>Take Photo</Text>
+                <Text style={[styles.menuSubtitle, { color: colors.secondaryText }]}>Photograph your notes</Text>
               </View>
             </TouchableOpacity>
+
             <TouchableOpacity
-              activeOpacity={0.8}
               onPress={pickFromGallery}
-              style={[
-                styles.menuOption,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.cardBorder,
-                },
-              ]}
+              activeOpacity={0.8}
+              style={[styles.menuOption, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
             >
-              <View
-                style={[
-                  styles.menuIcon,
-                  {
-                    backgroundColor: colors.iconBackground,
-                  },
-                ]}
-              >
+              <View style={[styles.menuIcon, { backgroundColor: colors.iconBackground }]}>
                 <Ionicons name="images-outline" size={24} color={colors.icon} />
               </View>
               <View style={styles.menuText}>
-                <Text style={[styles.menuTitle, { color: colors.text }]}>
-                  Choose from Gallery
-                </Text>
-                <Text
-                  style={[styles.menuSubtitle, { color: colors.secondaryText }]}
-                >
-                  Select multiple pages
-                </Text>
+                <Text style={[styles.menuTitle, { color: colors.text }]}>Choose from Gallery</Text>
+                <Text style={[styles.menuSubtitle, { color: colors.secondaryText }]}>Select multiple pages</Text>
               </View>
             </TouchableOpacity>
+
             <TouchableOpacity
-              activeOpacity={0.8}
               onPress={pickFiles}
-              style={[
-                styles.menuOption,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.cardBorder,
-                },
-              ]}
+              activeOpacity={0.8}
+              style={[styles.menuOption, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
             >
-              <View
-                style={[
-                  styles.menuIcon,
-                  {
-                    backgroundColor: colors.iconBackground,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="folder-open-outline"
-                  size={24}
-                  color={colors.icon}
-                />
+              <View style={[styles.menuIcon, { backgroundColor: colors.iconBackground }]}>
+                <Ionicons name="folder-open-outline" size={24} color={colors.icon} />
               </View>
               <View style={styles.menuText}>
-                <Text style={[styles.menuTitle, { color: colors.text }]}>
-                  Choose Files
-                </Text>
-                <Text
-                  style={[styles.menuSubtitle, { color: colors.secondaryText }]}
-                >
-                  Import image files
-                </Text>
+                <Text style={[styles.menuTitle, { color: colors.text }]}>Choose Files</Text>
+                <Text style={[styles.menuSubtitle, { color: colors.secondaryText }]}>Import image files</Text>
               </View>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      <Modal
-        visible={showCamera}
-        animationType="slide"
-        onRequestClose={() => setShowCamera(false)}
-      >
+      <Modal visible={showCamera} animationType="slide" onRequestClose={() => setShowCamera(false)}>
         <View style={styles.cameraContainer}>
-          <CameraView
-            ref={(ref) => setCameraRef(ref)}
-            style={styles.camera}
-            facing="back"
-          />
+          <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+
           <View style={styles.cameraControls}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => setShowCamera(false)}
-              style={styles.cameraCancel}
-            >
+            <TouchableOpacity onPress={() => setShowCamera(false)} activeOpacity={0.8} style={styles.cameraCancel}>
               <Ionicons name="close" size={26} color="#ffffff" />
             </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={takePhoto}
-              style={styles.captureButton}
-              disabled={isSaving}
-            >
+
+            <TouchableOpacity onPress={takePhoto} disabled={isSaving} activeOpacity={0.8} style={[styles.captureButton, { opacity: isSaving ? 0.5 : 1 }]}>
               <View style={styles.captureInner} />
             </TouchableOpacity>
+
             <View style={styles.cameraPlaceholder} />
           </View>
         </View>
@@ -1002,17 +759,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 25,
   },
-  emptyIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
   emptyTitle: {
     fontFamily: "BitterBold",
     fontSize: 15,
+    marginTop: 12,
     marginBottom: 6,
   },
   emptyText: {

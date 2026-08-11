@@ -1,19 +1,6 @@
 import React, { forwardRef, useEffect, useMemo, useState } from "react";
-import {
-  Alert,
-  Image,
-  Modal,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
+import { Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
@@ -22,6 +9,9 @@ import { useTheme } from "../context/themecontext";
 import MusicSelector from "./musicselector";
 
 const PROFILE_STORAGE_KEY = "@planova_profile";
+const TASKS_STORAGE_KEY = "@planova_tasks";
+const STREAK_STORAGE_KEY = "@planova_streak";
+const FOCUS_STORAGE_KEY = "@planova_focus_time";
 
 type ProfileData = {
   name: string;
@@ -31,20 +21,34 @@ type ProfileData = {
   backgroundUri: string;
 };
 
+type ProfileStats = {
+  tasksCompleted: number;
+  currentStreak: number;
+  focusHours: number;
+};
+
+type ProfileSheetProps = {
+  onLogout?: () => void;
+};
+
 const DEFAULT_PROFILE: ProfileData = {
   name: "Hokazono Iroha",
   school: "SAIT",
   program: "Software Development",
-  avatarUri:
-    "https://i.pinimg.com/736x/e9/46/55/e94655294e897527f56c15e51580661a.jpg",
-  backgroundUri:
-    "https://images.unsplash.com/photo-1534791547706-0c292bfb8004?auto=format&fit=crop&w=1200&q=80",
+  avatarUri: "https://i.pinimg.com/736x/e9/46/55/e94655294e897527f56c15e51580661a.jpg",
+  backgroundUri: "https://images.unsplash.com/photo-1534791547706-0c292bfb8004?auto=format&fit=crop&w=1200&q=80",
 };
 
-const ProfileSheet = forwardRef<any, {}>((props, ref) => {
+const DEFAULT_STATS: ProfileStats = {
+  tasksCompleted: 0,
+  currentStreak: 0,
+  focusHours: 0,
+};
+
+const ProfileSheet = forwardRef<any, ProfileSheetProps>(({ onLogout }, ref) => {
   const snapPoints = useMemo(() => ["90%"], []);
-  const [studyReminders, setStudyReminders] = useState(true);
   const [profile, setProfile] = useState<ProfileData>(DEFAULT_PROFILE);
+  const [stats, setStats] = useState<ProfileStats>(DEFAULT_STATS);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editName, setEditName] = useState("");
   const [editSchool, setEditSchool] = useState("");
@@ -60,7 +64,6 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
         textSecondary: "#A8B2FF",
         textMuted: "#9097B5",
         card: "#1A1E52",
-        deleteCard: "#1B1D36",
         description: "#B7B6D8",
         icon: "#E5D7FF",
         button: "#7C5DFF",
@@ -70,10 +73,10 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
         smallSubtitle: "#A6A5C9",
         gold: "#E7DDB2",
         goldText: "#323246",
-        deleteTitle: "#D68A8A",
-        deleteDescription: "#AFAFC7",
-        deleteBorder: "#7C5A66",
-        deleteText: "#F2C8D0",
+        logoutTitle: "#D8B8FF",
+        logoutDescription: "#AAA9C8",
+        logoutBorder: "#6255A8",
+        logoutText: "#D7C9FF",
         handle: "#7C5DFF",
         iconBackground: "rgba(255,255,255,0.06)",
         cardBorder: "rgba(255,255,255,0.08)",
@@ -86,7 +89,6 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
         textSecondary: "#6658B5",
         textMuted: "#77748A",
         card: "#FFFFFF",
-        deleteCard: "#FFF5F7",
         description: "#66627A",
         icon: "#6658A8",
         button: "#7C5DFF",
@@ -96,52 +98,107 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
         smallSubtitle: "#77738B",
         gold: "#E7DDB2",
         goldText: "#323246",
-        deleteTitle: "#B95F6C",
-        deleteDescription: "#81727A",
-        deleteBorder: "#D7AAB4",
-        deleteText: "#A45A68",
+        logoutTitle: "#6658B5",
+        logoutDescription: "#77738B",
+        logoutBorder: "#B7ACE3",
+        logoutText: "#6658B5",
         handle: "#7C5DFF",
         iconBackground: "rgba(124,93,255,0.08)",
         cardBorder: "rgba(91,76,145,0.12)",
       };
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-        if (!stored) {
-          setProfile(DEFAULT_PROFILE);
-          return;
-        }
-        const parsed = JSON.parse(stored);
-        if (!parsed || typeof parsed !== "object") {
-          setProfile(DEFAULT_PROFILE);
-          return;
-        }
-        setProfile({
-          name:
-            typeof parsed.name === "string" && parsed.name.trim()
-              ? parsed.name
-              : DEFAULT_PROFILE.name,
-          school:
-            typeof parsed.school === "string" ? parsed.school : DEFAULT_PROFILE.school,
-          program:
-            typeof parsed.program === "string" ? parsed.program : DEFAULT_PROFILE.program,
-          avatarUri:
-            typeof parsed.avatarUri === "string" && parsed.avatarUri
-              ? parsed.avatarUri
-              : DEFAULT_PROFILE.avatarUri,
-          backgroundUri:
-            typeof parsed.backgroundUri === "string" && parsed.backgroundUri
-              ? parsed.backgroundUri
-              : DEFAULT_PROFILE.backgroundUri,
-        });
-      } catch (error) {
-        console.log("Failed to load profile:", error);
-        setProfile(DEFAULT_PROFILE);
-      }
-    };
     loadProfile();
+    loadStats();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
+      if (!stored) {
+        setProfile(DEFAULT_PROFILE);
+        return;
+      }
+      const parsed = JSON.parse(stored);
+      if (!parsed || typeof parsed !== "object") {
+        setProfile(DEFAULT_PROFILE);
+        return;
+      }
+      setProfile({
+        name: typeof parsed.name === "string" && parsed.name.trim() ? parsed.name : DEFAULT_PROFILE.name,
+        school: typeof parsed.school === "string" ? parsed.school : DEFAULT_PROFILE.school,
+        program: typeof parsed.program === "string" ? parsed.program : DEFAULT_PROFILE.program,
+        avatarUri: typeof parsed.avatarUri === "string" && parsed.avatarUri ? parsed.avatarUri : DEFAULT_PROFILE.avatarUri,
+        backgroundUri: typeof parsed.backgroundUri === "string" && parsed.backgroundUri ? parsed.backgroundUri : DEFAULT_PROFILE.backgroundUri,
+      });
+    } catch (error) {
+      console.log("Failed to load profile:", error);
+      setProfile(DEFAULT_PROFILE);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      let tasksCompleted = 0;
+      let currentStreak = 0;
+      let focusHours = 0;
+
+      const storedTasks = await AsyncStorage.getItem(TASKS_STORAGE_KEY);
+      if (storedTasks) {
+        const parsedTasks = JSON.parse(storedTasks);
+        if (Array.isArray(parsedTasks)) {
+          tasksCompleted = parsedTasks.filter((task: any) => task?.completed === true || task?.isCompleted === true || task?.status === "completed").length;
+        } else if (parsedTasks && typeof parsedTasks === "object") {
+          if (typeof parsedTasks.completedTasks === "number") {
+            tasksCompleted = parsedTasks.completedTasks;
+          }
+        }
+      }
+
+      const storedStreak = await AsyncStorage.getItem(STREAK_STORAGE_KEY);
+      if (storedStreak) {
+        const parsedStreak = JSON.parse(storedStreak);
+        if (typeof parsedStreak === "number") {
+          currentStreak = parsedStreak;
+        } else if (parsedStreak && typeof parsedStreak === "object") {
+          if (typeof parsedStreak.currentStreak === "number") {
+            currentStreak = parsedStreak.currentStreak;
+          } else if (typeof parsedStreak.streak === "number") {
+            currentStreak = parsedStreak.streak;
+          }
+        }
+      }
+
+      const storedFocus = await AsyncStorage.getItem(FOCUS_STORAGE_KEY);
+      if (storedFocus) {
+        const parsedFocus = JSON.parse(storedFocus);
+        if (typeof parsedFocus === "number") {
+          focusHours = parsedFocus / 60;
+        } else if (parsedFocus && typeof parsedFocus === "object") {
+          if (typeof parsedFocus.totalMinutes === "number") {
+            focusHours = parsedFocus.totalMinutes / 60;
+          } else if (typeof parsedFocus.focusMinutes === "number") {
+            focusHours = parsedFocus.focusMinutes / 60;
+          } else if (typeof parsedFocus.totalSeconds === "number") {
+            focusHours = parsedFocus.totalSeconds / 3600;
+          } else if (typeof parsedFocus.focusSeconds === "number") {
+            focusHours = parsedFocus.focusSeconds / 3600;
+          }
+        }
+      }
+
+      setStats({ tasksCompleted, currentStreak, focusHours });
+    } catch (error) {
+      console.log("Failed to load Planova stats:", error);
+      setStats(DEFAULT_STATS);
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadStats();
+    }, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   const saveProfileToStorage = async (updatedProfile: ProfileData) => {
@@ -285,37 +342,38 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
 
   const showAvatarOptions = () => {
     Alert.alert("Profile Picture", "How would you like to change your profile picture?", [
-      {
-        text: "Choose from Photos",
-        onPress: pickProfilePicture,
-      },
-      {
-        text: "Take Photo",
-        onPress: takeProfilePicture,
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
+      { text: "Choose from Photos", onPress: pickProfilePicture },
+      { text: "Take Photo", onPress: takeProfilePicture },
+      { text: "Cancel", style: "cancel" },
     ]);
   };
 
   const showBackgroundOptions = () => {
     Alert.alert("Profile Background", "How would you like to change your profile background?", [
+      { text: "Choose from Photos", onPress: pickBackground },
+      { text: "Take Photo", onPress: takeBackgroundPhoto },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  const handleLogout = () => {
+    Alert.alert("Log Out", "Are you sure you want to log out of Planova?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: "Choose from Photos",
-        onPress: pickBackground,
-      },
-      {
-        text: "Take Photo",
-        onPress: takeBackgroundPhoto,
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
+        text: "Log Out",
+        style: "destructive",
+        onPress: () => {
+          if (onLogout) {
+            onLogout();
+          } else {
+            Alert.alert("Logout Ready", "Connect the onLogout prop to your authentication system to complete logout.");
+          }
+        },
       },
     ]);
   };
+
+  const formattedFocusHours = stats.focusHours < 10 ? stats.focusHours.toFixed(1) : Math.round(stats.focusHours).toString();
 
   return (
     <BottomSheet
@@ -326,83 +384,29 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
       enableContentPanningGesture
       enableHandlePanningGesture
       enableDynamicSizing={false}
-      backgroundStyle={[
-        styles.sheetBackground,
-        {
-          backgroundColor: colors.sheetBackground,
-        },
-      ]}
-      handleIndicatorStyle={[
-        styles.handle,
-        {
-          backgroundColor: colors.handle,
-        },
-      ]}
+      backgroundStyle={[styles.sheetBackground, { backgroundColor: colors.sheetBackground }]}
+      handleIndicatorStyle={[styles.handle, { backgroundColor: colors.handle }]}
       backdropComponent={(backdropProps) => (
-        <BottomSheetBackdrop
-          {...backdropProps}
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          opacity={0.3}
-          pressBehavior="none"
-        />
+        <BottomSheetBackdrop {...backdropProps} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.3} pressBehavior="none" />
       )}
     >
-      <BottomSheetScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <LinearGradient
-          colors={[colors.gradientTop, colors.gradientBottom]}
-          style={styles.gradient}
-        >
+      <BottomSheetScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <LinearGradient colors={[colors.gradientTop, colors.gradientBottom]} style={styles.gradient}>
           <View style={styles.profileHeader}>
             <Image source={{ uri: profile.backgroundUri }} style={styles.profileBackground} />
-            <LinearGradient
-              colors={["rgba(10,16,36,0.05)", colors.gradientTop, colors.gradientTop]}
-              locations={[0, 0.72, 1]}
-              style={styles.profileBackgroundOverlay}
-            />
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={showBackgroundOptions}
-              style={[
-                styles.backgroundEditButton,
-                {
-                  backgroundColor: colors.iconBackground,
-                  borderColor: colors.cardBorder,
-                },
-              ]}
-            >
+            <LinearGradient colors={["rgba(10,16,36,0.05)", colors.gradientTop, colors.gradientTop]} locations={[0, 0.72, 1]} style={styles.profileBackgroundOverlay} />
+            <TouchableOpacity activeOpacity={0.8} onPress={showBackgroundOptions} style={[styles.backgroundEditButton, { backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}>
               <Ionicons name="image-outline" size={17} color={colors.icon} />
             </TouchableOpacity>
             <TouchableOpacity activeOpacity={0.9} onPress={showAvatarOptions}>
               <Image source={{ uri: profile.avatarUri }} style={styles.avatar} />
-              <View
-                style={[
-                  styles.avatarEditButton,
-                  {
-                    backgroundColor: colors.button,
-                  },
-                ]}
-              >
+              <View style={[styles.avatarEditButton, { backgroundColor: colors.button }]}>
                 <Ionicons name="camera" size={14} color="#FFFFFF" />
               </View>
             </TouchableOpacity>
             <View style={styles.nameRow}>
               <Text style={[styles.name, { color: colors.textPrimary }]}>{profile.name}</Text>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={openEditProfile}
-                style={[
-                  styles.nameEditButton,
-                  {
-                    backgroundColor: colors.iconBackground,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-              >
+              <TouchableOpacity activeOpacity={0.8} onPress={openEditProfile} style={[styles.nameEditButton, { backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}>
                 <Ionicons name="pencil" size={15} color={colors.icon} />
               </TouchableOpacity>
             </View>
@@ -410,96 +414,27 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
               {profile.school} • {profile.program}
             </Text>
           </View>
+
           <View style={styles.statsRow}>
             <View style={styles.stat}>
-              <Text style={[styles.statNumber, { color: colors.textPrimary }]}>1240</Text>
+              <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{stats.tasksCompleted}</Text>
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>Tasks Completed</Text>
             </View>
             <View style={styles.stat}>
-              <Text style={[styles.statNumber, { color: colors.textPrimary }]}>12</Text>
-              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Planets</Text>
+              <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{stats.currentStreak}</Text>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Current Streak</Text>
             </View>
             <View style={styles.stat}>
-              <Text style={[styles.statNumber, { color: colors.textPrimary }]}>158</Text>
-              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Hours</Text>
+              <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{formattedFocusHours}</Text>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Focus Hours</Text>
             </View>
           </View>
+
           <Text style={[styles.heading, { color: colors.textPrimary }]}>Settings</Text>
-          <View
-            style={[
-              styles.settingCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <View style={styles.settingTopRow}>
-              <View
-                style={[
-                  styles.settingIcon,
-                  {
-                    backgroundColor: colors.iconBackground,
-                  },
-                ]}
-              >
-                <Ionicons name="time-outline" size={18} color={colors.icon} />
-              </View>
-              <Switch
-                value={studyReminders}
-                onValueChange={setStudyReminders}
-                thumbColor="#D9C4FF"
-                trackColor={{
-                  false: isDark ? "#3B3B55" : "#D9D4EB",
-                  true: "#6E5EFF",
-                }}
-              />
-            </View>
-            <Text style={[styles.settingTitle, { color: colors.textPrimary }]}>Study Reminders</Text>
-            <Text style={[styles.settingDescription, { color: colors.description }]}>
-              Receive cosmic nudges for your planned focus sessions.
-            </Text>
-            <View style={styles.tagRow}>
-              <TouchableOpacity
-                style={[
-                  styles.tag,
-                  {
-                    backgroundColor: colors.tag,
-                  },
-                ]}
-              >
-                <Text style={[styles.tagText, { color: colors.textPrimary }]}>Every 45m</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.tag,
-                  {
-                    backgroundColor: colors.tag,
-                  },
-                ]}
-              >
-                <Text style={[styles.tagText, { color: colors.textPrimary }]}>Zen Mode</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View
-            style={[
-              styles.settingCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
+
+          <View style={[styles.settingCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <View style={styles.settingRow}>
-              <View
-                style={[
-                  styles.settingIcon,
-                  {
-                    backgroundColor: colors.iconBackground,
-                  },
-                ]}
-              >
+              <View style={[styles.settingIcon, { backgroundColor: colors.iconBackground }]}>
                 <Ionicons name="color-palette-outline" size={18} color={colors.icon} />
               </View>
             </View>
@@ -515,30 +450,12 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   styles.themeOption,
                   {
                     borderColor: theme === "light" ? "#B6A8FF" : colors.optionBorder,
-                    backgroundColor:
-                      theme === "light"
-                        ? isDark
-                          ? "rgba(124,93,255,0.18)"
-                          : "rgba(124,93,255,0.10)"
-                        : "transparent",
+                    backgroundColor: theme === "light" ? (isDark ? "rgba(124,93,255,0.18)" : "rgba(124,93,255,0.10)") : "transparent",
                   },
                 ]}
               >
-                <Ionicons
-                  name="moon-outline"
-                  size={17}
-                  color={theme === "light" ? colors.textPrimary : colors.optionText}
-                />
-                <Text
-                  style={[
-                    styles.themeOptionText,
-                    {
-                      color: theme === "light" ? colors.textPrimary : colors.optionText,
-                    },
-                  ]}
-                >
-                  Stellar
-                </Text>
+                <Ionicons name="moon-outline" size={17} color={theme === "light" ? colors.textPrimary : colors.optionText} />
+                <Text style={[styles.themeOptionText, { color: theme === "light" ? colors.textPrimary : colors.optionText }]}>Stellar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.8}
@@ -547,374 +464,146 @@ const ProfileSheet = forwardRef<any, {}>((props, ref) => {
                   styles.themeOption,
                   {
                     borderColor: theme === "dark" ? "#B6A8FF" : colors.optionBorder,
-                    backgroundColor:
-                      theme === "dark"
-                        ? isDark
-                          ? "rgba(124,93,255,0.18)"
-                          : "rgba(124,93,255,0.10)"
-                        : "transparent",
+                    backgroundColor: theme === "dark" ? (isDark ? "rgba(124,93,255,0.18)" : "rgba(124,93,255,0.10)") : "transparent",
                   },
                 ]}
               >
-                <Ionicons
-                  name="sunny-outline"
-                  size={17}
-                  color={theme === "dark" ? colors.textPrimary : colors.optionText}
-                />
-                <Text
-                  style={[
-                    styles.themeOptionText,
-                    {
-                      color: theme === "dark" ? colors.textPrimary : colors.optionText,
-                    },
-                  ]}
-                >
-                  Lunar
-                </Text>
+                <Ionicons name="sunny-outline" size={17} color={theme === "dark" ? colors.textPrimary : colors.optionText} />
+                <Text style={[styles.themeOptionText, { color: theme === "dark" ? colors.textPrimary : colors.optionText }]}>Lunar</Text>
               </TouchableOpacity>
             </View>
           </View>
-          <View
-            style={[
-              styles.settingCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <View style={styles.settingRow}>
-              <View
-                style={[
-                  styles.settingIcon,
-                  {
-                    backgroundColor: colors.iconBackground,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="planet-outline"
-                  size={18}
-                  color={isDark ? "#F3CFA5" : "#8A6A35"}
-                />
-              </View>
-              <View style={styles.astralText}>
-                <Text style={[styles.settingTitle, { color: colors.textPrimary }]}>
-                  Astral Progress Tracking
-                </Text>
-                <Text style={[styles.settingDescription, { color: colors.description }]}>
-                  Detailed mapping of your intellectual expansion. Visualize subject mastery as
-                  expanding nebulae.
-                </Text>
-              </View>
-            </View>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={[
-                  styles.option,
-                  {
-                    borderColor: colors.optionBorder,
-                  },
-                ]}
-              >
-                <Text style={[styles.optionText, { color: colors.optionText }]}>Configure Map</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.goldButton,
-                  {
-                    backgroundColor: colors.gold,
-                  },
-                ]}
-              >
-                <Text style={[styles.goldButtonText, { color: colors.goldText }]}>View Universe</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={[
-              styles.smallCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <View style={styles.settingRow}>
-              <View
-                style={[
-                  styles.settingIcon,
-                  {
-                    backgroundColor: colors.iconBackground,
-                  },
-                ]}
-              >
-                <Ionicons name="shield-outline" size={18} color={colors.icon} />
-              </View>
-              <View style={styles.smallText}>
-                <Text style={[styles.smallTitle, { color: colors.textPrimary }]}>Privacy & Sanctuary</Text>
-                <Text style={[styles.smallSubtitle, { color: colors.smallSubtitle }]}>
-                  Manage your study visibility
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={18}
-                color={isDark ? "#B6A8FF" : "#6658A8"}
-              />
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={[
-              styles.smallCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <View style={styles.settingRow}>
-              <View
-                style={[
-                  styles.settingIcon,
-                  {
-                    backgroundColor: colors.iconBackground,
-                  },
-                ]}
-              >
-                <Ionicons name="git-network-outline" size={18} color={colors.icon} />
-              </View>
-              <View style={styles.smallText}>
-                <Text style={[styles.smallTitle, { color: colors.textPrimary }]}>Connected Orbits</Text>
-                <Text style={[styles.smallSubtitle, { color: colors.smallSubtitle }]}>
-                  Manage external data streams
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={18}
-                color={isDark ? "#B6A8FF" : "#6658A8"}
-              />
-            </View>
-          </TouchableOpacity>
+
           <MusicSelector />
-          <View
-            style={[
-              styles.deleteCard,
-              {
-                backgroundColor: colors.deleteCard,
-                borderColor: colors.cardBorder,
-              },
-            ]}
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handleLogout}
+            style={[styles.logoutCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
           >
-            <View style={styles.deleteText}>
-              <Text style={[styles.deleteTitle, { color: colors.deleteTitle }]}>End Expedition</Text>
-              <Text style={[styles.deleteDescription, { color: colors.deleteDescription }]}>
-                Permanently delete your account and all study nebulae.
-              </Text>
+            <View style={[styles.settingIcon, { backgroundColor: colors.iconBackground }]}>
+              <Ionicons name="log-out-outline" size={19} color={colors.logoutTitle} />
             </View>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={[
-                styles.deleteButton,
-                {
-                  borderColor: colors.deleteBorder,
-                },
-              ]}
-            >
-              <Text style={[styles.deleteButtonText, { color: colors.deleteText }]}>
-                Delete{"\n"}Data
-              </Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.logoutTextContainer}>
+              <Text style={[styles.logoutTitle, { color: colors.logoutTitle }]}>Log Out</Text>
+              <Text style={[styles.logoutDescription, { color: colors.logoutDescription }]}>Sign out of your Planova account.</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.logoutTitle} />
+          </TouchableOpacity>
+
+          <View style={styles.bottomSpacer} />
         </LinearGradient>
       </BottomSheetScrollView>
 
-      <Modal
-        visible={showEditProfile}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowEditProfile(false)}
-      >
-        <View
-          style={[
-            styles.modalOverlay,
-            {
-              backgroundColor: "rgba(0,0,0,0.55)",
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.profileEditModal,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Edit Profile</Text>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => setShowEditProfile(false)}>
-                <Ionicons name="close" size={23} color={colors.textMuted} />
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.modalSectionTitle, { color: colors.textPrimary }]}>
-              Profile Picture
-            </Text>
-            <View style={styles.photoButtonsRow}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={pickProfilePicture}
-                style={[
-                  styles.photoButton,
-                  {
-                    backgroundColor: colors.iconBackground,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
+      <Modal visible={showEditProfile} transparent animationType="fade" onRequestClose={() => setShowEditProfile(false)}>
+        <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+          <View style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.55)" }]}>
+            <View style={[styles.profileEditModal, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <ScrollView
+                style={styles.editProfileScroll}
+                contentContainerStyle={styles.editProfileScrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+                nestedScrollEnabled
               >
-                <Ionicons name="images-outline" size={19} color={colors.icon} />
-                <Text style={[styles.photoButtonText, { color: colors.textPrimary }]}>Photos</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={takeProfilePicture}
-                style={[
-                  styles.photoButton,
-                  {
-                    backgroundColor: colors.iconBackground,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-              >
-                <Ionicons name="camera-outline" size={19} color={colors.icon} />
-                <Text style={[styles.photoButtonText, { color: colors.textPrimary }]}>Camera</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.modalSectionTitle, { color: colors.textPrimary }]}>
-              Profile Background
-            </Text>
-            <View
-              style={[
-                styles.backgroundPreview,
-                {
-                  borderColor: colors.cardBorder,
-                },
-              ]}
-            >
-              <Image source={{ uri: profile.backgroundUri }} style={styles.backgroundPreviewImage} />
-              <LinearGradient
-                colors={["transparent", "rgba(0,0,0,0.5)"]}
-                style={styles.backgroundPreviewOverlay}
-              />
-              <Ionicons
-                name="image-outline"
-                size={23}
-                color="#FFFFFF"
-                style={styles.backgroundPreviewIcon}
-              />
-            </View>
-            <View style={styles.photoButtonsRow}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={pickBackground}
-                style={[
-                  styles.photoButton,
-                  {
-                    backgroundColor: colors.iconBackground,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-              >
-                <Ionicons name="images-outline" size={19} color={colors.icon} />
-                <Text style={[styles.photoButtonText, { color: colors.textPrimary }]}>Photos</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={takeBackgroundPhoto}
-                style={[
-                  styles.photoButton,
-                  {
-                    backgroundColor: colors.iconBackground,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-              >
-                <Ionicons name="camera-outline" size={19} color={colors.icon} />
-                <Text style={[styles.photoButtonText, { color: colors.textPrimary }]}>Camera</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.modalLabel, { color: colors.textMuted }]}>Full Name</Text>
-            <TextInput
-              value={editName}
-              onChangeText={setEditName}
-              placeholder="Your full name"
-              placeholderTextColor={colors.textMuted}
-              style={[
-                styles.modalInput,
-                {
-                  color: colors.textPrimary,
-                  backgroundColor: colors.iconBackground,
-                  borderColor: colors.cardBorder,
-                },
-              ]}
-            />
-            <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
-              School / Educational Institution
-            </Text>
-            <TextInput
-              value={editSchool}
-              onChangeText={setEditSchool}
-              placeholder="e.g. SAIT, Central High School"
-              placeholderTextColor={colors.textMuted}
-              style={[
-                styles.modalInput,
-                {
-                  color: colors.textPrimary,
-                  backgroundColor: colors.iconBackground,
-                  borderColor: colors.cardBorder,
-                },
-              ]}
-            />
-            <Text style={[styles.modalLabel, { color: colors.textMuted }]}>
-              Grade / Program / Field of Study
-            </Text>
-            <TextInput
-              value={editProgram}
-              onChangeText={setEditProgram}
-              placeholder="e.g. Grade 11, Software Development"
-              placeholderTextColor={colors.textMuted}
-              style={[
-                styles.modalInput,
-                {
-                  color: colors.textPrimary,
-                  backgroundColor: colors.iconBackground,
-                  borderColor: colors.cardBorder,
-                },
-              ]}
-            />
-            <View style={styles.modalActions}>
-              <TouchableOpacity activeOpacity={0.8} onPress={() => setShowEditProfile(false)} style={styles.cancelButton}>
-                <Text style={[styles.cancelButtonText, { color: colors.textSecondary }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={saveProfile}
-                style={[
-                  styles.saveProfileButton,
-                  {
-                    backgroundColor: colors.button,
-                  },
-                ]}
-              >
-                <Text style={styles.saveProfileText}>Save Profile</Text>
-              </TouchableOpacity>
+                <View style={styles.modalHeader}>
+                  <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Edit Profile</Text>
+                  <TouchableOpacity activeOpacity={0.8} onPress={() => setShowEditProfile(false)}>
+                    <Ionicons name="close" size={23} color={colors.textMuted} />
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={[styles.modalSectionTitle, { color: colors.textPrimary }]}>Profile Picture</Text>
+                <View style={styles.photoButtonsRow}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={pickProfilePicture}
+                    style={[styles.photoButton, { backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}
+                  >
+                    <Ionicons name="images-outline" size={19} color={colors.icon} />
+                    <Text style={[styles.photoButtonText, { color: colors.textPrimary }]}>Photos</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={takeProfilePicture}
+                    style={[styles.photoButton, { backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}
+                  >
+                    <Ionicons name="camera-outline" size={19} color={colors.icon} />
+                    <Text style={[styles.photoButtonText, { color: colors.textPrimary }]}>Camera</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={[styles.modalSectionTitle, { color: colors.textPrimary }]}>Profile Background</Text>
+                <View style={[styles.backgroundPreview, { borderColor: colors.cardBorder }]}>
+                  <Image source={{ uri: profile.backgroundUri }} style={styles.backgroundPreviewImage} />
+                  <LinearGradient colors={["transparent", "rgba(0,0,0,0.5)"]} style={styles.backgroundPreviewOverlay} />
+                  <Ionicons name="image-outline" size={23} color="#FFFFFF" style={styles.backgroundPreviewIcon} />
+                </View>
+                <View style={styles.photoButtonsRow}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={pickBackground}
+                    style={[styles.photoButton, { backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}
+                  >
+                    <Ionicons name="images-outline" size={19} color={colors.icon} />
+                    <Text style={[styles.photoButtonText, { color: colors.textPrimary }]}>Photos</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={takeBackgroundPhoto}
+                    style={[styles.photoButton, { backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}
+                  >
+                    <Ionicons name="camera-outline" size={19} color={colors.icon} />
+                    <Text style={[styles.photoButtonText, { color: colors.textPrimary }]}>Camera</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={[styles.modalLabel, { color: colors.textMuted }]}>Full Name</Text>
+                <TextInput
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder="Your full name"
+                  placeholderTextColor={colors.textMuted}
+                  returnKeyType="next"
+                  style={[styles.modalInput, { color: colors.textPrimary, backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}
+                />
+
+                <Text style={[styles.modalLabel, { color: colors.textMuted }]}>School / Educational Institution</Text>
+                <TextInput
+                  value={editSchool}
+                  onChangeText={setEditSchool}
+                  placeholder="e.g. SAIT, Central High School"
+                  placeholderTextColor={colors.textMuted}
+                  returnKeyType="next"
+                  style={[styles.modalInput, { color: colors.textPrimary, backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}
+                />
+
+                <Text style={[styles.modalLabel, { color: colors.textMuted }]}>Grade / Program / Field of Study</Text>
+                <TextInput
+                  value={editProgram}
+                  onChangeText={setEditProgram}
+                  placeholder="e.g. Grade 11, Software Development"
+                  placeholderTextColor={colors.textMuted}
+                  returnKeyType="done"
+                  onSubmitEditing={saveProfile}
+                  style={[styles.modalInput, { color: colors.textPrimary, backgroundColor: colors.iconBackground, borderColor: colors.cardBorder }]}
+                />
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity activeOpacity={0.8} onPress={() => setShowEditProfile(false)} style={styles.cancelButton}>
+                    <Text style={[styles.cancelButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity activeOpacity={0.8} onPress={saveProfile} style={[styles.saveProfileButton, { backgroundColor: colors.button }]}>
+                    <Text style={styles.saveProfileText}>Save Profile</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.keyboardBottomSpacer} />
+              </ScrollView>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </BottomSheet>
   );
@@ -1044,6 +733,7 @@ const styles = StyleSheet.create({
   statLabel: {
     fontFamily: "Bitter",
     marginTop: 4,
+    textAlign: "center",
   },
   heading: {
     fontFamily: "BitterBold",
@@ -1056,29 +746,6 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 18,
     borderWidth: 1,
-  },
-  smallCard: {
-    width: "100%",
-    borderRadius: 22,
-    padding: 18,
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  deleteCard: {
-    width: "100%",
-    borderRadius: 22,
-    padding: 18,
-    marginTop: 8,
-    marginBottom: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-  },
-  settingTopRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 18,
   },
   settingRow: {
     flexDirection: "row",
@@ -1102,20 +769,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontSize: 15,
   },
-  tagRow: {
-    flexDirection: "row",
-    marginTop: 18,
-  },
-  tag: {
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 10,
-  },
-  tagText: {
-    fontFamily: "Bitter",
-    fontSize: 12,
-  },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1136,68 +789,34 @@ const styles = StyleSheet.create({
     fontFamily: "BitterBold",
     fontSize: 14,
   },
-  option: {
-    flex: 1,
+  logoutCard: {
+    width: "100%",
+    borderRadius: 22,
+    padding: 18,
+    marginBottom: 16,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 4,
   },
-  optionText: {
-    fontFamily: "Bitter",
-  },
-  goldButton: {
-    flex: 1,
-    marginLeft: 8,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 12,
-  },
-  goldButtonText: {
-    fontFamily: "BitterBold",
-  },
-  smallText: {
+  logoutTextContainer: {
     flex: 1,
     marginLeft: 12,
+    marginRight: 10,
   },
-  smallTitle: {
+  logoutTitle: {
     fontFamily: "BitterBold",
     fontSize: 17,
   },
-  smallSubtitle: {
+  logoutDescription: {
     fontFamily: "Bitter",
     marginTop: 4,
     fontSize: 13,
   },
-  astralText: {
+  bottomSpacer: {
+    height: 30,
+  },
+  keyboardAvoidingView: {
     flex: 1,
-    marginLeft: 14,
-  },
-  deleteText: {
-    flex: 1,
-    marginRight: 12,
-  },
-  deleteTitle: {
-    fontFamily: "BitterBold",
-    fontSize: 18,
-  },
-  deleteDescription: {
-    fontFamily: "Bitter",
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  deleteButton: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  deleteButtonText: {
-    fontFamily: "BitterBold",
-    textAlign: "center",
   },
   modalOverlay: {
     flex: 1,
@@ -1208,10 +827,17 @@ const styles = StyleSheet.create({
   profileEditModal: {
     width: "100%",
     maxWidth: 430,
-    maxHeight: "90%",
+    height: "90%",
     borderRadius: 24,
     borderWidth: 1,
+    overflow: "hidden",
+  },
+  editProfileScroll: {
+    flex: 1,
+  },
+  editProfileScrollContent: {
     padding: 20,
+    paddingBottom: 10,
   },
   modalHeader: {
     flexDirection: "row",
@@ -1310,5 +936,8 @@ const styles = StyleSheet.create({
     fontFamily: "BitterBold",
     fontSize: 13,
     color: "#FFFFFF",
+  },
+  keyboardBottomSpacer: {
+    height: 180,
   },
 });

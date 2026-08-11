@@ -1,374 +1,378 @@
-import Header from "@/components/header";
 import { useTheme } from "@/context/themecontext";
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+  ActiveFocusSession,
+  clearActiveFocusSession,
+  getActiveFocusSession,
+  pauseActiveFocusSession,
+  resumeActiveFocusSession,
+  saveActiveFocusSession,
+} from "@/storage/focusTimerStorage";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const ACTIVE_FOCUS_SESSION_KEY = "@planova_active_focus_session";
-
-type ActiveFocusSession = {
-  id: string;
-  name: string;
-  durationSeconds: number;
-  startedAt: number;
-  endsAt: number;
-  remainingSeconds: number;
-  isRunning: boolean;
-  isCompleted: boolean;
-};
-
-export default function StudyScreen() {
+export default function FocusSessionScreen() {
   const { isDark } = useTheme();
-  const router = useRouter();
-  const [checkingTimer, setCheckingTimer] = useState(false);
+  const [session, setSession] = useState<ActiveFocusSession | null>(null);
+  const [remaining, setRemaining] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [changingState, setChangingState] = useState(false);
 
   const colors = isDark
     ? {
         title: "#e9d5ff",
         text: "#ffffff",
-        secondaryText: "#c4b5fd",
-        card: "rgba(14,25,56,0.55)",
-        cardBorder: "rgba(196,181,253,0.28)",
-        iconBackground: "rgba(196,181,253,0.14)",
+        secondary: "#c4b5fd",
+        card: "rgba(14,25,56,0.70)",
+        border: "rgba(196,181,253,0.30)",
+        iconBackground: "rgba(196,181,253,0.13)",
         icon: "#c4b5fd",
-        constellation: "rgba(196,181,253,0.45)",
-        featuredCard: "rgba(196,181,253,0.12)",
-        featuredBorder: "rgba(196,181,253,0.38)",
+        button: "#8064B5",
+        buttonText: "#ffffff",
+        danger: "#f87171",
+        backgroundTop: "#080D24",
+        backgroundMiddle: "#11183A",
+        backgroundBottom: "#24184A",
       }
     : {
         title: "#4F427D",
         text: "#30284C",
-        secondaryText: "#6D5A9F",
+        secondary: "#6D5A9F",
         card: "rgba(255,255,255,0.72)",
-        cardBorder: "rgba(79,66,125,0.30)",
+        border: "rgba(79,66,125,0.25)",
         iconBackground: "rgba(79,66,125,0.10)",
         icon: "#4F427D",
-        constellation: "rgba(79,66,125,0.40)",
-        featuredCard: "rgba(185,169,223,0.22)",
-        featuredBorder: "rgba(79,66,125,0.32)",
+        button: "#8069B3",
+        buttonText: "#ffffff",
+        danger: "#dc2626",
+        backgroundTop: "#DCD5F0",
+        backgroundMiddle: "#EEE9F8",
+        backgroundBottom: "#F8F5FC",
       };
 
-  const studyTools = [
-    {
-      title: "Flashcards",
-      description: "Review & memorize",
-      icon: "albums-outline" as const,
-    },
-    {
-      title: "Study Guides",
-      description: "Create quick reviews",
-      icon: "reader-outline" as const,
-    },
-    {
-      title: "Bookmarks",
-      description: "Save useful resources",
-      icon: "bookmark-outline" as const,
-    },
-    {
-      title: "Reference Library",
-      description: "Keep important material",
-      icon: "library-outline" as const,
-    },
-  ];
-
-  const getValidFocusSession = async (): Promise<ActiveFocusSession | null> => {
-    try {
-      const stored = await AsyncStorage.getItem(ACTIVE_FOCUS_SESSION_KEY);
-      if (!stored) return null;
-      const session = JSON.parse(stored) as ActiveFocusSession;
-      if (!session) {
-        await AsyncStorage.removeItem(ACTIVE_FOCUS_SESSION_KEY);
-        return null;
-      }
-      if (session.isCompleted) {
-        await AsyncStorage.removeItem(ACTIVE_FOCUS_SESSION_KEY);
-        return null;
-      }
-      if (session.isRunning === false && session.remainingSeconds > 0) {
-        return session;
-      }
-      if (session.isRunning === true && session.endsAt > Date.now()) {
-        return session;
-      }
-      if (session.isRunning === true && session.endsAt <= Date.now()) {
-        await AsyncStorage.removeItem(ACTIVE_FOCUS_SESSION_KEY);
-        return null;
-      }
-      await AsyncStorage.removeItem(ACTIVE_FOCUS_SESSION_KEY);
-      return null;
-    } catch (error) {
-      console.log("Failed to check active focus session:", error);
-      return null;
-    }
-  };
-
-  const handleFocusTimerPress = async () => {
-    if (checkingTimer) return;
-    setCheckingTimer(true);
-    try {
-      const session = await getValidFocusSession();
-      if (session) {
-        router.push("/focusSession");
-        return;
-      }
-      router.push("/focusTimer");
-    } catch (error) {
-      console.log("Failed to open focus timer:", error);
-      router.push("/focusTimer");
-    } finally {
-      setCheckingTimer(false);
-    }
-  };
-
-  useEffect(() => {
-    const checkTimer = async () => {
-      await getValidFocusSession();
-    };
-    checkTimer();
+  const showCompletionAlert = useCallback(() => {
+    Alert.alert("Focus Complete", "Your cosmic focus session is complete.", [
+      {
+        text: "OK",
+        onPress: () => router.replace("/study"),
+      },
+    ]);
   }, []);
 
-  const handleStudyToolPress = (title: string) => {
-    if (title === "Flashcards") {
-      router.push("/flashcards");
+  const loadSession = useCallback(async () => {
+    try {
+      const stored = await getActiveFocusSession();
+
+      if (!stored) {
+        setSession(null);
+        setRemaining(0);
+        setLoading(false);
+        router.replace("/study");
+        return;
+      }
+
+      if (stored.isCompleted) {
+        await clearActiveFocusSession();
+        setSession(null);
+        setRemaining(0);
+        setLoading(false);
+        showCompletionAlert();
+        return;
+      }
+
+      if (!stored.isRunning && stored.remainingSeconds > 0) {
+        setSession(stored);
+        setRemaining(stored.remainingSeconds);
+        setLoading(false);
+        return;
+      }
+
+      if (stored.isRunning) {
+        const seconds = Math.max(0, Math.ceil((stored.endsAt - Date.now()) / 1000));
+
+        if (seconds <= 0) {
+          const completed: ActiveFocusSession = {
+            ...stored,
+            remainingSeconds: 0,
+            isRunning: false,
+            isCompleted: true,
+          };
+          await saveActiveFocusSession(completed);
+          setSession(null);
+          setRemaining(0);
+          setLoading(false);
+          await clearActiveFocusSession();
+          showCompletionAlert();
+          return;
+        }
+
+        const updated: ActiveFocusSession = {
+          ...stored,
+          remainingSeconds: seconds,
+        };
+        await saveActiveFocusSession(updated);
+        setSession(updated);
+        setRemaining(seconds);
+        setLoading(false);
+        return;
+      }
+
+      await clearActiveFocusSession();
+      setSession(null);
+      setRemaining(0);
+      setLoading(false);
+      router.replace("/study");
+    } catch (error) {
+      console.log("Failed to load focus session:", error);
+      setLoading(false);
+    }
+  }, [showCompletionAlert]);
+
+  useEffect(() => {
+    loadSession();
+  }, [loadSession]);
+
+  useEffect(() => {
+    if (!session || !session.isRunning) {
       return;
     }
-    if (title === "Study Guides") {
-      router.push("/studyGuides");
+
+    const interval = setInterval(async () => {
+      const current = await getActiveFocusSession();
+
+      if (!current) {
+        setSession(null);
+        setRemaining(0);
+        clearInterval(interval);
+        router.replace("/study");
+        return;
+      }
+
+      if (!current.isRunning) {
+        if (current.remainingSeconds > 0) {
+          setSession(current);
+          setRemaining(current.remainingSeconds);
+        }
+        return;
+      }
+
+      const seconds = Math.max(0, Math.ceil((current.endsAt - Date.now()) / 1000));
+
+      if (seconds <= 0) {
+        const completed: ActiveFocusSession = {
+          ...current,
+          remainingSeconds: 0,
+          isRunning: false,
+          isCompleted: true,
+        };
+        await saveActiveFocusSession(completed);
+        clearInterval(interval);
+        await clearActiveFocusSession();
+        setSession(null);
+        setRemaining(0);
+        showCompletionAlert();
+        return;
+      }
+
+      const updated: ActiveFocusSession = {
+        ...current,
+        remainingSeconds: seconds,
+      };
+      await saveActiveFocusSession(updated);
+      setSession(updated);
+      setRemaining(seconds);
+    }, 250);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [session?.id, session?.isRunning, showCompletionAlert]);
+
+  const handlePause = async () => {
+    if (!session || !session.isRunning || changingState) {
       return;
     }
-    if (title === "Bookmarks") {
-      router.push("/bookmarks");
-      return;
-    }
-    if (title === "Reference Library") {
-      router.push("/referenceLibrary");
-      return;
+
+    setChangingState(true);
+
+    try {
+      const paused = await pauseActiveFocusSession();
+
+      if (!paused) {
+        setSession(null);
+        setRemaining(0);
+        router.replace("/study");
+        return;
+      }
+
+      if (paused.isCompleted) {
+        await clearActiveFocusSession();
+        setSession(null);
+        setRemaining(0);
+        showCompletionAlert();
+        return;
+      }
+
+      setSession(paused);
+      setRemaining(paused.remainingSeconds);
+    } finally {
+      setChangingState(false);
     }
   };
 
+  const handleResume = async () => {
+    if (!session || session.isRunning || changingState) {
+      return;
+    }
+
+    setChangingState(true);
+
+    try {
+      const resumed = await resumeActiveFocusSession();
+
+      if (!resumed) {
+        setSession(null);
+        setRemaining(0);
+        router.replace("/study");
+        return;
+      }
+
+      if (resumed.isCompleted) {
+        await clearActiveFocusSession();
+        setSession(null);
+        setRemaining(0);
+        showCompletionAlert();
+        return;
+      }
+
+      setSession(resumed);
+      setRemaining(resumed.remainingSeconds);
+    } finally {
+      setChangingState(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (changingState) {
+      return;
+    }
+
+    Alert.alert("Cancel Focus", "Are you sure you want to cancel this focus session?", [
+      {
+        text: "Keep Focus",
+        style: "cancel",
+      },
+      {
+        text: "Cancel Timer",
+        style: "destructive",
+        onPress: async () => {
+          setChangingState(true);
+          try {
+            await clearActiveFocusSession();
+            setSession(null);
+            setRemaining(0);
+            router.replace("/study");
+          } finally {
+            setChangingState(false);
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleBack = () => {
+    router.replace("/study");
+  };
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    if (hours > 0) {
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <LinearGradient colors={[colors.backgroundTop, colors.backgroundMiddle, colors.backgroundBottom]} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
+        <ActivityIndicator size="large" color={colors.title} />
+        <Text style={[styles.loadingText, { color: colors.secondary }]}>Restoring your cosmic focus...</Text>
+      </View>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  const isPaused = !session.isRunning;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Header />
-      <ScrollView
-        style={styles.pageScroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.titleSection}>
-          <Text style={[styles.pageTitle, { color: colors.title }]}>Study</Text>
-          <View
-            style={[
-              styles.constellationLine,
-              { backgroundColor: colors.constellation },
-            ]}
-          />
-          <Text style={[styles.pageSubtitle, { color: colors.secondaryText }]}>
-            Tools and resources to help you study smarter.
-          </Text>
-        </View>
-        <View style={styles.featuredRow}>
-          <TouchableOpacity
-            activeOpacity={0.82}
-            onPress={() => router.push("/notes")}
-            style={[
-              styles.featuredCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.featuredIcon,
-                {
-                  backgroundColor: colors.iconBackground,
-                },
-              ]}
-            >
-              <Ionicons
-                name="document-text-outline"
-                size={29}
-                color={colors.icon}
-              />
-            </View>
-            <Text style={[styles.featuredTitle, { color: colors.text }]}>
-              Notes
-            </Text>
-            <Text
-              style={[
-                styles.featuredDescription,
-                { color: colors.secondaryText },
-              ]}
-            >
-              Organize your notes and class materials.
-            </Text>
-            <View style={styles.featuredArrow}>
-              <Ionicons
-                name="arrow-forward-outline"
-                size={18}
-                color={colors.secondaryText}
-              />
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.82}
-            disabled={checkingTimer}
-            onPress={handleFocusTimerPress}
-            style={[
-              styles.featuredCard,
-              {
-                backgroundColor: colors.featuredCard,
-                borderColor: colors.featuredBorder,
-                opacity: checkingTimer ? 0.7 : 1,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.featuredIcon,
-                {
-                  backgroundColor: colors.iconBackground,
-                },
-              ]}
-            >
-              {checkingTimer ? (
-                <ActivityIndicator size="small" color={colors.icon} />
-              ) : (
-                <Ionicons name="timer-outline" size={29} color={colors.icon} />
-              )}
-            </View>
-            <Text style={[styles.featuredTitle, { color: colors.text }]}>
-              Focus Timer
-            </Text>
-            <Text
-              style={[
-                styles.featuredDescription,
-                { color: colors.secondaryText },
-              ]}
-            >
-              Set a session and focus on your work.
-            </Text>
-            <View style={styles.featuredArrow}>
-              <Ionicons
-                name="arrow-forward-outline"
-                size={18}
-                color={colors.secondaryText}
-              />
-            </View>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>
-            Study Tools
-          </Text>
-          <View
-            style={[
-              styles.constellationLine,
-              { backgroundColor: colors.constellation },
-            ]}
-          />
-          <View style={styles.toolsGrid}>
-            {studyTools.map((tool) => (
-              <TouchableOpacity
-                key={tool.title}
-                activeOpacity={0.82}
-                onPress={() => handleStudyToolPress(tool.title)}
-                style={[
-                  styles.toolCard,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.toolIcon,
-                    {
-                      backgroundColor: colors.iconBackground,
-                    },
-                  ]}
-                >
-                  <Ionicons name={tool.icon} size={23} color={colors.icon} />
-                </View>
-                <Text style={[styles.toolTitle, { color: colors.text }]}>
-                  {tool.title}
-                </Text>
-                <Text
-                  style={[
-                    styles.toolDescription,
-                    { color: colors.secondaryText },
-                  ]}
-                >
-                  {tool.description}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>
-            Recently Used
-          </Text>
-          <View
-            style={[
-              styles.constellationLine,
-              { backgroundColor: colors.constellation },
-            ]}
-          />
-          <View
-            style={[
-              styles.recentCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.recentIcon,
-                {
-                  backgroundColor: colors.iconBackground,
-                },
-              ]}
-            >
-              <Ionicons name="time-outline" size={24} color={colors.icon} />
-            </View>
-            <View style={styles.recentText}>
-              <Text style={[styles.recentTitle, { color: colors.text }]}>
-                Nothing here yet
-              </Text>
-              <Text
-                style={[
-                  styles.recentDescription,
-                  { color: colors.secondaryText },
-                ]}
-              >
-                Your recently opened study resources will appear here.
-              </Text>
-            </View>
-          </View>
-        </View>
+    <View style={styles.container}>
+      <LinearGradient colors={[colors.backgroundTop, colors.backgroundMiddle, colors.backgroundBottom]} locations={[0, 0.52, 1]} style={StyleSheet.absoluteFill} />
+
+      {Array.from({ length: 75 }).map((_, index) => (
         <View
+          key={index}
           style={[
-            styles.bottomDivider,
-            { backgroundColor: colors.constellation },
+            styles.star,
+            {
+              left: `${(index * 37) % 100}%`,
+              top: `${(index * 61) % 100}%`,
+              opacity: 0.25 + ((index * 17) % 60) / 100,
+              transform: [{ scale: 0.5 + ((index * 13) % 10) / 10 }],
+            },
           ]}
         />
-      </ScrollView>
-    </SafeAreaView>
+      ))}
+
+      <View pointerEvents="none" style={[styles.cosmicGlow, { backgroundColor: isDark ? "rgba(196,181,253,0.08)" : "rgba(128,105,179,0.07)" }]} />
+
+      <View style={styles.content}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={handleBack}
+          style={[styles.backButton, { backgroundColor: isDark ? "rgba(14,25,56,0.45)" : "rgba(255,255,255,0.45)", borderColor: colors.border }]}
+        >
+          <Ionicons name="chevron-back" size={23} color={colors.title} />
+        </TouchableOpacity>
+
+        <View style={[styles.icon, { backgroundColor: colors.iconBackground, borderColor: colors.border }]}>
+          <Ionicons name={isPaused ? "pause-outline" : "planet-outline"} size={32} color={colors.icon} />
+        </View>
+
+        <Text style={[styles.label, { color: colors.secondary }]}>{isPaused ? "FOCUS PAUSED" : "COSMIC FOCUS"}</Text>
+
+        <Text style={[styles.title, { color: colors.title }]}>{session.name}</Text>
+
+        <View style={[styles.timerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.timer, { color: colors.text }]}>{formatTime(remaining)}</Text>
+          <Text style={[styles.remainingLabel, { color: colors.secondary }]}>TIME REMAINING</Text>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          disabled={changingState}
+          onPress={isPaused ? handleResume : handlePause}
+          style={[styles.mainButton, { backgroundColor: colors.button, opacity: changingState ? 0.6 : 1 }]}
+        >
+          <Ionicons name={isPaused ? "play" : "pause"} size={20} color={colors.buttonText} />
+          <Text style={[styles.mainButtonText, { color: colors.buttonText }]}>{isPaused ? "Resume Focus" : "Pause Focus"}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity activeOpacity={0.7} disabled={changingState} onPress={handleCancel} style={styles.cancelButton}>
+          <Ionicons name="close-circle-outline" size={17} color={colors.danger} />
+          <Text style={[styles.cancelText, { color: colors.danger }]}>Cancel Focus</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -377,150 +381,116 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
-  pageScroll: {
+  loadingContainer: {
     flex: 1,
-    backgroundColor: "transparent",
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 100,
-    paddingBottom: 120,
-  },
-  titleSection: {
     alignItems: "center",
-    marginBottom: 30,
+    justifyContent: "center",
   },
-  pageTitle: {
-    fontFamily: "BitterBold",
-    fontSize: 30,
-    textAlign: "center",
-    marginBottom: 15,
-  },
-  pageSubtitle: {
+  loadingText: {
     fontFamily: "Bitter",
-    fontSize: 13,
-    lineHeight: 20,
-    textAlign: "center",
-    maxWidth: 310,
+    fontSize: 12,
+    marginTop: 12,
   },
-  constellationLine: {
-    width: "60%",
-    height: 1,
+  star: {
+    position: "absolute",
+    width: 2,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  cosmicGlow: {
+    position: "absolute",
+    width: 420,
+    height: 420,
+    borderRadius: 210,
     alignSelf: "center",
-    marginBottom: 20,
+    top: "28%",
+    opacity: 0.9,
   },
-  featuredRow: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 36,
+  content: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 25,
+    zIndex: 2,
   },
-  featuredCard: {
-    width: "48%",
-    minHeight: 215,
-    borderRadius: 22,
+  backButton: {
+    position: "absolute",
+    top: 16,
+    left: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     borderWidth: 1,
-    padding: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
   },
-  featuredIcon: {
-    width: 52,
+  icon: {
+    width: 72,
+    height: 72,
+    borderRadius: 23,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 18,
+  },
+  label: {
+    fontFamily: "BitterBold",
+    fontSize: 10,
+    letterSpacing: 2,
+    marginBottom: 10,
+  },
+  title: {
+    fontFamily: "BitterBold",
+    fontSize: 27,
+    textAlign: "center",
+    marginBottom: 25,
+  },
+  timerCard: {
+    width: "100%",
+    borderRadius: 28,
+    borderWidth: 1,
+    paddingVertical: 35,
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  timer: {
+    fontFamily: "BitterBold",
+    fontSize: 47,
+    letterSpacing: 1,
+  },
+  remainingLabel: {
+    fontFamily: "Bitter",
+    fontSize: 10,
+    letterSpacing: 1.5,
+    marginTop: 8,
+  },
+  mainButton: {
+    minWidth: 210,
     height: 52,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 17,
-  },
-  featuredTitle: {
-    fontFamily: "BitterBold",
-    fontSize: 17,
-    marginBottom: 8,
-  },
-  featuredDescription: {
-    fontFamily: "Bitter",
-    fontSize: 10.5,
-    lineHeight: 17,
-  },
-  featuredArrow: {
-    marginTop: "auto",
-    alignSelf: "flex-end",
-  },
-  section: {
-    width: "100%",
-    alignItems: "center",
-    marginBottom: 34,
-  },
-  sectionTitle: {
-    fontFamily: "BitterBold",
-    fontSize: 21,
-    textAlign: "center",
-    marginBottom: 15,
-  },
-  toolsGrid: {
-    width: "100%",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  toolCard: {
-    width: "48%",
-    minHeight: 145,
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 14,
-  },
-  toolIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 13,
-  },
-  toolTitle: {
-    fontFamily: "BitterBold",
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  toolDescription: {
-    fontFamily: "Bitter",
-    fontSize: 10.5,
-    lineHeight: 16,
-  },
-  recentCard: {
-    width: "100%",
-    minHeight: 92,
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 16,
+    borderRadius: 26,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 25,
+    gap: 9,
   },
-  recentIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 16,
+  mainButtonText: {
+    fontFamily: "BitterBold",
+    fontSize: 13,
+  },
+  cancelButton: {
+    height: 45,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 14,
+    gap: 7,
+    marginTop: 10,
+    paddingHorizontal: 15,
   },
-  recentText: {
-    flex: 1,
-  },
-  recentTitle: {
+  cancelText: {
     fontFamily: "BitterBold",
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  recentDescription: {
-    fontFamily: "Bitter",
-    fontSize: 10.5,
-    lineHeight: 16,
-  },
-  bottomDivider: {
-    width: "60%",
-    height: 1,
-    alignSelf: "center",
-    marginTop: 0,
+    fontSize: 11,
   },
 });
