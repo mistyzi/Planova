@@ -11,6 +11,12 @@ export default {
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
 
+    experimental: {
+      server: {
+        enabled: true
+      }
+    },
+
     ios: {
       supportsTablet: true
     },
