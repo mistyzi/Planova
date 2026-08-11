@@ -21,7 +21,7 @@ import MaskedView from "@react-native-masked-view/masked-view";
 // Planova logo
 const logo = require("../assets/logo.png");
 
-const AUTH_STORAGE_KEY = "@planova_auth";
+import { supabase } from "@/lib/supabase";
 
 type AuthScreen = "loading" | "choice" | "login" | "register";
 
@@ -244,182 +244,222 @@ export default function Auth() {
   // AUTH CHECK
   // ==========================================================
 
-  const checkExistingAuth = async () => {
-    try {
-      const authenticated =
-        await AsyncStorage.getItem(
-          AUTH_STORAGE_KEY
-        );
+const checkExistingAuth = async () => {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-      setTimeout(() => {
-        if (authenticated === "true") {
-          router.replace("/(tabs)");
-        } else {
-          setScreen("choice");
-        }
-      }, 1400);
-    } catch (error) {
-      console.log(
-        "Failed to check authentication:",
-        error
-      );
-
-      setTimeout(() => {
+    setTimeout(() => {
+      if (session) {
+        router.replace("/(tabs)");
+      } else {
         setScreen("choice");
-      }, 1400);
-    }
-  };
+      }
+    }, 1400);
+  } catch (error) {
+    console.log(
+      "Failed to check authentication:",
+      error
+    );
+
+    setTimeout(() => {
+      setScreen("choice");
+    }, 1400);
+  }
+};
 
   // ==========================================================
   // LOGIN
   // ==========================================================
 
-  const handleLogin = async () => {
-    const trimmedEmail = email.trim();
+const handleLogin = async () => {
+  const trimmedEmail = email.trim();
 
-    if (!trimmedEmail) {
-      Alert.alert(
-        "Missing Email",
-        "Please enter your email."
-      );
-      return;
+  if (!trimmedEmail) {
+    Alert.alert(
+      "Missing Email",
+      "Please enter your email."
+    );
+    return;
+  }
+
+  if (!password) {
+    Alert.alert(
+      "Missing Password",
+      "Please enter your password."
+    );
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const {
+      data,
+      error,
+    } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password,
+    });
+
+    if (error) {
+      throw error;
     }
 
-    if (!password) {
-      Alert.alert(
-        "Missing Password",
-        "Please enter your password."
+    if (!data.session) {
+      throw new Error(
+        "A login session could not be created."
       );
-      return;
     }
 
-    try {
-      setLoading(true);
+    router.replace("/(tabs)");
+  } catch (error: any) {
+    console.log(
+      "Login failed:",
+      error
+    );
 
-      await AsyncStorage.setItem(
-        AUTH_STORAGE_KEY,
-        "true"
-      );
-
-      router.replace("/(tabs)");
-    } catch (error) {
-      console.log("Login failed:", error);
-
-      Alert.alert(
-        "Login Error",
-        "Something went wrong while signing in."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    Alert.alert(
+      "Login Failed",
+      error?.message ||
+        "The email or password may be incorrect."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ==========================================================
   // REGISTRATION
   // ==========================================================
 
-  const handleRegistration = async () => {
-    const trimmedName = registerName.trim();
-    const trimmedEmail = registerEmail.trim();
+const handleRegistration = async () => {
+  const trimmedName = registerName.trim();
+  const trimmedEmail = registerEmail.trim();
 
-    if (!trimmedName) {
-      Alert.alert(
-        "Missing Name",
-        "Please enter your name."
-      );
-      return;
+  if (!trimmedName) {
+    Alert.alert("Missing Name", "Please enter your name.");
+    return;
+  }
+
+  if (!trimmedEmail) {
+    Alert.alert("Missing Email", "Please enter your email.");
+    return;
+  }
+
+  if (!registerPassword) {
+    Alert.alert(
+      "Missing Password",
+      "Please create a password."
+    );
+    return;
+  }
+
+  if (registerPassword.length < 6) {
+    Alert.alert(
+      "Password Too Short",
+      "Your password must be at least 6 characters."
+    );
+    return;
+  }
+
+  if (registerPassword !== confirmPassword) {
+    Alert.alert(
+      "Passwords Don't Match",
+      "Please make sure both passwords match."
+    );
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const {
+      data,
+      error,
+    } = await supabase.auth.signUp({
+      email: trimmedEmail,
+      password: registerPassword,
+    });
+
+    if (error) {
+      throw error;
     }
 
-    if (!trimmedEmail) {
-      Alert.alert(
-        "Missing Email",
-        "Please enter your email."
+    if (!data.user) {
+      throw new Error(
+        "Account could not be created."
       );
-      return;
     }
 
-    if (!registerPassword) {
-      Alert.alert(
-        "Missing Password",
-        "Please create a password."
-      );
-      return;
-    }
+    const defaultAvatar =
+      "https://i.pinimg.com/736x/e9/46/55/e94655294e897527f56c15e51580661a.jpg";
 
-    if (registerPassword.length < 6) {
-      Alert.alert(
-        "Password Too Short",
-        "Your password must be at least 6 characters."
-      );
-      return;
-    }
+    const defaultBackground =
+      "https://images.unsplash.com/photo-1534791547706-0c292bfb8004?auto=format&fit=crop&w=1200&q=80";
 
-    if (registerPassword !== confirmPassword) {
-      Alert.alert(
-        "Passwords Don't Match",
-        "Please make sure both passwords match."
-      );
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      await AsyncStorage.setItem(
-        AUTH_STORAGE_KEY,
-        "true"
-      );
-
-      const existingProfile =
-        await AsyncStorage.getItem(
-          "@planova_profile"
-        );
-
-      let profile = {
+    const {
+      error: profileError,
+    } = await supabase
+      .from("profiles")
+      .insert({
+        id: data.user.id,
         name: trimmedName,
         school: "",
         program: "",
-        avatarUri:
-          "https://i.pinimg.com/736x/e9/46/55/e94655294e897527f56c15e51580661a.jpg",
-        backgroundUri:
-          "https://images.unsplash.com/photo-1534791547706-0c292bfb8004?auto=format&fit=crop&w=1200&q=80",
-      };
+        avatar_uri: defaultAvatar,
+        background_uri: defaultBackground,
+      });
 
-      if (existingProfile) {
-        try {
-          const parsed =
-            JSON.parse(existingProfile);
-
-          profile = {
-            ...profile,
-            ...parsed,
-            name: trimmedName,
-          };
-        } catch {
-          // Keep default profile.
-        }
-      }
-
-      await AsyncStorage.setItem(
-        "@planova_profile",
-        JSON.stringify(profile)
-      );
-
-      router.replace("/(tabs)");
-    } catch (error) {
+    if (profileError) {
       console.log(
-        "Registration failed:",
-        error
+        "Profile creation error:",
+        profileError
       );
 
       Alert.alert(
-        "Registration Error",
-        "Something went wrong while creating your account."
+        "Account Created",
+        "Your account was created, but your profile could not be created."
       );
-    } finally {
-      setLoading(false);
+
+      return;
     }
-  };
+
+    /*
+     * Depending on your Supabase email-confirmation
+     * settings, session may be null here.
+     */
+
+    if (data.session) {
+      router.replace("/(tabs)");
+    } else {
+      Alert.alert(
+        "Check Your Email",
+        "Your account was created. Please verify your email before signing in.",
+        [
+          {
+            text: "OK",
+            onPress: () => setScreen("login"),
+          },
+        ]
+      );
+    }
+  } catch (error: any) {
+    console.log(
+      "Registration failed:",
+      error
+    );
+
+    Alert.alert(
+      "Registration Error",
+      error?.message ||
+        "Something went wrong while creating your account."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ==========================================================
   // BACK
