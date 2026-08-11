@@ -52,7 +52,8 @@ export default {
         }
       ],
       "expo-font",
-      "expo-audio"
+      "expo-audio",
+      "expo-sqlite"
     ],
 
     experiments: {
