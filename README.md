@@ -70,6 +70,7 @@ With essentials like a task tracker, focus timer, notes, and flashcards, Planova
 	│   ├── focusTimerOverlay.tsx
 	│   ├── header.tsx
 	│   ├── musicselector.tsx
+	│   ├── notificationSheet.tsx
 	│   ├── profilesheet.tsx
 	│   └── starrybackground.tsx
 	│ 
