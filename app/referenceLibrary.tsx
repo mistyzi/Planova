@@ -162,9 +162,6 @@ export default function ReferenceLibraryScreen() {
         >
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-        <Text style={[styles.topTitle, { color: colors.title }]}>
-          Reference Library
-        </Text>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push("/referenceMaker")}

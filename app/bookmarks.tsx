@@ -173,9 +173,6 @@ export default function BookmarksScreen() {
         >
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-        <Text style={[styles.topTitle, { color: colors.title }]}>
-          Bookmarks
-        </Text>
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.push("/bookmarkMaker")}

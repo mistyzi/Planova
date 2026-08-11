@@ -148,9 +148,6 @@ export default function StudyGuidesScreen() {
         >
           <Ionicons name="arrow-back" size={25} color={colors.title} />
         </TouchableOpacity>
-        <Text style={[styles.topTitle, { color: colors.title }]}>
-          Study Guides
-        </Text>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={createGuide}
@@ -170,19 +167,19 @@ export default function StudyGuidesScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.intro}>
-          <View
-            style={[
-              styles.introIcon,
-              {
-                backgroundColor: colors.iconBackground,
-              },
-            ]}
-          >
-            <Ionicons name="book-outline" size={28} color={colors.icon} />
-          </View>
+          
           <Text style={[styles.pageTitle, { color: colors.title }]}>
-            Your Study Guides
+            Study Guides
           </Text>
+          
+        <View
+          style={[
+            styles.finalDivider,
+            {
+              backgroundColor: colors.divider,
+            },
+          ]}
+        />
           <Text style={[styles.pageSubtitle, { color: colors.secondaryText }]}>
             Create organized study guides to review your course material.
           </Text>
@@ -550,6 +547,7 @@ const styles = StyleSheet.create({
     width: "60%",
     height: 1,
     alignSelf: "center",
-    marginTop: 35,
+    marginTop: 13,
+    marginBottom: 13
   },
 });
