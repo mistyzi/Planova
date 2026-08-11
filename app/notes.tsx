@@ -39,7 +39,7 @@ import {
 
 import {
   scanMultipleImages,
-} from "./ocr";
+} from "../utils/ocr";
 
 type NoteFilter = "All" | "Text" | "Images";
 

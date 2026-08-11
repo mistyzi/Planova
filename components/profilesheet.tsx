@@ -28,24 +28,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 
 import { useTheme } from "../context/themecontext";
 import MusicSelector from "./musicselector";
 
 const PROFILE_STORAGE_KEY = "@planova_profile";
-
-
-
-
-
-
-
-
-
-
-
-
-
 const TASKS_STORAGE_KEY = "@planova_tasks";
 const STREAK_STORAGE_KEY = "@planova_streak";
 const FOCUS_STORAGE_KEY = "@planova_focus_time";
@@ -86,6 +74,8 @@ const DEFAULT_STATS: ProfileStats = {
 
 const ProfileSheet = forwardRef<any, ProfileSheetProps>(
   ({ onLogout }, ref) => {
+    const router = useRouter();
+
     const snapPoints = useMemo(() => ["90%"], []);
 
     const [profile, setProfile] =
@@ -173,12 +163,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
           cardBorder: "rgba(91,76,145,0.12)",
         };
 
-    
-
-
-
-
-
     useEffect(() => {
       loadProfile();
       loadStats();
@@ -237,23 +221,11 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
       }
     };
 
-    
-
-
-
-
-
     const loadStats = async () => {
       try {
         let tasksCompleted = 0;
         let currentStreak = 0;
         let focusHours = 0;
-
-        
-
-
-
-
 
         const storedTasks =
           await AsyncStorage.getItem(
@@ -283,12 +255,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
             }
           }
         }
-
-        
-
-
-
-
 
         const storedStreak =
           await AsyncStorage.getItem(
@@ -320,12 +286,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
             }
           }
         }
-
-        
-
-
-
-
 
         const storedFocus =
           await AsyncStorage.getItem(
@@ -385,10 +345,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
       }
     };
 
-    
-
-
-
     useEffect(() => {
       const interval = setInterval(() => {
         loadStats();
@@ -396,12 +352,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
 
       return () => clearInterval(interval);
     }, []);
-
-    
-
-
-
-
 
     const saveProfileToStorage = async (
       updatedProfile: ProfileData
@@ -470,12 +420,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
 
       setShowEditProfile(false);
     };
-
-    
-
-
-
-
 
     const pickProfilePicture = async () => {
       try {
@@ -567,12 +511,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
         );
       }
     };
-
-    
-
-
-
-
 
     const pickBackground = async () => {
       try {
@@ -707,12 +645,26 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
       );
     };
 
-    
-
-
-
-
-
+    /*
+     * LOGOUT
+     *
+     * Your auth screens are inside:
+     *
+     * app/
+     *   auth/
+     *     index.tsx
+     *
+     * and your main app screens are inside:
+     *
+     * app/
+     *   (tabs)/
+     *     index.tsx
+     *     task.tsx
+     *     study.tsx
+     *
+     * Therefore router.replace("/auth") sends the
+     * user out of the tabs and back to authentication.
+     */
     const handleLogout = () => {
       Alert.alert(
         "Log Out",
@@ -726,13 +678,28 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
             text: "Log Out",
             style: "destructive",
             onPress: () => {
-              if (onLogout) {
-                onLogout();
-              } else {
-                Alert.alert(
-                  "Logout Ready",
-                  "Connect the onLogout prop to your authentication system to complete logout."
+              try {
+                // Close the profile sheet first.
+                if (ref && typeof ref !== "function") {
+                  ref.current?.close?.();
+                }
+
+                // Keep support for an optional parent
+                // logout callback if you already use one.
+                if (onLogout) {
+                  onLogout();
+                }
+
+                // Send the user to the auth screen.
+                router.replace("/auth");
+              } catch (error) {
+                console.log(
+                  "Logout navigation failed:",
+                  error
                 );
+
+                // Fallback navigation.
+                router.replace("/auth");
               }
             },
           },
@@ -740,24 +707,12 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
       );
     };
 
-    
-
-
-
-
-
     const formattedFocusHours =
       stats.focusHours < 10
         ? stats.focusHours.toFixed(1)
         : Math.round(
             stats.focusHours
           ).toString();
-
-    
-
-
-
-
 
     return (
       <BottomSheet
@@ -806,10 +761,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
             ]}
             style={styles.gradient}
           >
-            {}
-            {}
-            {}
-
             <View style={styles.profileHeader}>
               <Image
                 source={{
@@ -932,10 +883,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
               </Text>
             </View>
 
-            {}
-            {}
-            {}
-
             <View style={styles.statsRow}>
               <View style={styles.stat}>
                 <Text
@@ -1016,10 +963,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
               </View>
             </View>
 
-            {}
-            {}
-            {}
-
             <Text
               style={[
                 styles.heading,
@@ -1031,10 +974,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
             >
               Settings
             </Text>
-
-            {}
-            {}
-            {}
 
             <View
               style={[
@@ -1187,15 +1126,7 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
               </View>
             </View>
 
-            {}
-            {}
-            {}
-
             <MusicSelector />
-
-            {}
-            {}
-            {}
 
             <TouchableOpacity
               activeOpacity={0.8}
@@ -1269,10 +1200,6 @@ const ProfileSheet = forwardRef<any, ProfileSheetProps>(
             />
           </LinearGradient>
         </BottomSheetScrollView>
-
-        {}
-        {}
-        {}
 
         <Modal
           visible={showEditProfile}
