@@ -17,7 +17,6 @@ import { useTheme } from "@/context/themecontext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NotificationPopup from "@/components/notificationsheet";
 
-// Planova logo
 const logo = require("../assets/logo.png");
 
 export default function Header() {
@@ -162,9 +161,6 @@ export default function Header() {
 }
 
 const styles = StyleSheet.create({
-  // ==================================================
-  // HEADER CONTAINER
-  // ==================================================
 
   headerContainer: {
     position: "absolute",
@@ -176,10 +172,6 @@ const styles = StyleSheet.create({
     elevation: 100,
   },
 
-  // ==================================================
-  // HEADER GRADIENT
-  // ==================================================
-
   headerGradient: {
     position: "absolute",
     top: 0,
@@ -188,10 +180,6 @@ const styles = StyleSheet.create({
     height: 120,
     zIndex: 0,
   },
-
-  // ==================================================
-  // HEADER
-  // ==================================================
 
   header: {
     flexDirection: "row",
@@ -205,10 +193,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  // ==================================================
-  // PLANOVA BRANDING
-  // ==================================================
-
   logoRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -220,13 +204,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 
-  // Container around the masked PLANOVA text
   wordmarkMask: {
     justifyContent: "center",
     alignItems: "flex-start",
   },
 
-  // The actual PLANOVA shape used by MaskedView
   logoText: {
     fontFamily: "MysteryQuest",
     fontSize: 28,
@@ -236,9 +218,6 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
 
-  // This copy is only used to create the gradient.
-  // Its opacity is zero because MaskedView uses the
-  // other Text as the visible mask.
   logoTextInvisible: {
     opacity: 0,
   },
@@ -246,10 +225,6 @@ const styles = StyleSheet.create({
   wordmarkGradient: {
     alignSelf: "flex-start",
   },
-
-  // ==================================================
-  // HEADER ICONS
-  // ==================================================
 
   headerIcons: {
     flexDirection: "row",
